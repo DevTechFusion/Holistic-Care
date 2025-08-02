@@ -19,31 +19,47 @@ class WebAuthController extends Controller
     public function login(LoginRequest $request)
     {
         $credentials = $request->only('email', 'password');
-        $remember = $request->boolean('remember');
 
-        if (Auth::attempt($credentials, $remember)) {
-            $request->session()->regenerate();
+        // First check if user exists
+        $user = User::where('email', $credentials['email'])->first();
 
-            $user = Auth::user();
-
-            // Create Sanctum token with expiration (24 hours)
-            $token = $user->createToken('auth_token', ['*'], now()->addHours(24))->plainTextToken;
-
+        if (!$user) {
             return response()->json([
-                'status' => 'success',
-                'message' => 'Login successful',
-                'data' => [
-                    'user' => $user->load('roles'),
-                    'token' => $token,
-                    'token_type' => 'Bearer',
-                    'expires_at' => now()->addHours(24)->toISOString()
+                'status' => 'error',
+                'message' => 'No account found with this email address.',
+                'errors' => [
+                    'email' => ['No account found with this email address.']
                 ]
-            ], 200);
+            ], 422);
         }
 
-        throw ValidationException::withMessages([
-            'email' => ['The provided credentials are incorrect.'],
-        ]);
+        // Then check password
+        if (!Hash::check($credentials['password'], $user->password)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'The password you entered is incorrect.',
+                'errors' => [
+                    'password' => ['The password you entered is incorrect.']
+                ]
+            ], 422);
+        }
+
+        // Revoke existing tokens for this user
+        $user->tokens()->delete();
+
+        // Create new Sanctum token with expiration (8 hours)
+        $token = $user->createToken('auth_token', ['*'], now()->addHours(8))->plainTextToken;
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Login successful',
+            'data' => [
+                'user' => $user->load('roles'),
+                'token' => $token,
+                'token_type' => 'Bearer',
+                'expires_at' => now()->addHours(8)->toISOString()
+            ]
+        ], 200);
     }
 
     /**
@@ -51,31 +67,51 @@ class WebAuthController extends Controller
      */
     public function register(RegisterRequest $request)
     {
-        $userData = $request->validated();
-        $userData['password'] = Hash::make($userData['password']);
+        try {
+            $userData = $request->validated();
+            $userData['password'] = Hash::make($userData['password']);
 
-        $user = User::create($userData);
+            // Check if user already exists
+            $existingUser = User::where('email', $userData['email'])->first();
+            if ($existingUser) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'An account with this email address already exists.',
+                    'errors' => [
+                        'email' => ['An account with this email address already exists.']
+                    ]
+                ], 422);
+            }
 
-        // Assign default role if provided
-        if (isset($userData['role'])) {
-            $user->assignRole($userData['role']);
+            $user = User::create($userData);
+
+            // Assign default role if provided
+            if (isset($userData['role'])) {
+                $user->assignRole($userData['role']);
+            }
+
+            // Create Sanctum token for API access
+            $token = $user->createToken('auth_token', ['*'], now()->addHours(8))->plainTextToken;
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'User registered successfully',
+                'data' => [
+                    'user' => $user->load('roles'),
+                    'token' => $token,
+                    'token_type' => 'Bearer',
+                    'expires_at' => now()->addHours(8)->toISOString()
+                ]
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Registration failed. Please try again.',
+                'errors' => [
+                    'general' => ['Registration failed. Please try again.']
+                ]
+            ], 500);
         }
-
-        // Log the user in
-            Auth::login($user);
-
-        // Create Sanctum token for API access
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'User registered successfully',
-            'data' => [
-                'user' => $user->load('roles'),
-                'token' => $token,
-                'token_type' => 'Bearer'
-            ]
-        ], 201);
     }
 
     /**
@@ -87,13 +123,6 @@ class WebAuthController extends Controller
         if ($request->user()) {
             $request->user()->tokens()->delete();
         }
-
-        // Logout from session
-        Auth::logout();
-
-        // Invalidate session
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
 
         return response()->json([
             'status' => 'success',

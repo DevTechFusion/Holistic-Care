@@ -18,7 +18,7 @@ return [
     'stateful' => explode(',', env('SANCTUM_STATEFUL_DOMAINS', sprintf(
         '%s%s',
         'localhost,localhost:3000,127.0.0.1,127.0.0.1:8000,::1',
-        Sanctum::currentApplicationUrlWithPort()
+        env('FRONTEND_URL') ? ',' . env('FRONTEND_URL') : ''
     ))),
 
     /*
@@ -46,7 +46,7 @@ return [
     |
     */
 
-    'expiration' => env('SANCTUM_TOKEN_EXPIRATION', 60 * 24), // 24 hours
+    'expiration' => env('SANCTUM_TOKEN_EXPIRATION', 60 * 8), // 8 hours (reduced from 24)
 
     /*
     |--------------------------------------------------------------------------

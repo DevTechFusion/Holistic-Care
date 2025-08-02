@@ -1,572 +1,509 @@
 # API Endpoints Documentation
 
-This document describes the API endpoints available for role and permission management in your React frontend.
+## Overview
+All API endpoints are now properly configured in `routes/api.php` for cross-origin requests between separate frontend (React) and backend (Laravel) servers.
 
-## Authentication
-
-### Register User
-```http
-POST /auth/register
+## Base URL
+```
+http://your-laravel-backend.com/api
 ```
 
-**Request Body:**
-```json
-{
-  "name": "John Doe",
-  "email": "john@example.com",
-  "password": "password123",
-  "password_confirmation": "password123",
-  "role": "user" // optional
-}
-```
+## Authentication Endpoints
 
-**Response:**
-```json
-{
-  "status": "success",
-  "message": "User registered successfully",
-  "data": {
-    "user": {
-      "id": 1,
-      "name": "John Doe",
-      "email": "john@example.com",
-      "roles": [...]
-    },
-    "token": "1|abc123...",
-    "token_type": "Bearer"
+### Public Routes (No Authentication Required)
+
+#### Login
+- **URL**: `POST /api/login`
+- **Headers**: 
+  ```
+  Content-Type: application/json
+  Accept: application/json
+  ```
+- **Body**:
+  ```json
+  {
+    "email": "superadmin@example.com",
+    "password": "admin123!"
   }
-}
-```
-
-### Login User
-```http
-POST /auth/login
-```
-
-**Request Body:**
-```json
-{
-  "email": "john@example.com",
-  "password": "password123"
-}
-```
-
-**Response:**
-```json
-{
-  "status": "success",
-  "message": "Login successful",
-  "data": {
-    "user": {
-      "id": 1,
-      "name": "John Doe",
-      "email": "john@example.com",
-      "roles": [...]
-    },
-    "token": "1|abc123...",
-    "token_type": "Bearer"
-  }
-}
-```
-
-## Role Management
-
-### Get All Roles
-```http
-GET /roles
-```
-
-**Headers:**
-```
-Authorization: Bearer {token}
-```
-
-**Response:**
-```json
-{
-  "status": "success",
-  "data": {
-    "current_page": 1,
-    "data": [
-      {
+  ```
+- **Success Response** (200):
+  ```json
+  {
+    "status": "success",
+    "message": "Login successful",
+    "data": {
+      "user": {
         "id": 1,
-        "name": "admin",
-        "guard_name": "web",
-        "permissions": [...]
-      }
-    ]
-  }
-}
-```
-
-### Create Role
-```http
-POST /roles
-```
-
-**Request Body:**
-```json
-{
-  "name": "editor",
-  "guard_name": "web",
-  "permissions": ["create-posts", "edit-posts"]
-}
-```
-
-**Response:**
-```json
-{
-  "status": "success",
-  "message": "Role created successfully",
-  "data": {
-    "id": 2,
-    "name": "editor",
-    "guard_name": "web",
-    "permissions": [...]
-  }
-}
-```
-
-### Update Role
-```http
-PUT /roles/{id}
-```
-
-**Request Body:**
-```json
-{
-  "name": "senior-editor",
-  "permissions": ["create-posts", "edit-posts", "delete-posts"]
-}
-```
-
-### Delete Role
-```http
-DELETE /roles/{id}
-```
-
-### Get Role Details
-```http
-GET /roles/{id}
-```
-
-### Assign Permissions to Role
-```http
-POST /roles/{id}/assign-permissions
-```
-
-**Request Body:**
-```json
-{
-  "permissions": ["create-posts", "edit-posts"]
-}
-```
-
-### Remove Permissions from Role
-```http
-POST /roles/{id}/remove-permissions
-```
-
-**Request Body:**
-```json
-{
-  "permissions": ["delete-posts"]
-}
-```
-
-### Sync Permissions for Role
-```http
-POST /roles/{id}/sync-permissions
-```
-
-**Request Body:**
-```json
-{
-  "permissions": ["create-posts", "edit-posts", "view-posts"]
-}
-```
-
-### Get Role Permissions
-```http
-GET /roles/{id}/permissions
-```
-
-### Check Role Permissions
-```http
-POST /roles/check-permissions
-```
-
-**Request Body:**
-```json
-{
-  "role_id": 1,
-  "permissions": ["create-posts", "edit-posts", "delete-posts"]
-}
-```
-
-**Response:**
-```json
-{
-  "status": "success",
-  "data": {
-    "role_id": 1,
-    "role_name": "admin",
-    "permission_checks": {
-      "create-posts": true,
-      "edit-posts": true,
-      "delete-posts": false
+        "name": "Super Admin",
+        "email": "superadmin@example.com",
+        "roles": [...]
+      },
+      "token": "1|abc123...",
+      "token_type": "Bearer",
+      "expires_at": "2024-01-XX..."
     }
   }
-}
-```
-
-### Get Available Permissions for Role
-```http
-GET /roles/{id}/available-permissions
-```
-
-**Response:**
-```json
-{
-  "status": "success",
-  "data": {
-    "role": {
-      "id": 1,
-      "name": "editor",
-      "permissions": [...]
-    },
-    "available_permissions": [...],
-    "assigned_permissions": [...]
+  ```
+- **Error Response** (422) - Email Not Found:
+  ```json
+  {
+    "status": "error",
+    "message": "No account found with this email address.",
+    "errors": {
+      "email": ["No account found with this email address."]
+    }
   }
-}
-```
+  ```
+- **Error Response** (422) - Wrong Password:
+  ```json
+  {
+    "status": "error",
+    "message": "The password you entered is incorrect.",
+    "errors": {
+      "password": ["The password you entered is incorrect."]
+    }
+  }
+  ```
 
-## Permission Management
+#### Register
+- **URL**: `POST /api/register`
+- **Headers**: Same as login
+- **Body**:
+  ```json
+  {
+    "name": "New User",
+    "email": "user@example.com",
+    "password": "password123",
+    "password_confirmation": "password123"
+  }
+  ```
+- **Success Response** (201):
+  ```json
+  {
+    "status": "success",
+    "message": "User registered successfully",
+    "data": {
+      "user": {
+        "id": 2,
+        "name": "New User",
+        "email": "user@example.com",
+        "roles": [...]
+      },
+      "token": "2|def456...",
+      "token_type": "Bearer",
+      "expires_at": "2024-01-XX..."
+    }
+  }
+  ```
+- **Error Response** (422) - Email Already Exists:
+  ```json
+  {
+    "status": "error",
+    "message": "An account with this email address already exists.",
+    "errors": {
+      "email": ["An account with this email address already exists."]
+    }
+  }
+  ```
+- **Error Response** (422) - Validation Errors:
+  ```json
+  {
+    "status": "error",
+    "message": "The given data was invalid.",
+    "errors": {
+      "email": ["The email field is required."],
+      "password": ["The password field is required."]
+    }
+  }
+  ```
+- **Error Response** (500) - Server Error:
+  ```json
+  {
+    "status": "error",
+    "message": "Registration failed. Please try again.",
+    "errors": {
+      "general": ["Registration failed. Please try again."]
+    }
+  }
+  ```
 
-### Get All Permissions
-```http
-GET /permissions
-```
+### Protected Routes (Authentication Required)
 
-### Create Permission
-```http
-POST /permissions
-```
+#### Logout
+- **URL**: `POST /api/logout`
+- **Headers**: 
+  ```
+  Authorization: Bearer {token}
+  Accept: application/json
+  ```
 
-**Request Body:**
-```json
-{
-  "name": "manage-users",
-  "guard_name": "web"
-}
-```
+#### Get Profile
+- **URL**: `GET /api/profile`
+- **Headers**: Same as logout
 
-### Update Permission
-```http
-PUT /permissions/{id}
-```
+#### Refresh Token
+- **URL**: `POST /api/refresh`
+- **Headers**: Same as logout
 
-### Delete Permission
-```http
-DELETE /permissions/{id}
-```
-
-### Get Permission Details
-```http
-GET /permissions/{id}
-```
-
-### Get Roles by Permission
-```http
-GET /permissions/{id}/roles
-```
-
-### Assign Permission to Roles
-```http
-POST /permissions/{id}/assign-to-roles
-```
-
-**Request Body:**
-```json
-{
-  "role_ids": [1, 2, 3]
-}
-```
-
-### Remove Permission from Roles
-```http
-POST /permissions/{id}/remove-from-roles
-```
-
-**Request Body:**
-```json
-{
-  "role_ids": [1, 2]
-}
-```
-
-## User Management
+## User Management Endpoints
 
 ### Get All Users
-```http
-GET /users
-```
+- **URL**: `GET /api/users`
+- **Headers**: Authentication required
 
 ### Create User
-```http
-POST /users
-```
+- **URL**: `POST /api/users`
+- **Headers**: Authentication required
+- **Body**:
+  ```json
+  {
+    "name": "Amna",
+    "email": "amna@example.com",
+    "password": "password123",
+    "role": "agent"
+  }
+  ```
+- **Success Response** (201):
+  ```json
+  {
+    "status": "success",
+    "message": "User created successfully",
+    "data": {
+      "id": 3,
+      "name": "Amna",
+      "email": "amna@example.com",
+      "created_at": "2025-08-02T09:16:56.000000Z",
+      "updated_at": "2025-08-02T09:16:56.000000Z",
+      "roles": [
+        {
+          "id": 2,
+          "name": "agent",
+          "guard_name": "sanctum",
+          "pivot": {
+            "model_type": "App\\Models\\User",
+            "model_id": 3,
+            "role_id": 2
+          }
+        }
+      ],
+      "permissions": []
+    }
+  }
+  ```
+- **Error Response** (422) - Email Already Exists:
+  ```json
+  {
+    "message": "This email is already registered.",
+    "errors": {
+      "email": ["This email is already registered."]
+    }
+  }
+  ```
+- **Error Response** (422) - Validation Errors:
+  ```json
+  {
+    "message": "The given data was invalid.",
+    "errors": {
+      "name": ["The name field is required."],
+      "email": ["The email field is required."],
+      "password": ["The password field is required."],
+      "role": ["The selected role does not exist."]
+    }
+  }
+  ```
 
-**Request Body:**
-```json
-{
-  "name": "Jane Doe",
-  "email": "jane@example.com",
-  "password": "password123",
-  "role": "editor"
-}
-```
+### Get User
+- **URL**: `GET /api/users/{id}`
+- **Headers**: Authentication required
 
 ### Update User
-```http
-PUT /users/{id}
-```
+- **URL**: `PUT /api/users/{id}`
+- **Headers**: Authentication required
 
 ### Delete User
-```http
-DELETE /users/{id}
-```
-
-### Get User Details
-```http
-GET /users/{id}
-```
+- **URL**: `DELETE /api/users/{id}`
+- **Headers**: Authentication required
 
 ### Assign Role to User
-```http
-POST /users/{id}/assign-role
-```
-
-**Request Body:**
-```json
-{
-  "role": "editor"
-}
-```
+- **URL**: `POST /api/users/{id}/assign-role`
+- **Headers**: Authentication required
 
 ### Remove Role from User
-```http
-POST /users/{id}/remove-role
-```
+- **URL**: `POST /api/users/{id}/remove-role`
+- **Headers**: Authentication required
 
-**Request Body:**
-```json
-{
-  "role": "editor"
-}
-```
+## Role Management Endpoints
+
+### Get All Roles
+- **URL**: `GET /api/roles`
+- **Headers**: Authentication required
+
+### Create Role
+- **URL**: `POST /api/roles`
+- **Headers**: Authentication required
+
+### Get Role
+- **URL**: `GET /api/roles/{id}`
+- **Headers**: Authentication required
+
+### Update Role
+- **URL**: `PUT /api/roles/{id}`
+- **Headers**: Authentication required
+
+### Delete Role
+- **URL**: `DELETE /api/roles/{id}`
+- **Headers**: Authentication required
+
+### Assign Permissions to Role
+- **URL**: `POST /api/roles/{id}/assign-permissions`
+- **Headers**: Authentication required
+
+### Remove Permissions from Role
+- **URL**: `POST /api/roles/{id}/remove-permissions`
+- **Headers**: Authentication required
+
+### Sync Permissions for Role
+- **URL**: `POST /api/roles/{id}/sync-permissions`
+- **Headers**: Authentication required
+
+### Get Role Permissions
+- **URL**: `GET /api/roles/{id}/permissions`
+- **Headers**: Authentication required
+
+### Get All Permissions
+- **URL**: `GET /api/roles-permissions/all-permissions`
+- **Headers**: Authentication required
+
+## Permission Management Endpoints
+
+### Get All Permissions
+- **URL**: `GET /api/permissions`
+- **Headers**: Authentication required
+
+### Create Permission
+- **URL**: `POST /api/permissions`
+- **Headers**: Authentication required
+
+### Get Permission
+- **URL**: `GET /api/permissions/{id}`
+- **Headers**: Authentication required
+
+### Update Permission
+- **URL**: `PUT /api/permissions/{id}`
+- **Headers**: Authentication required
+
+### Delete Permission
+- **URL**: `DELETE /api/permissions/{id}`
+- **Headers**: Authentication required
+
+### Get Permission Roles
+- **URL**: `GET /api/permissions/{id}/roles`
+- **Headers**: Authentication required
+
+### Assign Permission to Roles
+- **URL**: `POST /api/permissions/{id}/assign-to-roles`
+- **Headers**: Authentication required
+
+### Remove Permission from Roles
+- **URL**: `POST /api/permissions/{id}/remove-from-roles`
+- **Headers**: Authentication required
+
+### Get All Roles
+- **URL**: `GET /api/permissions-roles/all-roles`
+- **Headers**: Authentication required
 
 ## Frontend-Specific Endpoints
 
-### Get User Permissions (for frontend authorization)
-```http
-GET /user/permissions
-```
-
-**Headers:**
-```
-Authorization: Bearer {token}
-```
-
-**Response:**
-```json
-{
-  "status": "success",
-  "data": {
-    "permissions": ["create-posts", "edit-posts", "view-posts"],
-    "roles": ["editor"],
-    "user": {
-      "id": 1,
-      "name": "John Doe",
-      "email": "john@example.com"
-    }
-  }
-}
-```
+### Get User Permissions
+- **URL**: `GET /api/user/permissions`
+- **Headers**: Authentication required
 
 ### Check User Permission
-```http
-POST /user/check-permission
-```
-
-**Request Body:**
-```json
-{
-  "permission": "create-posts"
-}
-```
-
-**Response:**
-```json
-{
-  "status": "success",
-  "data": {
-    "has_permission": true,
-    "permission": "create-posts",
-    "user_id": 1
-  }
-}
-```
+- **URL**: `POST /api/user/check-permission`
+- **Headers**: Authentication required
 
 ### Get User Roles
-```http
-GET /user/roles
-```
+- **URL**: `GET /api/user/roles`
+- **Headers**: Authentication required
 
-**Response:**
-```json
-{
-  "status": "success",
-  "data": {
-    "roles": ["editor", "moderator"],
-    "user_id": 1
+### Check Role Permissions
+- **URL**: `POST /api/roles/check-permissions`
+- **Headers**: Authentication required
+
+### Get Available Permissions for Role
+- **URL**: `GET /api/roles/{id}/available-permissions`
+- **Headers**: Authentication required
+
+## Department Management Endpoints
+
+**Service Pattern**: Uses `DepartmentService` for business logic
+
+### Get All Departments
+- **URL**: `GET /api/departments`
+- **Headers**: Authentication required
+
+### Create Department
+- **URL**: `POST /api/departments`
+- **Headers**: Authentication required
+- **Body**:
+  ```json
+  {
+    "name": "Dermatology"
   }
-}
+  ```
+- **Success Response** (201):
+  ```json
+  {
+    "status": "success",
+    "message": "Department created successfully",
+    "data": {
+      "id": 1,
+      "name": "Dermatology",
+      "created_at": "2025-08-02T10:18:10.000000Z",
+      "updated_at": "2025-08-02T10:18:10.000000Z"
+    }
+  }
+  ```
+
+### Get Department
+- **URL**: `GET /api/departments/{id}`
+- **Headers**: Authentication required
+
+### Update Department
+- **URL**: `PUT /api/departments/{id}`
+- **Headers**: Authentication required
+- **Body**:
+  ```json
+  {
+    "name": "Updated Department Name"
+  }
+  ```
+
+### Delete Department
+- **URL**: `DELETE /api/departments/{id}`
+- **Headers**: Authentication required
+
+## Procedure Management Endpoints
+
+**Service Pattern**: Uses `ProcedureService` for business logic
+
+### Get All Procedures
+- **URL**: `GET /api/procedures`
+- **Headers**: Authentication required
+
+### Create Procedure
+- **URL**: `POST /api/procedures`
+- **Headers**: Authentication required
+- **Body**:
+  ```json
+  {
+    "name": "Laser hair removal"
+  }
+  ```
+- **Success Response** (201):
+  ```json
+  {
+    "status": "success",
+    "message": "Procedure created successfully",
+    "data": {
+      "id": 1,
+      "name": "Laser hair removal",
+      "created_at": "2025-08-02T10:20:58.000000Z",
+      "updated_at": "2025-08-02T10:20:58.000000Z"
+    }
+  }
+  ```
+
+### Get Procedure
+- **URL**: `GET /api/procedures/{id}`
+- **Headers**: Authentication required
+
+### Update Procedure
+- **URL**: `PUT /api/procedures/{id}`
+- **Headers**: Authentication required
+- **Body**:
+  ```json
+  {
+    "name": "Updated Procedure Name"
+  }
+  ```
+
+### Delete Procedure
+- **URL**: `DELETE /api/procedures/{id}`
+- **Headers**: Authentication required
+
+## CORS Configuration
+
+The application is configured to allow cross-origin requests:
+
+```php
+// config/cors.php
+'paths' => ['api/*', 'sanctum/csrf-cookie', 'login', 'logout', 'register'],
+'allowed_methods' => ['*'],
+'allowed_origins' => ['*'],
+'allowed_headers' => ['*'],
+'supports_credentials' => true,
 ```
 
-## Error Responses
+## Error Handling
 
-All endpoints return consistent error responses:
+All API endpoints return proper JSON error responses:
 
+### Validation Errors (422)
 ```json
 {
-  "status": "error",
-  "message": "Error description",
-  "error": "Detailed error message"
-}
-```
-
-For validation errors:
-```json
-{
-  "status": "error",
-  "message": "Validation failed",
+  "message": "The given data was invalid.",
   "errors": {
     "field_name": ["Error message"]
   }
 }
 ```
 
-## Authentication
-
-Include the Bearer token in the Authorization header for all protected endpoints:
-
+### Authentication Errors (401)
+```json
+{
+  "message": "Unauthenticated."
+}
 ```
-Authorization: Bearer {your_token_here}
+
+### Server Errors (500)
+```json
+{
+  "message": "Server error message"
+}
 ```
 
-## Usage Examples for React
+## Testing
 
-### 1. Create a Role from Frontend
+### Test Credentials
+- **Email**: `superadmin@example.com`
+- **Password**: `admin123!`
 
+### Available Roles
+The system includes the following roles:
+- **super_admin**: Full system access with all permissions
+- **agent**: Agent role (permissions to be assigned)
+- **managerly**: Manager role (permissions to be assigned)
+
+### Postman Collection
+Import the provided Postman collection for testing all endpoints.
+
+## Frontend Integration
+
+### React Example
 ```javascript
-const createRole = async (roleData) => {
-  try {
-    const response = await fetch('/roles', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(roleData)
-    });
-    
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Error creating role:', error);
-  }
+const API_BASE_URL = 'http://your-laravel-backend.com/api';
+
+const login = async (email, password) => {
+  const response = await fetch(`${API_BASE_URL}/login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify({ email, password })
+  });
+  
+  return response.json();
 };
-
-// Usage
-createRole({
-  name: 'content-manager',
-  permissions: ['create-posts', 'edit-posts', 'publish-posts']
-});
-```
-
-### 2. Check User Permissions for Frontend Authorization
-
-```javascript
-const getUserPermissions = async () => {
-  try {
-    const response = await fetch('/user/permissions', {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    
-    const data = await response.json();
-    return data.data;
-  } catch (error) {
-    console.error('Error fetching permissions:', error);
-  }
-};
-
-// Usage in React component
-const { permissions, roles } = await getUserPermissions();
-
-// Check if user can perform an action
-const canCreatePost = permissions.includes('create-posts');
-```
-
-### 3. Check Specific Permission
-
-```javascript
-const checkPermission = async (permission) => {
-  try {
-    const response = await fetch('/user/check-permission', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ permission })
-    });
-    
-    const data = await response.json();
-    return data.data.has_permission;
-  } catch (error) {
-    console.error('Error checking permission:', error);
-    return false;
-  }
-};
-
-// Usage
-const canDeletePost = await checkPermission('delete-posts');
-```
-
-### 4. Check Role Permissions
-
-```javascript
-const checkRolePermissions = async (roleId, permissions) => {
-  try {
-    const response = await fetch('/roles/check-permissions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ role_id: roleId, permissions })
-    });
-    
-    const data = await response.json();
-    return data.data.permission_checks;
-  } catch (error) {
-    console.error('Error checking role permissions:', error);
-  }
-};
-
-// Usage
-const permissionChecks = await checkRolePermissions(1, ['create-posts', 'edit-posts']);
 ``` 
