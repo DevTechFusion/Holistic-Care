@@ -23,7 +23,9 @@ class DepartmentController extends Controller
     public function index()
     {
         try {
-            $departments = $this->departmentService->getAllDepartments();
+            $perPage = request()->get('per_page', 15);
+            $page = request()->get('page', 1);
+            $departments = $this->departmentService->getAllDepartments($perPage, $page);
 
             return response()->json([
                 'status' => 'success',

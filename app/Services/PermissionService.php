@@ -16,9 +16,9 @@ class PermissionService extends CrudeService
     /**
      * Get all permissions with pagination
      */
-    public function getAllPermissions($perPage = 15)
+    public function getAllPermissions($perPage = 15, $page = 1)
     {
-        return $this->_paginate($perPage, 1, null, ['roles']);
+        return $this->_paginate($perPage, $page, null, ['roles']);
     }
 
     /**

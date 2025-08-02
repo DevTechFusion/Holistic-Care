@@ -24,6 +24,10 @@ Route::middleware(['sanctum.token', 'auth:sanctum'])->group(function () {
     // Department management routes
     Route::apiResource('departments', App\Http\Controllers\Api\DepartmentController::class);
 
+    // Category management routes
+    Route::apiResource('categories', App\Http\Controllers\Api\CategoryController::class);
+    Route::get('categories/select', [App\Http\Controllers\Api\CategoryController::class, 'getCategoriesForSelect']);
+
     // Procedure management routes
     Route::apiResource('procedures', App\Http\Controllers\Api\ProcedureController::class);
 

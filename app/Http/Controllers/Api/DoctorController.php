@@ -23,7 +23,9 @@ class DoctorController extends Controller
     public function index()
     {
         try {
-            $doctors = $this->doctorService->getAllDoctors();
+            $perPage = request()->get('per_page', 15);
+            $page = request()->get('page', 1);
+            $doctors = $this->doctorService->getAllDoctors($perPage, $page);
 
             return response()->json([
                 'status' => 'success',

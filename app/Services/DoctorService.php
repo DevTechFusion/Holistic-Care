@@ -12,11 +12,11 @@ class DoctorService extends CrudeService
     }
 
     /**
-     * Get all doctors with relationships
+     * Get all doctors with pagination
      */
-    public function getAllDoctors($orderBy = 'name', $format = 'asc')
+    public function getAllDoctors($perPage = 15, $page = 1, $orderBy = 'name', $format = 'asc')
     {
-        return $this->_all(null, ['department', 'procedures'], $orderBy, $format);
+        return $this->_paginate($perPage, $page, null, ['department', 'procedures']);
     }
 
     /**

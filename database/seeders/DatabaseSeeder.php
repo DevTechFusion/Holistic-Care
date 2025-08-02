@@ -20,5 +20,8 @@ class DatabaseSeeder extends Seeder
         // ]);
         $this->call(PermissionSeeder::class);
         $this->call(SuperAdminSeeder::class);
+        $this->call(DepartmentSeeder::class);
+        $this->call(ProcedureSeeder::class);
+        $this->call(CategorySeeder::class);
     }
 }

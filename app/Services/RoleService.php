@@ -16,9 +16,9 @@ class RoleService extends CrudeService
     /**
      * Get all roles with pagination
      */
-    public function getAllRoles($perPage = 15)
+    public function getAllRoles($perPage = 15, $page = 1)
     {
-        return $this->_paginate($perPage, 1, null, ['permissions']);
+        return $this->_paginate($perPage, $page, null, ['permissions']);
     }
 
     /**

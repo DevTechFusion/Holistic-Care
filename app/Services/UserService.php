@@ -15,9 +15,9 @@ class UserService extends CrudeService
     /**
      * Get all users with pagination
      */
-    public function getAllUsers($perPage = 15)
+    public function getAllUsers($perPage = 15, $page = 1)
     {
-        return $this->_paginate($perPage, 1, null, ['roles', 'permissions']);
+        return $this->_paginate($perPage, $page, null, ['roles', 'permissions']);
     }
 
     /**

@@ -25,7 +25,8 @@ class UserController extends Controller
     {
         try {
             $perPage = request()->get('per_page', 15);
-            $users = $this->userService->getAllUsers($perPage);
+            $page = request()->get('page', 1);
+            $users = $this->userService->getAllUsers($perPage, $page);
 
             return response()->json([
                 'status' => 'success',

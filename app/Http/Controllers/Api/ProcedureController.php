@@ -23,7 +23,9 @@ class ProcedureController extends Controller
     public function index()
     {
         try {
-            $procedures = $this->procedureService->getAllProcedures();
+            $perPage = request()->get('per_page', 20);
+            $page = request()->get('page', 1);
+            $procedures = $this->procedureService->getAllProcedures($perPage, $page);
 
             return response()->json([
                 'status' => 'success',
