@@ -24,5 +24,8 @@ class DatabaseSeeder extends Seeder
         $this->call(ProcedureSeeder::class);
         $this->call(CategorySeeder::class);
         $this->call(SourceSeeder::class);
+        $this->call(Remarks1Seeder::class);
+        $this->call(Remarks2Seeder::class);
+        $this->call(StatusSeeder::class);
     }
 }

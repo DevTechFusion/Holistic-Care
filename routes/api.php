@@ -32,6 +32,18 @@ Route::middleware(['sanctum.token', 'auth:sanctum'])->group(function () {
     Route::apiResource('sources', App\Http\Controllers\Api\SourceController::class);
     Route::get('sources/select', [App\Http\Controllers\Api\SourceController::class, 'getSourcesForSelect']);
 
+    // Remarks1 management routes
+    Route::get('remarks1/select', [App\Http\Controllers\Api\Remarks1Controller::class, 'getRemarks1ForSelect']);
+    Route::apiResource('remarks1', App\Http\Controllers\Api\Remarks1Controller::class);
+
+    // Remarks2 management routes
+    Route::get('remarks2/select', [App\Http\Controllers\Api\Remarks2Controller::class, 'getRemarks2ForSelect']);
+    Route::apiResource('remarks2', App\Http\Controllers\Api\Remarks2Controller::class);
+
+    // Status management routes
+    Route::get('statuses/select', [App\Http\Controllers\Api\StatusController::class, 'getStatusesForSelect']);
+    Route::apiResource('statuses', App\Http\Controllers\Api\StatusController::class);
+
     // Procedure management routes
     Route::apiResource('procedures', App\Http\Controllers\Api\ProcedureController::class);
 

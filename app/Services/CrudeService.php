@@ -89,7 +89,6 @@ abstract class CrudeService
      */
     public function allSelect($columns)
     {
-        $column = implode(', ', $columns);
         $query = $this->model->select('id as value', 'name as label');
 
         return $query->get();
