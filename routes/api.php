@@ -44,6 +44,24 @@ Route::middleware(['sanctum.token', 'auth:sanctum'])->group(function () {
     Route::get('statuses/select', [App\Http\Controllers\Api\StatusController::class, 'getStatusesForSelect']);
     Route::apiResource('statuses', App\Http\Controllers\Api\StatusController::class);
 
+    // Appointment management routes
+    Route::get('appointments/search', [App\Http\Controllers\Api\AppointmentController::class, 'search']);
+    Route::get('appointments/date-range', [App\Http\Controllers\Api\AppointmentController::class, 'byDateRange']);
+    Route::get('appointments/doctor/{doctorId}', [App\Http\Controllers\Api\AppointmentController::class, 'byDoctor']);
+    Route::get('appointments/department/{departmentId}', [App\Http\Controllers\Api\AppointmentController::class, 'byDepartment']);
+    Route::get('appointments/stats', [App\Http\Controllers\Api\AppointmentController::class, 'stats']);
+    Route::apiResource('appointments', App\Http\Controllers\Api\AppointmentController::class);
+
+    // Report management routes
+    Route::get('reports/search', [App\Http\Controllers\Api\ReportController::class, 'search']);
+    Route::get('reports/date-range', [App\Http\Controllers\Api\ReportController::class, 'byDateRange']);
+    Route::get('reports/type/{type}', [App\Http\Controllers\Api\ReportController::class, 'byType']);
+    Route::get('reports/generated-by/{user}', [App\Http\Controllers\Api\ReportController::class, 'byGeneratedBy']);
+    Route::get('reports/appointment/{appointmentId}', [App\Http\Controllers\Api\ReportController::class, 'forAppointment']);
+    Route::get('reports/stats', [App\Http\Controllers\Api\ReportController::class, 'stats']);
+    Route::post('reports/generate-from-appointment', [App\Http\Controllers\Api\ReportController::class, 'generateFromAppointment']);
+    Route::apiResource('reports', App\Http\Controllers\Api\ReportController::class);
+
     // Procedure management routes
     Route::apiResource('procedures', App\Http\Controllers\Api\ProcedureController::class);
 

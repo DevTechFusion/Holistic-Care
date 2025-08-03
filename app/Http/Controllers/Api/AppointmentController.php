@@ -1,0 +1,305 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Services\AppointmentService;
+use Illuminate\Http\Request;
+
+class AppointmentController extends Controller
+{
+    protected $appointmentService;
+
+    public function __construct(AppointmentService $appointmentService)
+    {
+        $this->appointmentService = $appointmentService;
+    }
+
+    /**
+     * Display a listing of appointments (not reports)
+     */
+    public function index()
+    {
+        try {
+            $perPage = request()->get('per_page', 20);
+            $page = request()->get('page', 1);
+            $appointments = $this->appointmentService->getAllAppointments($perPage, $page);
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $appointments
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch appointments',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Store a newly created appointment
+     */
+    public function store(Request $request)
+    {
+        try {
+            $request->validate([
+                'date' => 'required|date',
+                'time_slot' => 'required|string|max:255',
+                'patient_name' => 'required|string|max:255',
+                'contact_number' => 'required|string|max:255',
+                'agent_id' => 'required|exists:users,id',
+                'doctor_id' => 'required|exists:doctors,id',
+                'procedure_id' => 'required|exists:procedures,id',
+                'category_id' => 'required|exists:categories,id',
+                'department_id' => 'required|exists:departments,id',
+                'source_id' => 'required|exists:sources,id',
+                'notes' => 'nullable|string',
+                'mr_number' => 'nullable|string|max:255',
+            ]);
+
+            $appointment = $this->appointmentService->createAppointment($request->all());
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Appointment created successfully',
+                'data' => $appointment
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to create appointment',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Display the specified appointment
+     */
+    public function show($id)
+    {
+        try {
+            $appointment = $this->appointmentService->getAppointmentById($id);
+
+            if (!$appointment) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Appointment not found'
+                ], 404);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $appointment
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch appointment',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update the specified appointment
+     */
+    public function update(Request $request, $id)
+    {
+        try {
+            $request->validate([
+                'date' => 'sometimes|required|date',
+                'time_slot' => 'sometimes|required|string|max:255',
+                'patient_name' => 'sometimes|required|string|max:255',
+                'contact_number' => 'sometimes|required|string|max:255',
+                'agent_id' => 'sometimes|required|exists:users,id',
+                'doctor_id' => 'sometimes|required|exists:doctors,id',
+                'procedure_id' => 'sometimes|required|exists:procedures,id',
+                'category_id' => 'sometimes|required|exists:categories,id',
+                'department_id' => 'sometimes|required|exists:departments,id',
+                'source_id' => 'sometimes|required|exists:sources,id',
+                'notes' => 'nullable|string',
+                'mr_number' => 'nullable|string|max:255',
+            ]);
+
+            $appointment = $this->appointmentService->updateAppointment($id, $request->all());
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Appointment updated successfully',
+                'data' => $appointment
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to update appointment',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Remove the specified appointment
+     */
+    public function destroy($id)
+    {
+        try {
+            $appointment = $this->appointmentService->getAppointmentById($id);
+
+            if (!$appointment) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Appointment not found'
+                ], 404);
+            }
+
+            $this->appointmentService->deleteAppointment($id);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Appointment deleted successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to delete appointment',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Search appointments
+     */
+    public function search(Request $request)
+    {
+        try {
+            $request->validate([
+                'search' => 'required|string|min:2'
+            ]);
+
+            $perPage = request()->get('per_page', 20);
+            $page = request()->get('page', 1);
+            $appointments = $this->appointmentService->searchAppointments(
+                $request->search, $perPage, $page
+            );
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $appointments
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to search appointments',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get appointments by date range
+     */
+    public function byDateRange(Request $request)
+    {
+        try {
+            $request->validate([
+                'start_date' => 'required|date',
+                'end_date' => 'required|date|after_or_equal:start_date'
+            ]);
+
+            $perPage = request()->get('per_page', 20);
+            $page = request()->get('page', 1);
+            $appointments = $this->appointmentService->getAppointmentsByDateRange(
+                $request->start_date, $request->end_date, $perPage, $page
+            );
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $appointments
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch appointments by date range',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get appointments by doctor
+     */
+    public function byDoctor($doctorId)
+    {
+        try {
+            $perPage = request()->get('per_page', 20);
+            $page = request()->get('page', 1);
+            $appointments = $this->appointmentService->getAppointmentsByDoctor(
+                $doctorId, $perPage, $page
+            );
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $appointments
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch appointments by doctor',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get appointments by department
+     */
+    public function byDepartment($departmentId)
+    {
+        try {
+            $perPage = request()->get('per_page', 20);
+            $page = request()->get('page', 1);
+            $appointments = $this->appointmentService->getAppointmentsByDepartment(
+                $departmentId, $perPage, $page
+            );
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $appointments
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch appointments by department',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get appointment statistics
+     */
+    public function stats(Request $request)
+    {
+        try {
+            $startDate = $request->get('start_date');
+            $endDate = $request->get('end_date');
+
+            $stats = $this->appointmentService->getAppointmentStats($startDate, $endDate);
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $stats
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch appointment statistics',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+}
