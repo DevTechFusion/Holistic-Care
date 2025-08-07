@@ -55,3 +55,9 @@ Route::middleware(['sanctum.token', 'auth:sanctum'])->group(function () {
     Route::post('/roles/check-permissions', [App\Http\Controllers\Api\RoleController::class, 'checkRolePermissions']);
     Route::get('/roles/{id}/available-permissions', [App\Http\Controllers\Api\RoleController::class, 'getAvailablePermissions']);
 });
+
+     // Appointment management routes
+use App\Http\Controllers\Api\AppointmentController;
+
+Route::apiResource('appointments', AppointmentController::class);
+
