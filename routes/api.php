@@ -92,4 +92,28 @@ Route::middleware(['sanctum.token', 'auth:sanctum'])->group(function () {
     Route::get('/user/roles', [App\Http\Controllers\Api\UserController::class, 'getUserRoles']);
     Route::post('/roles/check-permissions', [App\Http\Controllers\Api\RoleController::class, 'checkRolePermissions']);
     Route::get('/roles/{id}/available-permissions', [App\Http\Controllers\Api\RoleController::class, 'getAvailablePermissions']);
+
+    // File management routes
+    Route::prefix('files')->name('files.')->group(function () {
+        // File upload routes
+        Route::post('/upload', [App\Http\Controllers\Api\FileController::class, 'upload'])->name('upload');
+        Route::post('/profile-picture', [App\Http\Controllers\Api\FileController::class, 'uploadProfilePicture'])->name('profile-picture');
+
+        // File retrieval routes
+        Route::get('/', [App\Http\Controllers\Api\FileController::class, 'index'])->name('index');
+        Route::get('/model-files', [App\Http\Controllers\Api\FileController::class, 'getModelFiles'])->name('model-files');
+        Route::get('/profile-picture', [App\Http\Controllers\Api\FileController::class, 'getProfilePicture'])->name('get-profile-picture');
+
+        // File access routes
+        Route::get('/{file}', [App\Http\Controllers\Api\FileController::class, 'show'])->name('show');
+        Route::get('/{file}/download', [App\Http\Controllers\Api\FileController::class, 'download'])->name('download');
+        Route::get('/{file}/stream', [App\Http\Controllers\Api\FileController::class, 'stream'])->name('stream');
+
+        // File management routes
+        Route::delete('/{file}', [App\Http\Controllers\Api\FileController::class, 'destroy'])->name('destroy');
+
+        // Admin routes
+        Route::get('/admin/statistics', [App\Http\Controllers\Api\FileController::class, 'statistics'])->name('statistics');
+        Route::post('/admin/cleanup-expired', [App\Http\Controllers\Api\FileController::class, 'cleanupExpired'])->name('cleanup-expired');
+    });
 });

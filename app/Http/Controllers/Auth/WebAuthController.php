@@ -146,7 +146,7 @@ class WebAuthController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => $user->load('roles', 'permissions')
+            'data' => $user->load('roles', 'permissions', 'profilePicture')
         ], 200);
     }
 
