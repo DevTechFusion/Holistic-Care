@@ -178,19 +178,89 @@ class DoctorController extends Controller
     /**
      * Get available doctors
      */
-    public function getAvailable()
+    public function getAvailable(Request $request)
     {
         try {
-            $doctors = $this->doctorService->getAvailableDoctors();
+            // Validate query parameters
+            $request->validate([
+                'date' => 'nullable|date|after_or_equal:today',
+                'time' => 'nullable|date_format:H:i',
+                'procedure_id' => 'nullable|integer|exists:procedures,id',
+                'department_id' => 'nullable|integer|exists:departments,id',
+                'duration' => 'nullable|integer|min:15|max:480' // minutes, 15min to 8hours
+            ]);
+
+            $filters = [
+                'date' => $request->query('date'),
+                'time' => $request->query('time'),
+                'procedure_id' => $request->query('procedure_id'),
+                'department_id' => $request->query('department_id'),
+                'duration' => $request->query('duration', 60) // default 1 hour
+            ];
+
+            // If no specific parameters provided, return basic availability
+            if (!$filters['date'] && !$filters['time'] && !$filters['procedure_id']) {
+                $doctors = $this->doctorService->getAvailableDoctors();
+            } else {
+                $doctors = $this->doctorService->getAvailableDoctorsForSlot($filters);
+            }
 
             return response()->json([
                 'status' => 'success',
-                'data' => $doctors
+                'data' => $doctors,
+                'filters_applied' => array_filter($filters)
             ], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Invalid parameters',
+                'errors' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to fetch available doctors',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get available time slots for a specific doctor on a specific date
+     */
+    public function getAvailableSlots(Request $request, $doctorId)
+    {
+        try {
+            // Validate request parameters
+            $request->validate([
+                'date' => 'required|date|after_or_equal:today',
+                'duration' => 'nullable|integer|min:15|max:480' // minutes, 15min to 8hours
+            ]);
+
+            $date = $request->query('date');
+            $duration = $request->query('duration', 60); // default 1 hour
+
+            $slots = $this->doctorService->getDoctorAvailabilitySlots($doctorId, $date, $duration);
+
+            return response()->json([
+                'status' => 'success',
+                'data' => [
+                    'doctor_id' => $doctorId,
+                    'date' => $date,
+                    'slot_duration' => $duration,
+                    'slots' => $slots
+                ]
+            ], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Invalid parameters',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch doctor availability slots',
                 'error' => $e->getMessage()
             ], 500);
         }

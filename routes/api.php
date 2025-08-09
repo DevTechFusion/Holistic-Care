@@ -70,6 +70,7 @@ Route::middleware(['sanctum.token', 'auth:sanctum'])->group(function () {
     Route::get('doctors/department/{departmentId}', [App\Http\Controllers\Api\DoctorController::class, 'getByDepartment']);
     Route::get('doctors/procedure/{procedureId}', [App\Http\Controllers\Api\DoctorController::class, 'getByProcedure']);
     Route::get('doctors/available', [App\Http\Controllers\Api\DoctorController::class, 'getAvailable']);
+    Route::get('doctors/{doctor}/slots', [App\Http\Controllers\Api\DoctorController::class, 'getAvailableSlots']);
 
     // Role management routes
     Route::apiResource('roles', App\Http\Controllers\Api\RoleController::class);
