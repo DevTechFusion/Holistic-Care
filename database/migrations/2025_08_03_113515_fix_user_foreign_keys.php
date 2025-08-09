@@ -12,8 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('appointments', function (Blueprint $table) {
-            // Add foreign key constraint to existing agent_id column
-            $table->foreign('agent_id')->references('id')->on('users')->onDelete('cascade');
+            // First drop the existing agent string column
+            $table->dropColumn('agent');
+
+            // Add agent_id as foreign key
+            $table->foreignId('agent_id')->constrained('users')->onDelete('cascade');
 
             // Add index for better performance
             $table->index(['agent_id']);
@@ -40,6 +43,10 @@ return new class extends Migration
             // Drop the foreign key and index
             $table->dropForeign(['agent_id']);
             $table->dropIndex(['agent_id']);
+            $table->dropColumn('agent_id');
+
+            // Add back the original agent string column
+            $table->string('agent');
         });
 
         Schema::table('reports', function (Blueprint $table) {
