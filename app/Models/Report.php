@@ -92,7 +92,7 @@ class Report extends Model
      */
     public function scopeByGeneratedBy($query, $user)
     {
-        return $query->where('generated_by', $user);
+        return $query->where('generated_by_id', $user);
     }
 
     /**
