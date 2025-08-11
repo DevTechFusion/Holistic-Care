@@ -48,7 +48,7 @@ class StatusController extends Controller
                 'name' => 'required|string|max:255|unique:statuses,name'
             ]);
 
-            $status = $this->statusService->createStatus($request->validated());
+            $status = $this->statusService->createStatus($request->all());
 
             return response()->json([
                 'status' => 'success',
@@ -102,7 +102,7 @@ class StatusController extends Controller
                 'name' => 'required|string|max:255|unique:statuses,name,' . $id
             ]);
 
-            $status = $this->statusService->updateStatus($id, $request->validated());
+            $status = $this->statusService->updateStatus($id, $request->all());
 
             return response()->json([
                 'status' => 'success',

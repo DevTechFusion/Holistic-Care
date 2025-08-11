@@ -48,7 +48,7 @@ class Remarks1Controller extends Controller
                 'name' => 'required|string|max:255|unique:remarks_1,name'
             ]);
 
-            $remarks1 = $this->remarks1Service->createRemarks1($request->validated());
+            $remarks1 = $this->remarks1Service->createRemarks1($request->all());
 
             return response()->json([
                 'status' => 'success',
@@ -102,7 +102,7 @@ class Remarks1Controller extends Controller
                 'name' => 'required|string|max:255|unique:remarks_1,name,' . $id
             ]);
 
-            $remarks1 = $this->remarks1Service->updateRemarks1($id, $request->validated());
+            $remarks1 = $this->remarks1Service->updateRemarks1($id, $request->all());
 
             return response()->json([
                 'status' => 'success',

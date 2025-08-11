@@ -48,7 +48,7 @@ class CategoryController extends Controller
                 'name' => 'required|string|max:255|unique:categories,name'
             ]);
 
-            $category = $this->categoryService->createCategory($request->validated());
+            $category = $this->categoryService->createCategory($request->all());
 
             return response()->json([
                 'status' => 'success',
@@ -102,7 +102,7 @@ class CategoryController extends Controller
                 'name' => 'required|string|max:255|unique:categories,name,' . $id
             ]);
 
-            $category = $this->categoryService->updateCategory($id, $request->validated());
+            $category = $this->categoryService->updateCategory($id, $request->all());
 
             return response()->json([
                 'status' => 'success',

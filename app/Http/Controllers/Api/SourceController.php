@@ -48,7 +48,7 @@ class SourceController extends Controller
                 'name' => 'required|string|max:255|unique:sources,name'
             ]);
 
-            $source = $this->sourceService->createSource($request->validated());
+            $source = $this->sourceService->createSource($request->all());
 
             return response()->json([
                 'status' => 'success',
@@ -102,7 +102,7 @@ class SourceController extends Controller
                 'name' => 'required|string|max:255|unique:sources,name,' . $id
             ]);
 
-            $source = $this->sourceService->updateSource($id, $request->validated());
+            $source = $this->sourceService->updateSource($id, $request->all());
 
             return response()->json([
                 'status' => 'success',
