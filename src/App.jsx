@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import { Box, CircularProgress } from "@mui/material";
 import ThemeConfig from "./theme";
 import "./App.css";
@@ -7,48 +12,44 @@ import { SnackbarProvider } from "notistack";
 import LoginPage from "./pages/LoginPage";
 import Dashboard from "./pages/Dashboard";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import AuthLayout from "./layouts/AuthLayout";
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
-  
+
   if (loading) {
     return (
-      <Box 
-        display="flex" 
-        justifyContent="center" 
-        alignItems="center" 
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
         minHeight="100vh"
       >
         <CircularProgress />
       </Box>
     );
   }
-  
+
   return isAuthenticated ? children : <Navigate to="/login" replace />;
 };
 
 // App Routes Component
 const AppRoutes = () => {
-  const { isAuthenticated } = useAuth();
-  
+  const { isAuthenticated, loading } = useAuth();
+
   return (
     <Routes>
-      <Route 
-        path="/login" 
-        element={<LoginPage />} 
-      />
-      <Route 
-        path="/dashboard" 
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/" element={<ProtectedRoute />} />
+      <Route element={<AuthLayout />}>
+        <Route path="dashboard" element={<Dashboard />} />
+      </Route>
+      <Route
+        path="/"
         element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/" 
-        element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} 
+          <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />
+        }
       />
     </Routes>
   );
@@ -60,11 +61,11 @@ function App() {
     <Router>
       <ThemeConfig>
         <AuthProvider>
-          <SnackbarProvider 
+          <SnackbarProvider
             maxSnack={3}
             anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
+              vertical: "top",
+              horizontal: "right",
             }}
           >
             <AppRoutes />
