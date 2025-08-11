@@ -1,0 +1,297 @@
+.login-page {
+  min-height: 100vh;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.login-container {
+  height: 10vh;
+  min-height: 100vh;
+}
+
+/* Left Column - Background Image with Overlay */
+.left-column {
+  background: var(--primary-main);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Background Image Overlay */
+.left-bg-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.left-bg-image {
+  width: 30%;
+  height: 30%;
+  object-fit: cover;
+  opacity: 0.7;
+  position: relative;
+  z-index: 4;
+  top: 0%;
+  left: 0%;
+}
+
+/* Doctors Container */
+.doctors-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 40px;
+  z-index: 2;
+  position: relative;
+}
+
+.doctors-image {
+  max-width: 300px;
+  height: auto;
+  border-radius: 8px;
+}
+
+/* Welcome Text */
+.welcome-title {
+  color: white;
+  font-weight: 700 !important;
+  font-size: 2.5rem !important;
+  text-align: start;
+  margin-bottom: 24px !important;
+  line-height: 1.2 !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 2;
+  position: relative;
+  
+  
+}
+
+.welcome-description {
+  color: rgba(255, 255, 255, 0.9);
+  text-align: start;
+  max-width: 500px;
+  line-height: 1.6 !important;
+  font-size: 1.1rem !important;
+  z-index: 2;
+  position: relative;
+}
+
+/* Right Column - White Background */
+.right-column {
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 100px;
+  position: relative;
+}
+
+/* Background Medical Cross */
+.medical-cross {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  opacity: 0.03;
+  z-index: 0;
+}
+
+/* Login Form Container */
+.login-form-container {
+  width: 100%;
+  max-width: 400px;
+  z-index: 1;
+}
+
+/* Logo */
+.logo-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 40px;
+  justify-content: start;
+}
+
+.logo-image {
+  width: 100px;
+  height: 120px;
+  margin-right: 12px;
+  object-fit: contain;
+}
+
+/* Login Title */
+.login-title {
+  font-weight: 700 !important;
+  color: #1f2937 !important;
+  margin-bottom: 8px !important;
+  text-align: start;
+  letter-spacing: 2px;
+}
+
+.login-subtitle {
+  color: #6b7280 !important;
+  margin-bottom: 32px !important;
+  text-align: start;
+  font-size: 1rem !important;
+}
+
+/* Form Fields */
+.form-fields {
+  width: 100%;
+}
+
+.form-field {
+  margin-bottom: 24px !important;
+}
+
+.form-field .MuiOutlinedInput-root {
+  border-radius: 8px;
+}
+
+.form-field .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: var(--primary-main);
+}
+
+.form-field .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: var(--primary-main);
+}
+
+/* Form Options */
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.remember-checkbox {
+  color: var(--primary-main) !important;
+}
+
+.remember-checkbox.Mui-checked {
+  color: var(--primary-main) !important;
+}
+
+.remember-label {
+  color: #6b7280 !important;
+  font-size: 0.9rem !important;
+}
+
+.forgot-password {
+  color: var(--primary-main) !important;
+  text-decoration: none !important;
+  font-size: 0.9rem !important;
+  font-weight: 500;
+}
+
+.forgot-password:hover {
+  text-decoration: underline !important;
+}
+
+/* Login Button */
+.login-button {
+  background-color: var(--primary-main) !important;
+  color: white !important;
+  padding: 14px 24px !important;
+  border-radius: 8px !important;
+  text-transform: none !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 12px rgba(35, 199, 183, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.login-button:hover {
+  background-color: var(--primary-dark) !important;
+  box-shadow: 0 6px 20px rgba(35, 199, 183, 0.4) !important;
+  transform: translateY(-2px);
+}
+
+/* CSS Custom Properties for Theme Colors */
+:root {
+  --primary-main: #23C7B7;
+  --primary-light: #7DE8DD;
+  --primary-lighter: #D4F7F4;
+  --primary-dark: #1EAE9F;
+  --primary-darker: #178277;
+  --primary-contrast: #ffffff;
+  
+  --success-main: #38A169;
+  --success-light: #8DD8B0;
+  --success-lighter: #D9F2E5;
+  --success-dark: #359763;
+  --success-darker: #27724A;
+  --success-contrast: #ffffff;
+  
+  --error-main: #F56565;
+  --error-light: #F66F6F;
+  --error-lighter: #FCCFCF;
+  --error-dark: #C00C0C;
+  --error-darker: #900909;
+  --error-contrast: #ffffff;
+  
+  --accent-main: #4DA2F7;
+  --accent-light: #6DB2F8;
+  --accent-lighter: #CEE5FD;
+  --accent-dark: #0966C3;
+  --accent-darker: #074C92;
+  --accent-contrast: #ffffff;
+}
+
+/* Responsive Design */
+@media (max-width: 960px) {
+  .left-column {
+    padding: 40px 20px;
+  }
+  
+  .doctors-image {
+    max-width: 250px;
+  }
+  
+  .welcome-title {
+    font-size: 2rem !important;
+  }
+  
+  .welcome-description {
+    font-size: 1rem !important;
+  }
+  
+  .right-column {
+    padding: 20px;
+  }
+  
+  .login-form-container {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .left-column {
+    order: 2;
+    padding: 30px 20px;
+  }
+  
+  .right-column {
+    order: 1;
+    padding: 30px 20px;
+  }
+  
+  .doctors-image {
+    max-width: 200px;
+  }
+  
+  .welcome-title {
+    font-size: 1.8rem !important;
+  }
+  
+  .form-options {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+} 
