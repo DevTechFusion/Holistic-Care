@@ -44,6 +44,18 @@ Route::middleware(['sanctum.token', 'auth:sanctum'])->group(function () {
     Route::get('statuses/select', [App\Http\Controllers\Api\StatusController::class, 'getStatusesForSelect']);
     Route::apiResource('statuses', App\Http\Controllers\Api\StatusController::class);
 
+    // Complaint Type management routes
+    Route::get('complaint-types/select', [App\Http\Controllers\Api\ComplaintTypeController::class, 'getComplaintTypesForSelect']);
+    Route::apiResource('complaint-types', App\Http\Controllers\Api\ComplaintTypeController::class);
+
+    // Complaint management routes
+    Route::get('complaints/search', [App\Http\Controllers\Api\ComplaintController::class, 'search']);
+    Route::get('complaints/agent/{agentId}', [App\Http\Controllers\Api\ComplaintController::class, 'byAgent']);
+    Route::get('complaints/doctor/{doctorId}', [App\Http\Controllers\Api\ComplaintController::class, 'byDoctor']);
+    Route::get('complaints/type/{complaintTypeId}', [App\Http\Controllers\Api\ComplaintController::class, 'byType']);
+    Route::get('complaints/stats', [App\Http\Controllers\Api\ComplaintController::class, 'stats']);
+    Route::apiResource('complaints', App\Http\Controllers\Api\ComplaintController::class);
+
     // Appointment management routes
     Route::get('appointments/search', [App\Http\Controllers\Api\AppointmentController::class, 'search']);
     Route::get('appointments/date-range', [App\Http\Controllers\Api\AppointmentController::class, 'byDateRange']);

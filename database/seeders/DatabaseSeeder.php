@@ -28,5 +28,6 @@ class DatabaseSeeder extends Seeder
         $this->call(Remarks1Seeder::class);
         $this->call(Remarks2Seeder::class);
         $this->call(StatusSeeder::class);
+        $this->call(ComplaintTypeSeeder::class);
     }
 }

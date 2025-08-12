@@ -188,6 +188,26 @@ This application uses Laravel's built-in authentication flow with the following 
 - `POST /users/{id}/assign-role` - Assign role to user
 - `POST /users/{id}/remove-role` - Remove role from user
 
+### Complaint Type Management
+- `GET /complaint-types` - Get all complaint types
+- `POST /complaint-types` - Create new complaint type
+- `GET /complaint-types/{id}` - Get complaint type details
+- `PUT /complaint-types/{id}` - Update complaint type
+- `DELETE /complaint-types/{id}` - Delete complaint type
+- `GET /complaint-types/select` - Get complaint types for select dropdown
+
+### Complaint Management
+- `GET /complaints` - Get all complaints
+- `POST /complaints` - Create new complaint
+- `GET /complaints/{id}` - Get complaint details
+- `PUT /complaints/{id}` - Update complaint
+- `DELETE /complaints/{id}` - Delete complaint
+- `GET /complaints/search` - Search complaints by description
+- `GET /complaints/agent/{agentId}` - Get complaints by agent
+- `GET /complaints/doctor/{doctorId}` - Get complaints by doctor
+- `GET /complaints/type/{complaintTypeId}` - Get complaints by type
+- `GET /complaints/stats` - Get complaints statistics
+
 ### Frontend-Specific Endpoints
 - `GET /user/permissions` - Get authenticated user's permissions
 - `POST /user/check-permission` - Check if user has specific permission
