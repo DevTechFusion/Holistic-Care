@@ -19,24 +19,18 @@ import { useTheme } from "@mui/material/styles";
 import { useAuth } from "../contexts/AuthContext";
 import "./LoginPage.css";
 
-// Import images from assets
+// Images
 import doctorsImage from "../assets/images/doctors_image.png";
-import logoImage from "../assets/images/logo.svg";
-import leftBgImage from "../assets/images/left-bg.png";
+import logo from "../assets/images/logo.svg";
+import leftBgPattern from "../assets/images/left-bg.png";
 import { login } from "../DAL/auth";
 
-// Logo component with actual logo image
-const Logo = () => {
-  const theme = useTheme();
+const Logo = () => (
+  <Box className="logo-container">
+    <img src={logo} alt="Holistic Care Logo" className="logo-image" />
+  </Box>
+);
 
-  return (
-    <Box className="logo-container">
-      <img src={logoImage} alt="Holistic Care Logo" className="logo-image" />
-    </Box>
-  );
-};
-
-// Login form component
 const LoginForm = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -45,27 +39,30 @@ const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
-
   const { setLoading } = useAuth();
 
   const handleLogin = async () => {
     setLoading(true);
     if (!email.trim() || !password.trim()) {
       enqueueSnackbar("Please fill in all fields", { variant: "error" });
+      setLoading(false);
       return;
     }
 
     setIsLoading(true);
-
     try {
       const result = await login({ email, password });
-      if (result.status === "success") {
+      if (result?.status === "success") {
         enqueueSnackbar("Login successful", { variant: "success" });
-        navigate("/dashboard");
         localStorage.setItem("token", result.data.token);
+        navigate("/dashboard");
+      } else {
+        enqueueSnackbar(result?.message || "Login failed", {
+          variant: "error",
+        });
       }
     } catch (error) {
-      enqueueSnackbar(error.message || "Login failed", { variant: "error" });
+      enqueueSnackbar(error?.message || "Login failed", { variant: "error" });
     } finally {
       setIsLoading(false);
       setLoading(false);
@@ -111,7 +108,8 @@ const LoginForm = () => {
             endAdornment: (
               <InputAdornment position="end">
                 <IconButton
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={() => setShowPassword((s) => !s)}
+                  edge="end"
                   disabled={isLoading}
                 >
                   {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
@@ -135,7 +133,7 @@ const LoginForm = () => {
             className="remember-label"
           />
 
-          <Link href="#" className="forgot-password">
+          <Link href="#" className="forgot-password" underline="none">
             Forgot Password?
           </Link>
         </Box>
@@ -154,31 +152,31 @@ const LoginForm = () => {
   );
 };
 
-// Main login page component
 const LoginPage = () => {
   const theme = useTheme();
 
   return (
     <Box className="login-page">
       <Grid container className="login-container">
-        {/* Left Column - Background Image with Overlay */}
-        <Grid item xs={12} md={6} className="left-column">
-          {/* Background image with overlay */}
-          <Box className="left-bg-overlay">
-            <img
-              src={leftBgImage}
-              alt="Background Pattern"
-              className="left-bg-image"
-            />
-          </Box>
-
-          {/* Doctors image */}
+        {/* Left panel */}
+        <Grid
+          item
+          xs={12}
+          md={5}
+          className="left-column"
+          sx={{
+            width: {
+              xs: "100%", // mobile
+              sm: "40%", // small
+            },
+          }}
+        >
+          <img src={leftBgPattern} alt="pattern" className="left-bg-pattern" />
           <Box className="doctors-container">
             <img src={doctorsImage} alt="Doctors" className="doctors-image" />
           </Box>
 
-          {/* Welcome text */}
-          <Typography variant="h3" className="welcome-title" align="flex-start">
+          <Typography variant="h3" className="welcome-title">
             Welcome to
             <br />
             Holistic Care CRM
@@ -187,20 +185,30 @@ const LoginPage = () => {
           <Typography variant="body1" className="welcome-description">
             Lorem Ipsum is simply dummy text of the printing and typesetting
             industry. Lorem Ipsum has been the industry's standard dummy text
-            ever since the 1500s, when an unknown printer took a galley of type
-            and scrambled it to make a type specimen book.
+            ever since the 1500s.
           </Typography>
         </Grid>
 
-        {/* Right Column - White Background */}
-        <Grid item xs={12} md={6} className="right-column">
-          {/* Background medical cross */}
-          <Box className="medical-cross">
-            <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
+        {/* Right panel */}
+        <Grid
+          item
+          xs={12}
+          md={7}
+          className="right-column"
+          sx={{
+            width: {
+              xs: "100%", // mobile
+              sm: "60%", // small
+            },
+          }}
+        >
+          <Box className="medical-cross" aria-hidden>
+            <svg width="220" height="220" viewBox="0 0 120 120" fill="none">
               <path
                 d="M60 20V100M20 60H100"
-                stroke="rgba(0,0,0,0.03)"
+                stroke="rgba(0,0,0,0.05)"
                 strokeWidth="8"
+                strokeLinecap="round"
               />
             </svg>
           </Box>

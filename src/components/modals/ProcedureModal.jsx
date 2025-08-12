@@ -13,11 +13,14 @@ const style = {
   bgcolor: 'background.paper',
   border: '2px solid #000',
   boxShadow: 24,
+  borderRadius: 2,
   p: 4,
 };
 
-export default function BasicModal() {
-  const [open, setOpen] = React.useState(false);
+export default function ProcedureModal() {
+  const [open, setOpen] = useState(false);
+  const [procedure, setProcedure] = useState('');
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 

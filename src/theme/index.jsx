@@ -2,11 +2,13 @@ import { useMemo } from "react";
 import { createTheme, CssBaseline, StyledEngineProvider, ThemeProvider } from "@mui/material";
 import palette from "./palette";
 import ComponentsOverride from "./components";
+import breakpoints from "./breakpoints";
 
 export default function ThemeConfig({ children }) {
   const themeOptions = useMemo(
     () => ({
       palette,
+      breakpoints,
       typography: {
         fontFamily: `"Inter", sans-serif`,
         fontSize: 16,

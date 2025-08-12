@@ -1,297 +1,198 @@
+:root{
+  --primary-main: #23C7B7;
+  --primary-dark: #1EAE9F;
+  --text-dark: #1f2937;
+  --muted: #6b7280;
+}
+
+/* Page layout */
 .login-page {
-  min-height: 100vh;
-  height: 100vh;
   width: 100vw;
+  height: 100vh;
   overflow: hidden;
+  background: #f8fafc;
 }
 
 .login-container {
   height: 100vh;
-  min-height: 100vh;
+  width: 100%;
+
 }
 
-/* Left Column - Background Image with Overlay */
+/* Left Column */
 .left-column {
   background: var(--primary-main);
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
-  padding: 60px 40px;
+  padding: 64px 48px;
   position: relative;
   overflow: hidden;
+  min-height: 100vh;
+  align-items: flex-start;
 }
 
-/* Background Image Overlay */
-.left-bg-overlay {
+/* subtle pattern image in left panel */
+.left-bg-pattern {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
+  top: 12%;
+  right: -10%;
+  width: 60%;
+  opacity: 0.12;
+  pointer-events: none;
 }
 
-.left-bg-image {
-  width: 30%;
-  height: 30%;
-  object-fit: cover;
-  opacity: 0.7;
-  position: relative;
-  z-index: 4;
-  top: 0%;
-  left: 0%;
-}
-
-/* Doctors Container */
+/* Doctor image */
 .doctors-container {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 40px;
   z-index: 2;
-  position: relative;
+  margin-bottom: 28px;
 }
-
 .doctors-image {
-  max-width: 300px;
+  width: 300px;
   height: auto;
-  border-radius: 8px;
+  display: block;
+  object-fit: contain;
 }
 
-/* Welcome Text */
+/* Welcome text */
 .welcome-title {
-  color: white;
-  font-weight: 700 !important;
-  font-size: 2.5rem !important;
-  text-align: start;
-  margin-bottom: 24px !important;
-  line-height: 1.2 !important;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: #ffffff;
+  font-weight: 800 !important;
+  font-size: 2.4rem !important;
+  line-height: 1.05 !important;
+  margin-bottom: 20px !important;
+  text-align: left;
   z-index: 2;
-  position: relative;
-  
-  
 }
 
 .welcome-description {
-  color: rgba(255, 255, 255, 0.9);
-  text-align: start;
-  max-width: 500px;
-  line-height: 1.6 !important;
-  font-size: 1.1rem !important;
+  color: rgba(255,255,255,0.95);
+  max-width: 420px;
+  line-height: 1.6;
+  font-size: 1rem;
   z-index: 2;
-  position: relative;
 }
 
-/* Right Column - White Background */
+/* Right Column */
 .right-column {
-  background-color: white;
+  background: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 100px;
+  padding: 80px 96px;
   position: relative;
 }
 
-/* Background Medical Cross */
+/* faint cross shape on bottom-right of right column */
 .medical-cross {
   position: absolute;
-  bottom: 20px;
-  right: 20px;
-  opacity: 0.03;
-  z-index: 0;
+  bottom: 30px;
+  right: 30px;
+  opacity: 0.06;
+  pointer-events: none;
 }
 
-/* Login Form Container */
+/* Form container */
 .login-form-container {
   width: 100%;
-  max-width: 400px;
-  z-index: 1;
+  z-index: 5;
 }
 
 /* Logo */
 .logo-container {
   display: flex;
   align-items: center;
-  margin-bottom: 40px;
-  justify-content: start;
+  justify-content: flex-start;
+  margin-bottom: 28px;
 }
-
 .logo-image {
-  width: 100px;
-  height: 120px;
-  margin-right: 12px;
+  width: 140px;
+  height: auto;
   object-fit: contain;
 }
 
-/* Login Title */
+/* Titles */
 .login-title {
-  font-weight: 700 !important;
-  color: #1f2937 !important;
+  font-weight: 800 !important;
+  color: var(--text-dark) !important;
   margin-bottom: 8px !important;
-  text-align: start;
-  letter-spacing: 2px;
+  letter-spacing: 0.6px;
+  text-align: left;
 }
 
 .login-subtitle {
-  color: #6b7280 !important;
-  margin-bottom: 32px !important;
-  text-align: start;
-  font-size: 1rem !important;
+  color: var(--muted) !important;
+  margin-bottom: 28px !important;
+  text-align: left;
 }
 
-/* Form Fields */
-.form-fields {
-  width: 100%;
-}
+/* Inputs */
+.form-fields { width: 70%; }
+.form-field { margin-bottom: 22px !important; }
 
-.form-field {
-  margin-bottom: 24px !important;
-}
-
+/* Rounded inputs */
 .form-field .MuiOutlinedInput-root {
-  border-radius: 8px;
+  border-radius: 12px;
+  height: 52px;
 }
-
-.form-field .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
-  border-color: var(--primary-main);
+.form-field .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline {
+  border-color: rgba(0,0,0,0.08);
 }
-
 .form-field .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
   border-color: var(--primary-main);
+  box-shadow: 0 0 0 4px rgba(35,199,183,0.06);
 }
 
-/* Form Options */
+/* Options row */
 .form-options {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
 }
 
-.remember-checkbox {
-  color: var(--primary-main) !important;
-}
+/* Checkbox color */
+.remember-checkbox.Mui-checked { color: var(--primary-main) !important; }
+.remember-label { color: var(--muted); font-size: 0.95rem; }
 
-.remember-checkbox.Mui-checked {
-  color: var(--primary-main) !important;
-}
-
-.remember-label {
-  color: #6b7280 !important;
-  font-size: 0.9rem !important;
-}
-
+/* forgot link */
 .forgot-password {
-  color: var(--primary-main) !important;
-  text-decoration: none !important;
-  font-size: 0.9rem !important;
+  color: var(--primary-main);
   font-weight: 500;
+  font-size: 0.95rem;
+  text-decoration: none;
 }
+.forgot-password:hover { text-decoration: underline; }
 
-.forgot-password:hover {
-  text-decoration: underline !important;
-}
-
-/* Login Button */
+/* Login button big rounded */
 .login-button {
   background-color: var(--primary-main) !important;
   color: white !important;
   padding: 14px 24px !important;
-  border-radius: 8px !important;
+  border-radius: 12px !important;
   text-transform: none !important;
-  font-size: 1rem !important;
-  font-weight: 600 !important;
-  box-shadow: 0 4px 12px rgba(35, 199, 183, 0.3) !important;
-  transition: all 0.3s ease !important;
+  font-size: 1.05rem !important;
+  font-weight: 700 !important;
+  box-shadow: 0 8px 24px rgba(35,199,183,0.18) !important;
 }
 
+/* Hover state */
 .login-button:hover {
   background-color: var(--primary-dark) !important;
-  box-shadow: 0 6px 20px rgba(35, 199, 183, 0.4) !important;
+  box-shadow: 0 10px 30px rgba(35,199,183,0.22) !important;
   transform: translateY(-2px);
 }
 
-/* CSS Custom Properties for Theme Colors */
-:root {
-  --primary-main: #23C7B7;
-  --primary-light: #7DE8DD;
-  --primary-lighter: #D4F7F4;
-  --primary-dark: #1EAE9F;
-  --primary-darker: #178277;
-  --primary-contrast: #ffffff;
-  
-  --success-main: #38A169;
-  --success-light: #8DD8B0;
-  --success-lighter: #D9F2E5;
-  --success-dark: #359763;
-  --success-darker: #27724A;
-  --success-contrast: #ffffff;
-  
-  --error-main: #F56565;
-  --error-light: #F66F6F;
-  --error-lighter: #FCCFCF;
-  --error-dark: #C00C0C;
-  --error-darker: #900909;
-  --error-contrast: #ffffff;
-  
-  --accent-main: #4DA2F7;
-  --accent-light: #6DB2F8;
-  --accent-lighter: #CEE5FD;
-  --accent-dark: #0966C3;
-  --accent-darker: #074C92;
-  --accent-contrast: #ffffff;
-}
-
-/* Responsive Design */
+/* Responsive tweaks */
 @media (max-width: 960px) {
-  .left-column {
-    padding: 40px 20px;
-  }
-  
-  .doctors-image {
-    max-width: 250px;
-  }
-  
-  .welcome-title {
-    font-size: 2rem !important;
-  }
-  
-  .welcome-description {
-    font-size: 1rem !important;
-  }
-  
-  .right-column {
-    padding: 20px;
-  }
-  
-  .login-form-container {
-    max-width: 100%;
-  }
+  .left-column { padding: 40px 28px; }
+  .doctors-image { width: 240px; }
+  .welcome-title { font-size: 2rem !important; }
+  .right-column { padding: 48px 28px; }
 }
 
 @media (max-width: 600px) {
-  .left-column {
-    order: 2;
-    padding: 30px 20px;
-  }
-  
-  .right-column {
-    order: 1;
-    padding: 30px 20px;
-  }
-  
-  .doctors-image {
-    max-width: 200px;
-  }
-  
-  .welcome-title {
-    font-size: 1.8rem !important;
-  }
-  
-  .form-options {
-    flex-direction: column;
-    gap: 16px;
-    align-items: flex-start;
-  }
-} 
+  .left-column { display: none; } /* hide left panel on small screens */
+  .right-column { padding: 28px 18px; }
+  .login-form-container { max-width: 100%; }
+}

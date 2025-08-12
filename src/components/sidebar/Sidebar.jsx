@@ -57,7 +57,7 @@ const Sidebar = () => {
                 onClick={() => item.children && handleDropdownToggle(item.title)}
                 sx={{
                   '&:hover': {
-                    backgroundColor: 'primary.main',
+                    backgroundColor: 'primary.light',
                     color: 'white',
                     '& .MuiListItemIcon-root': {
                       color: 'white'
@@ -87,7 +87,7 @@ const Sidebar = () => {
                     <ListItemButton
                       sx={{
                         '&:hover': {
-                          backgroundColor: 'primary.main',
+                          backgroundColor: 'primary.light',
                           color: 'white',
                           '& .MuiListItemIcon-root': {
                             color: 'white'
