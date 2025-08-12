@@ -1,91 +1,93 @@
-import React, { useState } from 'react';
+import * as React from 'react';
 import {
   Box,
-  TextField,
-  Button
+  Button,
+  Typography,
+  Modal,
+  IconButton,
+  TextField
 } from '@mui/material';
-import CreateModal from './CreateModal';
+import CloseIcon from '@mui/icons-material/Close';
 
-const CreateProcedureModal = ({ open, onClose, onSubmit }) => {
-  const [procedureName, setProcedureName] = useState('');
-
-  const handleSubmit = () => {
-    if (procedureName.trim()) {
-      onSubmit({ name: procedureName.trim() });
-      setProcedureName('');
-      onClose();
-    }
-  };
-
-  const handleClose = () => {
-    setProcedureName('');
-    onClose();
-  };
-
-  return (
-    <CreateModal
-      open={open}
-      onClose={handleClose}
-      title="Create Procedure"
-      actions={
-        <>
-          <Button
-            onClick={handleClose}
-            sx={{
-              backgroundColor: 'white',
-              color: 'text.primary',
-              border: '1px solid #e0e0e0',
-              textTransform: 'none',
-              px: 3,
-              py: 1.5,
-              borderRadius: 2,
-              '&:hover': {
-                backgroundColor: '#f5f5f5'
-              }
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            variant="contained"
-            sx={{
-              backgroundColor: '#23C7B7',
-              color: 'white',
-              textTransform: 'none',
-              px: 3,
-              py: 1.5,
-              borderRadius: 2,
-              fontWeight: 600,
-              '&:hover': {
-                backgroundColor: '#1BA89A'
-              }
-            }}
-          >
-            Create
-          </Button>
-        </>
-      }
-    >
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <TextField
-          label="Procedure"
-          value={procedureName}
-          onChange={(e) => setProcedureName(e.target.value)}
-          fullWidth
-          required
-          marginTop='12'
-          placeholder="e.g., Laser hair removal, Carbon facial, Lip laser"
-          sx={{
-            '& .MuiOutlinedInput-root': {
-              borderRadius: 2,
-              marginTop: 2
-            }
-          }}
-        />
-      </Box>
-    </CreateModal>
-  );
+const style = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 500,
+  bgcolor: 'background.paper',
+  borderRadius: 2,
+  boxShadow: 24,
+  p: 3
 };
 
-export default CreateProcedureModal; 
+export default function CreateProcedureModal() {
+  const [open, setOpen] = React.useState(false);
+  const [procedure, setProcedure] = React.useState('');
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  return (
+    <div>
+      <Button variant="contained" onClick={handleOpen}>
+        Create
+      </Button>
+      <Modal open={open} onClose={handleClose}>
+        <Box sx={style}>
+          {/* Header */}
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mb: 2
+            }}
+          >
+            <Typography variant="h6" fontWeight="bold">
+              Create procedure
+            </Typography>
+            <IconButton onClick={handleClose}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+
+          {/* Input Field */}
+          <TextField
+            fullWidth
+            label="Procedure*"
+            variant="outlined"
+            value={procedure}
+            onChange={(e) => setProcedure(e.target.value)}
+            sx={{ mb: 3 }}
+          />
+
+          {/* Actions */}
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+            <Button
+              variant="outlined"
+              onClick={handleClose}
+              sx={{ textTransform: 'none' }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              onClick={() => {
+                console.log('Creating:', procedure);
+                handleClose();
+              }}
+              sx={{
+                textTransform: 'none',
+                bgcolor: 'primary.main',
+                '&:hover': { bgcolor: 'primary.dark' }
+              }}
+            >
+              Create
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
+    </div>
+  );
+}

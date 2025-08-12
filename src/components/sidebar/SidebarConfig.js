@@ -1,22 +1,49 @@
+import {
+  DashboardIcon,
+  BookIcon,
+  UserIcon,
+  AgentIcon,
+  DoctorIcon,
+  ManagerIcon,
+  ReportIcon
+} from '../../assets/icons/sidebar';
+
 const SidebarConfig = [
   {
-    name: 'Dashboard',
-    icon: 'dashboard',
+    title: 'Dashboard',
+    icon: DashboardIcon,
     path: '/dashboard',
   },
   {
-    name: 'Appointment Booking',
-    icon: 'calendar_today',
+    title: 'Appointment Booking',
+    icon: BookIcon,
     path: '/appointments',
   },
   {
-    name: 'User Management',
-    icon: 'people',
+    title: 'User Management',
+    icon: UserIcon,
     path: '/users',
+    children: [
+      {
+        title: 'Agent List',
+        icon: AgentIcon,
+        path: '/users/list',
+      },
+      {
+        title: 'Doctor List',
+        icon: DoctorIcon,
+        path: '/users/roles',
+      },
+      {
+        title: 'Manager List',
+        icon: ManagerIcon,
+        path: '/users/permissions',
+      },
+    ]
   },
   {
-    name: 'Reports',
-    icon: 'assessment',
+    title: 'Reports',
+    icon: ReportIcon,
     path: '/reports',
   }
 ];

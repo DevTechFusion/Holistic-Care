@@ -21,7 +21,7 @@ import "./LoginPage.css";
 
 // Import images from assets
 import doctorsImage from "../assets/images/doctors_image.png";
-import logoImage from "../assets/images/logo.png";
+import logoImage from "../assets/images/logo.svg";
 import leftBgImage from "../assets/images/left-bg.png";
 import { login } from "../DAL/auth";
 

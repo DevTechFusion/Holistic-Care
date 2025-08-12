@@ -1,45 +1,24 @@
 import { useState } from 'react';
 import { 
   Box, 
-  Typography, 
   List, 
   ListItem, 
   ListItemButton, 
   ListItemIcon, 
   ListItemText,
-  Divider,
-  Button
+  Divider
 } from '@mui/material';
-import {
-  Dashboard as DashboardIcon,
-  CalendarToday as CalendarIcon,
-  People as PeopleIcon,
-  Assessment as AssessmentIcon,
-  Logout as LogoutIcon
-} from '@mui/icons-material';
 import SidebarConfig from './SidebarConfig';
-import logoImage from '../../assets/images/logo.png';
+import logo from '../../assets/images/logo.svg';
 
 const Sidebar = () => {
-  const [activeItem, setActiveItem] = useState('Dashboard');
+  const [openDropdowns, setOpenDropdowns] = useState({});
 
-  const handleItemClick = (itemName) => {
-    setActiveItem(itemName);
-  };
-
-  const getIcon = (iconName) => {
-    switch (iconName) {
-      case 'dashboard':
-        return <DashboardIcon />;
-      case 'calendar_today':
-        return <CalendarIcon />;
-      case 'people':
-        return <PeopleIcon />;
-      case 'assessment':
-        return <AssessmentIcon />;
-      default:
-        return <DashboardIcon />;
-    }
+  const handleDropdownToggle = (title) => {
+    setOpenDropdowns((prev) => ({
+      ...prev,
+      [title]: !prev[title]
+    }));
   };
 
   return (
@@ -47,96 +26,96 @@ const Sidebar = () => {
       sx={{
         width: 280,
         height: '100vh',
-        backgroundColor: 'primary.main',
         background: 'white',
         display: 'flex',
         flexDirection: 'column',
         position: 'fixed',
-        left: 0,
-        top: 0,
-        zIndex: 1200,
+        zIndex: 2,
         boxShadow: '2px 0 8px rgba(0,0,0,0.1)'
       }}
     >
-      {/* Logo Section */}
+      {/* Logo */}
       <Box
         sx={{
-          p: 3,
-          borderBottom: '1px solid rgba(255,255,255,0.1)'
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '6px',
         }}
       >
-        <Typography
-          variant="h5"
-          sx={{
-            color: 'black',
-            fontWeight: 'bold',
-            textAlign: 'center',
-            letterSpacing: '1px'
-          }}
-        >
-          <img src={logoImage} alt="Holistic Care Logo" className="logo-image" />
-        </Typography>
+        <img src={logo} alt="Logo" style={{ width: '121px', height: '67px' }} />
       </Box>
 
-      {/* Navigation Menu */}
-      <Box sx={{ flex: 1, py: 2 }}>
-        <List sx={{ px: 2 }}>
-          {SidebarConfig.map((item) => (
-            <ListItem key={item.name} disablePadding sx={{ mb: 1 }}>
+      <Divider />
+
+      {/* Menu Items */}
+      <List>
+        {SidebarConfig.map((item) => (
+          <Box key={item.title}>
+            <ListItem disablePadding>
               <ListItemButton
-                onClick={() => handleItemClick(item.name)}
+                onClick={() => item.children && handleDropdownToggle(item.title)}
                 sx={{
-                  borderRadius: 2,
-                  backgroundColor: activeItem === item.name ? 'rgba(255,255,255,0.2)' : 'transparent',
                   '&:hover': {
-                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    backgroundColor: 'primary.main',
+                    color: 'white',
+                    '& .MuiListItemIcon-root': {
+                      color: 'white'
+                    }
                   },
-                  transition: 'all 0.3s ease'
+                  '&:active': {
+                    backgroundColor: 'primary.darker',
+                    color: 'white',
+                    '& .MuiListItemIcon-root': {
+                      color: 'white'
+                    }
+                  }
                 }}
               >
-                <ListItemIcon
-                  sx={{
-                    color: 'black',
-                    minWidth: 40
-                  }}
-                >
-                  {getIcon(item.icon)}
+                <ListItemIcon>
+                  <img src={item.icon} alt={item.title} width={24} height={24} />
                 </ListItemIcon>
-                <ListItemText
-                  primary={item.name}
-                  sx={{
-                    '& .MuiTypography-root': {
-                      color: 'black',
-                      fontWeight: activeItem === item.name ? 600 : 400,
-                      fontSize: '0.95rem'
-                    }
-                  }}
-                />
+                <ListItemText primary={item.title} />
               </ListItemButton>
             </ListItem>
-          ))}
-        </List>
-      </Box>
 
-      {/* Logout Button */}
-      <Box sx={{ p: 2, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-        <Button
-          fullWidth
-          variant="text"
-          startIcon={<LogoutIcon />}
-          sx={{
-            color: 'black',
-            textTransform: 'none',
-            fontSize: '0.95rem',
-            fontWeight: 500,
-            '&:hover': {
-              backgroundColor: 'rgba(255,255,255,0.1)',
-            }
-          }}
-        >
-          Logout
-        </Button>
-      </Box>
+            {/* Dropdown Children */}
+            {item.children && openDropdowns[item.title] && (
+              <List component="div" disablePadding sx={{ pl: 4 }}>
+                {item.children.map((child) => (
+                  <ListItem key={child.title} disablePadding>
+                    <ListItemButton
+                      sx={{
+                        '&:hover': {
+                          backgroundColor: 'primary.main',
+                          color: 'white',
+                          '& .MuiListItemIcon-root': {
+                            color: 'white'
+                          }
+                        },
+                        '&:active': {
+                          backgroundColor: 'primary.darker',
+                          color: 'white',
+                          '& .MuiListItemIcon-root': {
+                            color: 'white'
+                          }
+                        }
+                      }}
+                    >
+                      <ListItemIcon>
+                        <img src={child.icon} alt={child.title} width={24} height={24} />
+                      </ListItemIcon>
+                      <ListItemText primary={child.title} />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+              </List>
+            )}
+
+            <Divider />
+          </Box>
+        ))}
+      </List>
     </Box>
   );
 };

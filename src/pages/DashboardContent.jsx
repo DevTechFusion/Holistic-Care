@@ -27,7 +27,6 @@ import CreateProcedureModal from '../components/modals/CreateProcedureModal';
 import CreateDepartmentModal from '../components/modals/CreateDepartmentModal';
 import CreateUserModal from '../components/modals/CreateUserModal';
 import { useAuth } from '../contexts/AuthContext';
-
 const DashboardContent = () => {
   const { enqueueSnackbar } = useSnackbar();
   const {user} = useAuth()
