@@ -5,8 +5,10 @@ import Sidebar from "../components/sidebar/Sidebar";
 import Topbar from "../components/topbar/Topbar";
 import DashboardContent from "./DashboardContent";
 import CreateDoctorModal from "../components/modals/CreateDoctorModal";
+import CreateUserModal from "../components/forms/UserForm";
 
 const Dashboard = () => {
+  const [openCreateUserModal, setOpenCreateUserModal] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
   const [isDoctorModalOpen, setIsDoctorModalOpen] = useState(false);
 
@@ -33,6 +35,15 @@ const Dashboard = () => {
 
   return (
     <>
+
+  <div>
+    <button onClick={() => setOpenCreateUserModal(true)}>Create User</button>
+
+    <CreateUserModal
+        open={openCreateUserModal}
+        onClose={() => setOpenCreateUserModal(false)}
+      />
+  </div>
       <DashboardContent />
 
       {/* Doctor Modal */}
