@@ -1,7 +1,26 @@
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, IconButton, Box, Typography, TextField, MenuItem } from "@mui/material";
+//src/components/forms/GenericForm.jsx
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  IconButton,
+  Box,
+  Typography,
+  TextField,
+  MenuItem,
+} from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
-const GenericFormModal = ({ open, onClose, onSubmit, title, fields, isSubmitting = false }) => {
+const GenericFormModal = ({
+  open,
+  onClose,
+  onSubmit,
+  title,
+  fields,
+  isSubmitting = false,
+}) => {
   const handleSubmit = (event) => {
     event.preventDefault();
     const formData = new FormData(event.target);
@@ -18,7 +37,6 @@ const GenericFormModal = ({ open, onClose, onSubmit, title, fields, isSubmitting
       PaperProps={{
         sx: {
           borderRadius: 2,
-          minHeight: "300px",
         },
       }}
     >
@@ -34,7 +52,11 @@ const GenericFormModal = ({ open, onClose, onSubmit, title, fields, isSubmitting
           borderBottom: "1px solid #e5e7eb",
         }}
       >
-        <Typography variant="h6" component="div" sx={{ fontWeight: 600, color: "#374151" }}>
+        <Typography
+          variant="h6"
+          component="div"
+          sx={{ fontWeight: 600, color: "#374151" }}
+        >
           {title}
         </Typography>
         <IconButton onClick={onClose} size="small" sx={{ color: "#6b7280" }}>

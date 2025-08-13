@@ -44,7 +44,7 @@ export async function invokeApi({
     console.log("<===Api-Error===>", error);
 
     if (error.response.status === 401) {
-      sessionStorage.clear();
+      localStorage.clear();
       window.location.reload();
     }
     return {

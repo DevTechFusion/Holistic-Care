@@ -16,14 +16,14 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { useSnackbar } from "notistack";
 import { useTheme } from "@mui/material/styles";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 import "./LoginPage.css";
 
 // Images
-import doctorsImage from "../assets/images/doctors_image.png";
-import logo from "../assets/images/logo.svg";
-import leftBgPattern from "../assets/images/left-bg.png";
-import { login } from "../DAL/auth";
+import doctorsImage from "../../assets/images/doctors_image.png";
+import logo from "../../assets/images/logo.svg";
+import leftBgPattern from "../../assets/images/left-bg.png";
+import { login } from "../../DAL/auth";
 
 const Logo = () => (
   <Box className="logo-container">

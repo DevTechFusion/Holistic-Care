@@ -9,8 +9,8 @@ import { Box, CircularProgress } from "@mui/material";
 import ThemeConfig from "./theme";
 import "./App.css";
 import { SnackbarProvider } from "notistack";
-import LoginPage from "./pages/LoginPage";
-import Dashboard from "./pages/Dashboard";
+import LoginPage from "./pages/login/LoginPage";
+import Dashboard from "./pages/dashboard/Dashboard";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import AuthLayout from "./layouts/AuthLayout";
 
@@ -63,6 +63,7 @@ function App() {
         <AuthProvider>
           <SnackbarProvider
             maxSnack={3}
+            autoHideDuration={3000}
             anchorOrigin={{
               vertical: "top",
               horizontal: "right",

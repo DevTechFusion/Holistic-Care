@@ -26,10 +26,6 @@ import {
   MedicalServices as ProcedureIcon,
   Group as UserIcon
 } from '@mui/icons-material';
-import CreateDoctorModal from '../modals/CreateDoctorModal';
-import CreateProcedureModal from '../modals/CreateProcedureModal';
-import CreateDepartmentModal from '../modals/CreateDepartmentModal';
-import CreateUserModal from '../modals/CreateUserModal';
 
 const Topbar = () => {
   const [createMenuAnchor, setCreateMenuAnchor] = useState(null);

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { userDetail } from "../DAL/auth";
+import { getUserProfile } from "../DAL/auth";
 
 const AuthContext = createContext();
 
@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
   const getUserDetail = async () => {
     setLoading(true);
     try {
-      const result = await userDetail();
+      const result = await getUserProfile();
       if (result.status === "success") {
         setUser(result.data);
       }

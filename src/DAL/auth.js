@@ -10,6 +10,15 @@ export const login = (data) => {
   return invokeApi(reqObj);
 };
 
-export const userDetail = () => {
+export const getUserProfile = () => {
   return invokeApi({ path: "api/profile" });
+};
+
+export const logout = () => {
+  const reqObj = { 
+    method: "POST",
+    path: "api/logout",
+    postData: { token: localStorage.getItem("token") },
+  };
+  return invokeApi(reqObj); 
 };
