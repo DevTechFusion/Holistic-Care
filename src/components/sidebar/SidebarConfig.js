@@ -8,6 +8,7 @@ import {
   ReportIcon
 } from '../../assets/icons/sidebar';
 
+
 const SidebarConfig = [
   {
     title: 'Dashboard',
@@ -17,34 +18,44 @@ const SidebarConfig = [
   {
     title: 'Appointment Booking',
     icon: BookIcon,
-    path: '/appointments',
+    path: '',
   },
   {
-    title: 'User Management',
+    title: 'Management',
     icon: UserIcon,
-    path: '/users',
+    path: '',
     children: [
-      {
+       {
         title: 'Agent List',
         icon: AgentIcon,
-        path: '/users/list',
+        path: '#',
       },
       {
         title: 'Doctor List',
         icon: DoctorIcon,
-        path: '/users/roles',
+        path: '',
+      },
+      {
+        title: 'Departments List',
+        icon: AgentIcon,
+        path: '/departments',
       },
       {
         title: 'Manager List',
         icon: ManagerIcon,
-        path: '/users/permissions',
+        path: '/users',
+      },
+      {
+        title: 'Procedures List',
+        icon: ManagerIcon,
+        path: '/procedures',
       },
     ]
   },
   {
     title: 'Reports',
     icon: ReportIcon,
-    path: '/reports',
+    path: '',
   }
 ];
 

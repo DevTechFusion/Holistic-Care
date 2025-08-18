@@ -15,7 +15,7 @@
 
 .login-container {
   height: 100vh;
-  width: 100%;
+  width: 110%;
 
 }
 
@@ -25,7 +25,6 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 64px 48px;
   position: relative;
   overflow: hidden;
   min-height: 100vh;
@@ -35,23 +34,25 @@
 /* subtle pattern image in left panel */
 .left-bg-pattern {
   position: absolute;
-  top: 12%;
-  right: -10%;
-  width: 60%;
-  opacity: 0.12;
-  pointer-events: none;
+  top: -30px;
+  right: -30px;
+  width: 280px;
+  height: 400px;
+  opacity: 100%;
 }
 
 /* Doctor image */
 .doctors-container {
-  z-index: 2;
-  margin-bottom: 28px;
+  z-index: 4;
+  margin-bottom: 32px;
 }
 .doctors-image {
-  width: 300px;
+  position: absolute;
+  width: 700px;
   height: auto;
-  display: block;
-  object-fit: contain;
+  top: 70px;
+  right: 35px;
+
 }
 
 /* Welcome text */
@@ -60,7 +61,9 @@
   font-weight: 800 !important;
   font-size: 2.4rem !important;
   line-height: 1.05 !important;
-  margin-bottom: 20px !important;
+  margin-bottom: 10px !important;
+  margin-top: 350px;
+  margin-left: 150px !important;
   text-align: left;
   z-index: 2;
 }
@@ -68,6 +71,8 @@
 .welcome-description {
   color: rgba(255,255,255,0.95);
   max-width: 420px;
+  margin-top: 5px;
+  margin-left: 150px !important;
   line-height: 1.6;
   font-size: 1rem;
   z-index: 2;
@@ -83,19 +88,10 @@
   position: relative;
 }
 
-/* faint cross shape on bottom-right of right column */
-.medical-cross {
-  position: absolute;
-  bottom: 30px;
-  right: 30px;
-  opacity: 0.06;
-  pointer-events: none;
-}
-
 /* Form container */
 .login-form-container {
-  width: 100%;
-  z-index: 5;
+  width: 80%;
+  z-index: 2;
 }
 
 /* Logo */
@@ -103,10 +99,10 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  margin-bottom: 28px;
+  margin-bottom: 26px;
 }
 .logo-image {
-  width: 140px;
+  width: 150px;
   height: auto;
   object-fit: contain;
 }

@@ -27,7 +27,7 @@ const CreateUserModal = ({ open, onClose }) => {
           name: "",
           email: "",
           password: "",
-          role: "",
+          role_id: "",
         });
         onClose();
       } else {

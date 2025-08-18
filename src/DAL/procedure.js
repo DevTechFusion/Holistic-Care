@@ -13,7 +13,7 @@ export const getProcedures = () => {
   return invokeApi({ path: "api/procedures" });
 };
 
-export const getProcedure = (id) => {
+export const getProcedureById = (id) => {
   return invokeApi({ path: `api/procedures/${id}` });
 };
 

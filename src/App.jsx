@@ -11,6 +11,9 @@ import "./App.css";
 import { SnackbarProvider } from "notistack";
 import LoginPage from "./pages/login/LoginPage";
 import Dashboard from "./pages/dashboard/Dashboard";
+import DepartmentsPage from "./pages/departmentsPage/DepartmentsPage";
+import UsersPage from "./pages/usersPage/UsersPage";
+import ProceduresPage from "./pages/proceduresPage/ProceduresPage";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import AuthLayout from "./layouts/AuthLayout";
 
@@ -44,6 +47,9 @@ const AppRoutes = () => {
       <Route path="/" element={<ProtectedRoute />} />
       <Route element={<AuthLayout />}>
         <Route path="dashboard" element={<Dashboard />} />
+        <Route path="departments" element={<DepartmentsPage />} />
+        <Route path="users" element={<UsersPage/>} />
+        <Route path="procedures" element={<ProceduresPage/>} />
       </Route>
       <Route
         path="/"
@@ -52,6 +58,7 @@ const AppRoutes = () => {
         }
       />
     </Routes>
+
   );
 };
 

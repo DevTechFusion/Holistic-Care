@@ -162,7 +162,7 @@ const LoginPage = () => {
         <Grid
           item
           xs={12}
-          md={5}
+          md={6}
           className="left-column"
           sx={{
             width: {
@@ -193,7 +193,7 @@ const LoginPage = () => {
         <Grid
           item
           xs={12}
-          md={7}
+          md={6}
           className="right-column"
           sx={{
             width: {
@@ -202,18 +202,8 @@ const LoginPage = () => {
             },
           }}
         >
-          <Box className="medical-cross" aria-hidden>
-            <svg width="220" height="220" viewBox="0 0 120 120" fill="none">
-              <path
-                d="M60 20V100M20 60H100"
-                stroke="rgba(0,0,0,0.05)"
-                strokeWidth="8"
-                strokeLinecap="round"
-              />
-            </svg>
-          </Box>
-
           <LoginForm />
+          
         </Grid>
       </Grid>
     </Box>

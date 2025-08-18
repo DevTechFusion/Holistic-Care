@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import GenericFormModal from "./GenericForm";
 import { useSnackbar } from "notistack";
 import { createDoctor } from "../../DAL/doctors";
-import { getDepartments } from "../../DAL/departments"; // fixed: fetching all departments
+import { getDepartments } from "../../DAL/departments"; 
 import { getProcedures } from "../../DAL/procedure";
 import { TimePicker } from "@mui/x-date-pickers/TimePicker";
 import dayjs from "dayjs";
@@ -20,7 +20,7 @@ const CreateDoctorModal = ({ open, onClose }) => {
     department_id: "",
     procedures: [],
     phone_number: "",
-    availability: Array(7).fill({ available: false }), // 7 days
+    availability: Array(7).fill({ available: false }), 
   });
 
   // Fetch dropdown data
@@ -37,6 +37,7 @@ const CreateDoctorModal = ({ open, onClose }) => {
       const res = await createDoctor(formData);
       if (res?.status === 200 || res?.status === "success") {
         enqueueSnackbar("Doctor created successfully!", { variant: "success" });
+        console.log("Doctor created:", res);
         setFormData({
           name: "",
           department_id: "",
@@ -114,8 +115,14 @@ const CreateDoctorModal = ({ open, onClose }) => {
         })),
       options: procedures.map((p) => ({ value: p.id, label: p.name })),
     },
-    // Availability fields will be rendered manually
+    {
+      name: "availability",
+      label: "Availability",
+      type: "custom",
+      required: true,
+    },
   ];
+
 
   return (
     <GenericFormModal
@@ -125,30 +132,9 @@ const CreateDoctorModal = ({ open, onClose }) => {
       title="Create Doctor"
       fields={fields}
       isSubmitting={isSubmitting}
-    >
-      <div className="availability-section">
-        <h4 className="mb-2 font-semibold">Availability</h4>
-        {Array.from({ length: 7 }, (_, i) => (
-          <div key={i} className="flex items-center gap-4 mb-2">
-            <span className="w-20">Day {i + 1}</span>
-            <TimePicker
-              label="Start Time"
-              value={formData.availability[i]?.start_time ? dayjs(formData.availability[i].start_time, "HH:mm") : null}
-              onChange={(newValue) =>
-                handleAvailabilityChange(i, "start_time", newValue ? newValue.format("HH:mm") : "")
-              }
-            />
-            <TimePicker
-              label="End Time"
-              value={formData.availability[i]?.end_time ? dayjs(formData.availability[i].end_time, "HH:mm") : null}
-              onChange={(newValue) =>
-                handleAvailabilityChange(i, "end_time", newValue ? newValue.format("HH:mm") : "")
-              }
-            />
-          </div>
-        ))}
-      </div>
-    </GenericFormModal>
+    />
+    
+    
   );
 };
 
