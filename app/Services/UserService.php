@@ -132,4 +132,24 @@ class UserService extends CrudeService
     {
         return app(\Spatie\Permission\Models\Permission::class)->all();
     }
+
+    /**
+     * Get users by role(s)
+     */
+    public function getUsersByRoles($roles, $perPage = 15, $page = 1)
+    {
+        if (is_string($roles)) {
+            $roles = [$roles];
+        }
+
+        $query = $this->model->whereHas('roles', function ($q) use ($roles) {
+            $q->whereIn('name', $roles);
+        })->with(['roles', 'permissions']);
+
+        if ($perPage > 0) {
+            return $query->paginate($perPage, ['*'], 'page', $page);
+        }
+
+        return $query->get();
+    }
 }

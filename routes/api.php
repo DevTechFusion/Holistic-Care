@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // Public auth routes with rate limiting
@@ -17,6 +16,7 @@ Route::middleware(['sanctum.token', 'auth:sanctum'])->group(function () {
     Route::post('/refresh', [App\Http\Controllers\Auth\WebAuthController::class, 'refresh']);
 
     // User management routes
+    Route::get('users/by-roles', [App\Http\Controllers\Api\UserController::class, 'getUsersByRoles']);
     Route::apiResource('users', App\Http\Controllers\Api\UserController::class);
     Route::post('users/{id}/assign-role', [App\Http\Controllers\Api\UserController::class, 'assignRole']);
     Route::post('users/{id}/remove-role', [App\Http\Controllers\Api\UserController::class, 'removeRole']);
