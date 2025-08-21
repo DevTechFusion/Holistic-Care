@@ -12,7 +12,7 @@ import {
   TableCell,
   TableBody,
 } from "@mui/material";
-import { getProcedures } from "../../DAL/procedure"; // <-- API call for procedures
+import { getProcedures } from "../../DAL/procedure";
 import CreateProcedureModal from "../../components/forms/ProcedureForm";
 
 const ProceduresPage = () => {
@@ -24,9 +24,14 @@ const ProceduresPage = () => {
     setLoading(true);
     try {
       const res = await getProcedures();
-      setProcedures(res?.data || []); // adjust based on your API response
+      console.log("API Response:", res);
+
+      // ✅ Extract array from nested structure
+      const procedures = res?.data?.data || [];
+      setProcedures(procedures);
     } catch (err) {
       console.error("Failed to fetch procedures", err);
+      setProcedures([]);
     } finally {
       setLoading(false);
     }
@@ -39,7 +44,12 @@ const ProceduresPage = () => {
   return (
     <Box p={3}>
       {/* Page Header */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
         <Typography variant="h5">Procedures</Typography>
         <Button variant="contained" onClick={() => setOpenModal(true)}>
           + Add Procedure
@@ -49,7 +59,9 @@ const ProceduresPage = () => {
       {/* Table */}
       <Paper>
         {loading ? (
-          <CircularProgress />
+          <Box display="flex" justifyContent="center" p={3}>
+            <CircularProgress />
+          </Box>
         ) : (
           <Table>
             <TableHead>
@@ -59,12 +71,20 @@ const ProceduresPage = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {procedures.map((proc, idx) => (
-                <TableRow key={proc.id}>
-                  <TableCell>{idx + 1}</TableCell>
-                  <TableCell>{proc.name}</TableCell>
+              {procedures.length > 0 ? (
+                procedures.map((proc, idx) => (
+                  <TableRow key={proc.id || idx}>
+                    <TableCell>{idx + 1}</TableCell>
+                    <TableCell>{proc.name}</TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={2} align="center">
+                    No procedures found
+                  </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         )}
@@ -75,7 +95,7 @@ const ProceduresPage = () => {
         open={openModal}
         onClose={() => {
           setOpenModal(false);
-          fetchProcedures(); // refresh after adding new
+          fetchProcedures();
         }}
       />
     </Box>

@@ -33,7 +33,7 @@ const SidebarConfig = [
       {
         title: 'Doctor List',
         icon: DoctorIcon,
-        path: '',
+        path: '/doctors',
       },
       {
         title: 'Departments List',

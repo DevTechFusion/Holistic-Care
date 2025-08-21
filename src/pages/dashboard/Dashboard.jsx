@@ -17,6 +17,7 @@ import CreateProcedureModal from "../../components/forms/ProcedureForm";
 import CreateDepartmentModal from "../../components/forms/DepartmentForm";
 import CreateDoctorModal from "../../components/forms/DoctorForm";
 import DashboardContent from "./DashboardContent";
+import WeeklyAvailability from "../../components/forms/WeeklyAvailability";
 
 const Dashboard = () => {
   const [openModal, setOpenModal] = useState(null);
@@ -42,7 +43,7 @@ const Dashboard = () => {
           borderRadius: "xl",
           textTransform: "none",
           fontWeight: "bold",
-          position: "fixed",
+          position: "absolute",
           top: 114,
           right: 44,
           px: 3,
@@ -122,6 +123,8 @@ const Dashboard = () => {
       />
 
       <DashboardContent />
+      <WeeklyAvailability />
+    
     </div>
   );
 };

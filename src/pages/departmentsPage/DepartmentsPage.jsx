@@ -24,7 +24,10 @@ const DepartmentsPage = () => {
     setLoading(true);
     try {
       const res = await getDepartments();
-      setDepartments(res?.data || []); // adjust based on your API response
+      console.log("API Response:", res);
+
+      const departments = res?.data?.data || [];
+      setDepartments(departments);
     } catch (err) {
       console.error("Failed to fetch departments", err);
     } finally {
@@ -57,12 +60,20 @@ const DepartmentsPage = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {departments.map((dept, idx) => (
-                <TableRow key={dept.id}>
-                  <TableCell>{idx + 1}</TableCell>
-                  <TableCell>{dept.name}</TableCell>
+              {departments.length > 0 ? (
+                departments.map((department, index) => (
+                  <TableRow key={department.id || index}>
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>{department.name}</TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={2} align="center">
+                    No departments found</TableCell>
                 </TableRow>
-              ))}
+                
+              )}
             </TableBody>
           </Table>
         )}

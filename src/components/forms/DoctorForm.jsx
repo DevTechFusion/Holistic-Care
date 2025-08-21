@@ -5,8 +5,7 @@ import { useSnackbar } from "notistack";
 import { createDoctor } from "../../DAL/doctors";
 import { getDepartments } from "../../DAL/departments"; 
 import { getProcedures } from "../../DAL/procedure";
-import { TimePicker } from "@mui/x-date-pickers/TimePicker";
-import dayjs from "dayjs";
+import WeeklyAvailability from "./WeeklyAvailability";
 
 const CreateDoctorModal = ({ open, onClose }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -23,13 +22,13 @@ const CreateDoctorModal = ({ open, onClose }) => {
     availability: Array(7).fill({ available: false }), 
   });
 
-  // Fetch dropdown data
+  
   useEffect(() => {
     if (open) {
-      getDepartments().then((res) => setDepartments(res.data || []));
-      getProcedures().then((res) => setProcedures(res.data || []));
+      getDepartments().then((res) => setDepartments(res?.data?.data || []));
+      getProcedures().then((res) => setProcedures(res?.data?.data || []));
     }
-  }, [open]);
+  }, [close]);
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
@@ -43,7 +42,6 @@ const CreateDoctorModal = ({ open, onClose }) => {
           department_id: "",
           procedures: [],
           phone_number: "",
-          availability: Array(7).fill({ available: false }),
         });
         onClose();
       } else {
@@ -58,20 +56,6 @@ const CreateDoctorModal = ({ open, onClose }) => {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleAvailabilityChange = (dayIndex, field, value) => {
-    setFormData((prev) => {
-      const updated = [...prev.availability];
-      updated[dayIndex] = { ...updated[dayIndex], [field]: value };
-
-      // Ensure available is true if times are set
-      if (field === "start_time" || field === "end_time") {
-        updated[dayIndex].available = !!(updated[dayIndex].start_time && updated[dayIndex].end_time);
-      }
-
-      return { ...prev, availability: updated };
-    });
   };
 
   const fields = [
@@ -115,12 +99,8 @@ const CreateDoctorModal = ({ open, onClose }) => {
         })),
       options: procedures.map((p) => ({ value: p.id, label: p.name })),
     },
-    {
-      name: "availability",
-      label: "Availability",
-      type: "custom",
-      required: true,
-    },
+  
+    
   ];
 
 
@@ -132,7 +112,9 @@ const CreateDoctorModal = ({ open, onClose }) => {
       title="Create Doctor"
       fields={fields}
       isSubmitting={isSubmitting}
-    />
+      >
+        <WeeklyAvailability   />
+      </GenericFormModal>
     
     
   );

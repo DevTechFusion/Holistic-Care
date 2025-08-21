@@ -14,6 +14,7 @@ import Dashboard from "./pages/dashboard/Dashboard";
 import DepartmentsPage from "./pages/departmentsPage/DepartmentsPage";
 import UsersPage from "./pages/usersPage/UsersPage";
 import ProceduresPage from "./pages/proceduresPage/ProceduresPage";
+import DoctorsList from "./pages/doctorsList/DoctorsList";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import AuthLayout from "./layouts/AuthLayout";
 
@@ -43,18 +44,19 @@ const AppRoutes = () => {
 
   return (
     <Routes>
-      <Route path="/login" element={<LoginPage />} />
+      <Route path="/" element={<LoginPage />} />
       <Route path="/" element={<ProtectedRoute />} />
       <Route element={<AuthLayout />}>
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="departments" element={<DepartmentsPage />} />
         <Route path="users" element={<UsersPage/>} />
         <Route path="procedures" element={<ProceduresPage/>} />
+        <Route path="doctors" element={<DoctorsList/>} />
       </Route>
       <Route
         path="/"
         element={
-          <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />
+          <Navigate to={isAuthenticated ? "/dashboard" : "/"} replace />
         }
       />
     </Routes>

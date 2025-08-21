@@ -45,7 +45,7 @@ const Topbar = () => {
       <Box
         sx={{
           height: 80,
-          backgroundColor: 'white',
+          backgroundColor: '#f5f5f5',
           borderBottom: '1px solid #e0e0e0',
           display: 'flex',
           alignItems: 'center',
@@ -53,7 +53,7 @@ const Topbar = () => {
           px: 3,
           position: 'sticky',
           top: 0,
-          zIndex: 1100,
+          zIndex: 2,
           boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
         }}
       >

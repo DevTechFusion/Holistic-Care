@@ -3,7 +3,6 @@ import { useState } from "react";
 import GenericFormModal from "./GenericForm";
 import { useSnackbar } from "notistack";
 import { createDepartment } from "../../DAL/departments";
-import { set } from "lodash";
 
 const CreateDepartmentModal = ({ open, onClose }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);

@@ -1,4 +1,4 @@
-// src/pages/users/UsersPage.jsx
+// src/pages/doctors/DoctorsPage.jsx
 import { useEffect, useState } from "react";
 import {
   Box,
@@ -12,37 +12,37 @@ import {
   TableCell,
   TableBody,
 } from "@mui/material";
-import { getUsers } from "../../DAL/users"; 
-import CreateUserModal from "../../components/forms/UserForm"; // you'll create this like DepartmentForm
+import { getDoctors } from "../../DAL/doctors"; 
+import CreateDoctorModal from "../../components/forms/DoctorForm";
 
-const UsersPage = () => {
-  const [users, setUsers] = useState([]);
+const DoctorsPage = () => {
+  const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
 
-  // Fetch Users
-  const fetchUsers = async () => {
+  // Fetch Doctors
+  const fetchDoctors = async () => {
     setLoading(true);
     try {
-      const res = await getUsers();
-      setUsers(res?.data?.data || []); // adjust based on your API response
+      const res = await getDoctors();
+      setDoctors(res?.data?.data || []); 
     } catch (err) {
-      console.error("Failed to fetch users", err);
+      console.error("Failed to fetch doctors", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchUsers();
+    fetchDoctors();
   }, []);
 
   return (
     <Box p={3}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Typography variant="h5">Users</Typography>
+        <Typography variant="h5">Doctors</Typography>
         <Button variant="contained" onClick={() => setOpenModal(true)}>
-          + Add User
+          + Add Doctor
         </Button>
       </Box>
 
@@ -57,17 +57,21 @@ const UsersPage = () => {
               <TableRow>
                 <TableCell>#</TableCell>
                 <TableCell>Name</TableCell>
-                <TableCell>Email</TableCell>
-                <TableCell>Role</TableCell>
+                <TableCell>Phone</TableCell>
+                <TableCell>Department</TableCell>
+                <TableCell>Procedures</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {users.map((user, idx) => (
-                <TableRow key={user.id}>
+              {doctors.map((doctor, idx) => (
+                <TableRow key={doctor.id}>
                   <TableCell>{idx + 1}</TableCell>
-                  <TableCell>{user.name}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.roles.map((role) => role.name).join(", ")}</TableCell>
+                  <TableCell>{doctor.name}</TableCell>
+                  <TableCell>{doctor.phone_number}</TableCell>
+                  {/* <TableCell>{doctor.department?.name}</TableCell>
+                  <TableCell>
+                    {doctor.procedures?.map((p) => p.name).join(", ")}
+                  </TableCell> */}
                 </TableRow>
               ))}
             </TableBody>
@@ -75,16 +79,16 @@ const UsersPage = () => {
         )}
       </Paper>
 
-      {/* Create User Modal */}
-      <CreateUserModal
+      {/* Create Doctor Modal */}
+      <CreateDoctorModal
         open={openModal}
         onClose={() => {
           setOpenModal(false);
-          fetchUsers(); // refresh after creating user
+          fetchDoctors(); // refresh after creating doctor
         }}
       />
     </Box>
   );
 };
 
-export default UsersPage;
+export default DoctorsPage;

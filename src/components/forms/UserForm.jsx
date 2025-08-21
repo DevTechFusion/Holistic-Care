@@ -2,7 +2,7 @@
 import { useState } from "react";
 import GenericFormModal from "./GenericForm";
 import { useSnackbar } from "notistack";
-import { createUser } from "../../DAL/users"; 
+import { createUser } from "../../DAL/users";
 
 const CreateUserModal = ({ open, onClose }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -11,7 +11,7 @@ const CreateUserModal = ({ open, onClose }) => {
     name: "",
     email: "",
     password: "",
-    role_id: "",
+    role: "",
   });
 
   const handleSubmit = async () => {
@@ -22,12 +22,11 @@ const CreateUserModal = ({ open, onClose }) => {
       if (res?.status === 200 || res?.status === "success") {
         enqueueSnackbar("User created successfully!", { variant: "success" });
         console.log("User created:", res);
-        // Reset form data after successful creation
         setFormData({
           name: "",
           email: "",
           password: "",
-          role_id: "",
+          role: "",
         });
         onClose();
       } else {
@@ -55,7 +54,9 @@ const CreateUserModal = ({ open, onClose }) => {
       required: true,
       defaultValue: "",
       value: formData.name,
-      onChange: (e) => setFormData(prev => ({ ...prev, name: e.target.value })),
+      onChange: (e) =>
+        setFormData((prev) => ({ ...prev, name: e.target.value })),
+      
     },
     {
       name: "email",
@@ -64,7 +65,9 @@ const CreateUserModal = ({ open, onClose }) => {
       required: true,
       defaultValue: "",
       value: formData.email,
-      onChange: (e) => setFormData(prev => ({ ...prev, email: e.target.value })),
+      onChange: (e) =>
+        setFormData((prev) => ({ ...prev, email: e.target.value })),
+     
     },
     {
       name: "password",
@@ -73,20 +76,24 @@ const CreateUserModal = ({ open, onClose }) => {
       required: true,
       defaultValue: "",
       value: formData.password,
-      onChange: (e) => setFormData(prev => ({ ...prev, password: e.target.value })),
+      onChange: (e) =>
+        setFormData((prev) => ({ ...prev, password: e.target.value })),
+     
     },
     {
-      name: "role_id",
+      name: "role",
       label: "Role",
       required: true,
-      defaultValue: "Agent",
+      defaultValue: "agent",
       value: formData.role,
       type: "select",
-      onChange: (e) => setFormData(prev => ({ ...prev, role_id: e.target.value })),
+      onChange: (e) =>
+        setFormData((prev) => ({ ...prev, role: e.target.value })),
       options: [
-        { value: "1", label: "Agent" },
-        { value: "2", label: "Manager" },
+        { value: "agent", label: "Agent" },
+        { value: "managerly", label: "Manager" },
       ],
+      
     },
   ];
 
