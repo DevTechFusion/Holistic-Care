@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('files', function (Blueprint $table) {
             $table->id();
-            $table->string('name'); // Original filename
+            $table->string('name'); // filename
             $table->string('filename'); // Stored filename (with hash)
             $table->string('path'); // Storage path
             $table->string('disk')->default('public'); // Storage disk
