@@ -25,7 +25,7 @@ const UsersPage = () => {
     setLoading(true);
     try {
       const res = await getUsers();
-      setUsers(res?.data?.data || []); // adjust based on your API response
+      setUsers(res?.data?.data || []);
     } catch (err) {
       console.error("Failed to fetch users", err);
     } finally {

@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-  //  isAuthenticated && getUserDetail();
+     // isAuthenticated && getUserDetail();
   }, [isAuthenticated]);
 
   const value = {

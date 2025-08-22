@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box, Typography } from '@mui/material';
 
 const WelcomeSection = () => {
@@ -12,7 +11,7 @@ const WelcomeSection = () => {
           mb: 1
         }}
       >
-        Welcome back, Alina!
+        Welcome back, 
       </Typography>
       <Typography 
         variant="body1" 
@@ -21,7 +20,7 @@ const WelcomeSection = () => {
           fontSize: '1.1rem'
         }}
       >
-        Lorem ipsum sajbab dj daoweiaoi
+        How are you today?
       </Typography>
     </Box>
   );

@@ -68,10 +68,10 @@ const DoctorsPage = () => {
                   <TableCell>{idx + 1}</TableCell>
                   <TableCell>{doctor.name}</TableCell>
                   <TableCell>{doctor.phone_number}</TableCell>
-                  {/* <TableCell>{doctor.department?.name}</TableCell>
+                  <TableCell>{doctor.department?.name}</TableCell>
                   <TableCell>
                     {doctor.procedures?.map((p) => p.name).join(", ")}
-                  </TableCell> */}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

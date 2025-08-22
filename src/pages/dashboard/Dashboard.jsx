@@ -18,6 +18,7 @@ import CreateDepartmentModal from "../../components/forms/DepartmentForm";
 import CreateDoctorModal from "../../components/forms/DoctorForm";
 import DashboardContent from "./DashboardContent";
 import WeeklyAvailability from "../../components/forms/WeeklyAvailability";
+import CreateAppointmentModal from "../../components/forms/AppointmentForm";
 
 const Dashboard = () => {
   const [openModal, setOpenModal] = useState(null);
@@ -102,6 +103,13 @@ const Dashboard = () => {
           </ListItemIcon>
           <ListItemText primary="Doctor" />
         </MenuItem>
+
+        <MenuItem onClick={() => handleClose("appointment")}>
+          <ListItemIcon>
+            <LocalHospitalIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary="Appointment" />
+        </MenuItem>
       </Menu>
 
       {/* Modals */}
@@ -119,6 +127,10 @@ const Dashboard = () => {
       />
       <CreateDoctorModal
         open={openModal === "doctor"}
+        onClose={() => setOpenModal(null)}
+      />
+      <CreateAppointmentModal
+        open={openModal === "appointment"}
         onClose={() => setOpenModal(null)}
       />
 

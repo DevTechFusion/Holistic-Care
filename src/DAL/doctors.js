@@ -13,7 +13,7 @@ export const getDoctors = () => {
   return invokeApi({ path: "api/doctors" });
 };
 
-export const getDoctor = (id) => {
+export const getDoctorById = (id) => {
   return invokeApi({ path: `api/doctors/${id}` });
 };
 

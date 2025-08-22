@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import GenericFormModal from "./GenericForm";
 import { useSnackbar } from "notistack";
 import { createDoctor } from "../../DAL/doctors";
-import { getDepartments } from "../../DAL/departments"; 
+import { getDepartments } from "../../DAL/departments";
 import { getProcedures } from "../../DAL/procedure";
 import WeeklyAvailability from "./WeeklyAvailability";
 
@@ -19,16 +19,16 @@ const CreateDoctorModal = ({ open, onClose }) => {
     department_id: "",
     procedures: [],
     phone_number: "",
-    availability: Array(7).fill({ available: false }), 
+    availability: [],
   });
 
-  
   useEffect(() => {
     if (open) {
       getDepartments().then((res) => setDepartments(res?.data?.data || []));
+
       getProcedures().then((res) => setProcedures(res?.data?.data || []));
     }
-  }, [close]);
+  }, [open]);
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
@@ -45,12 +45,15 @@ const CreateDoctorModal = ({ open, onClose }) => {
         });
         onClose();
       } else {
-        enqueueSnackbar(res?.message || "Failed to create doctor", { variant: "error" });
+        enqueueSnackbar(res?.message || "Failed to create doctor", {
+          variant: "error",
+        });
       }
     } catch (error) {
       console.error("Error creating doctor:", error);
       enqueueSnackbar(
-        error?.response?.data?.message || "Something went wrong. Please try again.",
+        error?.response?.data?.message ||
+          "Something went wrong. Please try again.",
         { variant: "error" }
       );
     } finally {
@@ -65,7 +68,8 @@ const CreateDoctorModal = ({ open, onClose }) => {
       type: "text",
       required: true,
       value: formData.name,
-      onChange: (e) => setFormData((prev) => ({ ...prev, name: e.target.value })),
+      onChange: (e) =>
+        setFormData((prev) => ({ ...prev, name: e.target.value })),
     },
     {
       name: "phone_number",
@@ -73,7 +77,8 @@ const CreateDoctorModal = ({ open, onClose }) => {
       type: "text",
       required: true,
       value: formData.phone_number,
-      onChange: (e) => setFormData((prev) => ({ ...prev, phone_number: e.target.value })),
+      onChange: (e) =>
+        setFormData((prev) => ({ ...prev, phone_number: e.target.value })),
     },
     {
       name: "department_id",
@@ -81,7 +86,11 @@ const CreateDoctorModal = ({ open, onClose }) => {
       type: "select",
       required: true,
       value: formData.department_id,
-      onChange: (e) => setFormData((prev) => ({ ...prev, department_id: Number(e.target.value) })),
+      onChange: (e) =>
+        setFormData((prev) => ({
+          ...prev,
+          department_id: Number(e.target.value),
+        })),
       options: departments.map((d) => ({ value: d.id, label: d.name })),
     },
     {
@@ -99,10 +108,7 @@ const CreateDoctorModal = ({ open, onClose }) => {
         })),
       options: procedures.map((p) => ({ value: p.id, label: p.name })),
     },
-  
-    
   ];
-
 
   return (
     <GenericFormModal
@@ -112,11 +118,9 @@ const CreateDoctorModal = ({ open, onClose }) => {
       title="Create Doctor"
       fields={fields}
       isSubmitting={isSubmitting}
-      >
-        <WeeklyAvailability   />
-      </GenericFormModal>
-    
-    
+    >
+      <WeeklyAvailability setFormData={setFormData} />
+    </GenericFormModal>
   );
 };
 
