@@ -18,7 +18,7 @@ const SidebarConfig = [
   {
     title: 'Appointment Booking',
     icon: BookIcon,
-    path: '',
+    path: '/appointments',
   },
   {
     title: 'Management',

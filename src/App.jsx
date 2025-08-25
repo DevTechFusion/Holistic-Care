@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+
 import {
   BrowserRouter as Router,
   Routes,
@@ -15,6 +15,7 @@ import DepartmentsPage from "./pages/departmentsPage/DepartmentsPage";
 import UsersPage from "./pages/usersPage/UsersPage";
 import ProceduresPage from "./pages/proceduresPage/ProceduresPage";
 import DoctorsList from "./pages/doctorsList/DoctorsList";
+import AppointmentsList from "./pages/appointmentList/AppointmentList";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import AuthLayout from "./layouts/AuthLayout";
 
@@ -52,7 +53,7 @@ const AppRoutes = () => {
         <Route path="users" element={<UsersPage/>} />
         <Route path="procedures" element={<ProceduresPage/>} />
         <Route path="doctors" element={<DoctorsList/>} />
-
+        <Route path="appointments" element={<AppointmentsList/>} />
       </Route>
       <Route
         path="/"

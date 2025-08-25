@@ -12,7 +12,7 @@ import { ExpandLess, ExpandMore, Logout as LogoutIcon } from "@mui/icons-materia
 import { useLocation, useNavigate } from "react-router-dom";
 import SidebarConfig from "./SidebarConfig";
 import logo from "../../assets/images/logo.svg";
-import { logout } from "../../DAL/auth"; // adjust path to where your logout API is
+import { logout } from "../../DAL/auth"; 
 import { enqueueSnackbar } from "notistack";
 
 const Sidebar = () => {
