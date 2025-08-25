@@ -8,11 +8,15 @@ import {
   ListItemText,
   Collapse,
 } from "@mui/material";
-import { ExpandLess, ExpandMore, Logout as LogoutIcon } from "@mui/icons-material";
+import {
+  ExpandLess,
+  ExpandMore,
+  Logout as LogoutIcon,
+} from "@mui/icons-material";
 import { useLocation, useNavigate } from "react-router-dom";
 import SidebarConfig from "./SidebarConfig";
 import logo from "../../assets/images/logo.svg";
-import { logout } from "../../DAL/auth"; 
+import { logout } from "../../DAL/auth";
 import { enqueueSnackbar } from "notistack";
 
 const Sidebar = () => {
@@ -34,7 +38,7 @@ const Sidebar = () => {
       await logout();
       enqueueSnackbar("Logout successful", { variant: "success" });
       localStorage.removeItem("token");
-      navigate("/"); 
+      navigate("/");
     } catch (error) {
       console.error("Logout failed:", error);
     }
@@ -43,8 +47,11 @@ const Sidebar = () => {
   return (
     <Box
       sx={{
-        width: 280,
-        height: "100vh",
+        width: {
+          xs: "0%", // small screens
+          md: "20%", // medium and up
+        },
+        minHeight: "100vh",
         background: "white",
         display: "flex",
         flexDirection: "column",
@@ -57,6 +64,7 @@ const Sidebar = () => {
       {/* Logo Section */}
       <Box
         sx={{
+          height: "100%",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -64,7 +72,11 @@ const Sidebar = () => {
           borderBottom: "1px solid #eee",
         }}
       >
-        <img src={logo} alt="Logo" style={{ width: "120px", height: "auto" }} />
+        <img
+          src={logo}
+          alt="Logo"
+          style={{ width: "100%", height: "59px", objectFit: "contain" }}
+        />
       </Box>
 
       {/* Scrollable Menu */}
@@ -73,7 +85,8 @@ const Sidebar = () => {
           {SidebarConfig.map((item) => {
             const parentActive =
               isActive(item.path) ||
-              (item.children && item.children.some((child) => isActive(child.path)));
+              (item.children &&
+                item.children.some((child) => isActive(child.path)));
 
             return (
               <Box key={item.title}>
@@ -89,7 +102,9 @@ const Sidebar = () => {
                       borderRadius: "8px",
                       margin: "4px 8px",
                       paddingY: "10px",
-                      backgroundColor: parentActive ? "primary.main" : "transparent",
+                      backgroundColor: parentActive
+                        ? "primary.main"
+                        : "transparent",
                       color: parentActive ? "white" : "text.primary",
                       transition: "all 0.3s ease",
                       "&:hover": {
@@ -110,20 +125,30 @@ const Sidebar = () => {
                         width={22}
                         height={22}
                         style={{
-                          filter: parentActive ? "brightness(0) invert(1)" : "none",
+                          filter: parentActive
+                            ? "brightness(0) invert(1)"
+                            : "none",
                         }}
                       />
                     </ListItemIcon>
                     <ListItemText primary={item.title} />
 
                     {item.children &&
-                      (openDropdowns[item.title] ? <ExpandLess /> : <ExpandMore />)}
+                      (openDropdowns[item.title] ? (
+                        <ExpandLess />
+                      ) : (
+                        <ExpandMore />
+                      ))}
                   </ListItemButton>
                 </ListItem>
 
                 {/* Dropdown Children */}
                 {item.children && (
-                  <Collapse in={openDropdowns[item.title]} timeout="auto" unmountOnExit>
+                  <Collapse
+                    in={openDropdowns[item.title]}
+                    timeout="auto"
+                    unmountOnExit
+                  >
                     <List component="div" disablePadding>
                       {item.children.map((child) => {
                         const childActive = isActive(child.path);

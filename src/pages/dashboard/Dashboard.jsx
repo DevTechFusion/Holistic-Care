@@ -35,29 +35,6 @@ const Dashboard = () => {
 
   return (
     <div>
-      {/* Single Action Button */}
-      <Button
-        variant="contained"
-        onClick={handleClick}
-        sx={{
-          background: "linear-gradient(135deg, primary.main, primary.dark)",
-          borderRadius: "xl",
-          textTransform: "none",
-          fontWeight: "bold",
-          position: "absolute",
-          top: 114,
-          right: 44,
-          px: 3,
-          py: 1,
-          boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-          "&:hover": {
-            background: "linear-gradient(135deg, primary.dark, primary.main)",
-          },
-        }}
-      >
-        + Create New
-      </Button>
-
       {/* Dropdown Menu */}
       <Menu
         anchorEl={anchorEl}
@@ -134,9 +111,8 @@ const Dashboard = () => {
         onClose={() => setOpenModal(null)}
       />
 
-      <DashboardContent />
-      <WeeklyAvailability />
-    
+      <DashboardContent handleClick={handleClick} />
+      {/* <WeeklyAvailability /> */}
     </div>
   );
 };

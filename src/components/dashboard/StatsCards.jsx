@@ -44,15 +44,15 @@ const StatsCards = () => {
   ];
 
   return (
-    <Grid container spacing={6}>
+    <Grid container spacing={3}>
       {stats.map((stat, index) => {
         const IconComponent = stat.icon; // store the icon to render
         return (
-          <Grid item xs={12} sm={6} md={3} key={index}>
+          <Grid item size={{ xs: 6 }} key={index}>
             <Card
               sx={{
                 height: "150px",
-                width: "250px",
+                // minWidth: "250px",
                 borderRadius: 3,
                 boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                 "&:hover": {
@@ -62,7 +62,7 @@ const StatsCards = () => {
                 },
               }}
             >
-              <CardContent sx={{ p:2, position: "relative" }}>
+              <CardContent sx={{ p: 2, position: "relative" }}>
                 {/* Icon */}
                 <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                   <IconComponent sx={{ color: stat.color, fontSize: 32 }} />
@@ -92,7 +92,16 @@ const StatsCards = () => {
                 </Typography>
 
                 {/* Change */}
-                <Box sx={{ display: "flex", alignItems: "flex-end", gap: 0.5, position: "absolute", top: 16, right: 16 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "flex-end",
+                    gap: 0.5,
+                    position: "absolute",
+                    top: 16,
+                    right: 16,
+                  }}
+                >
                   {stat.isPositive ? (
                     <TrendingUp sx={{ color: "#23C7B7", fontSize: 20 }} />
                   ) : (

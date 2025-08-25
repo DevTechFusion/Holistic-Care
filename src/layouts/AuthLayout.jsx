@@ -11,10 +11,17 @@ const AuthLayout = () => {
       <Box
         sx={{
           flex: 1,
-          marginLeft: "280px", // Match sidebar width
           minHeight: "100vh",
           backgroundColor: "#f8f9fa",
           position: "relative",
+          width: {
+            xs: "100%", // small screens
+            md: "80%", // medium and up
+          },
+          marginLeft: {
+            xs: 0, // small screens
+            md: "20%", // medium and up
+          },
         }}
       >
         <Topbar />

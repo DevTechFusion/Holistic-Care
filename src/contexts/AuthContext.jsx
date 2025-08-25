@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const isAuthenticated = !localStorage.getItem("token");
+  const isAuthenticated = !!localStorage.getItem("token");
 
   const getUserDetail = async () => {
     setLoading(true);
@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-     // isAuthenticated && getUserDetail();
+     isAuthenticated && getUserDetail();
   }, [isAuthenticated]);
 
   const value = {

@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { Box, Grid, Card, CardContent, Typography } from "@mui/material";
+import {
+  Box,
+  Grid,
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  Stack,
+} from "@mui/material";
 import { useSnackbar } from "notistack";
 import {
   WelcomeSection,
@@ -9,7 +17,7 @@ import {
   BookingsSection,
 } from "../../components/dashboard";
 import { useAuth } from "../../contexts/AuthContext";
-const DashboardContent = () => {
+const DashboardContent = ({ handleClick = () => {} }) => {
   const { enqueueSnackbar } = useSnackbar();
   const { user } = useAuth();
 
@@ -44,31 +52,59 @@ const DashboardContent = () => {
   return (
     <Box sx={{ mt: 2 }}>
       {/* Welcome Section */}
-      <WelcomeSection />
+      <Stack
+        direction={"row"}
+        justifyContent="space-between"
+        alignItems="start"
+        flexWrap={"wrap"}
+        spacing={2}
+        mb={2}
+      >
+        <WelcomeSection />
+        {/* Single Action Button */}
+        <Button
+          variant="contained"
+          onClick={handleClick}
+          sx={{
+            background: "linear-gradient(135deg, primary.main, primary.dark)",
+            borderRadius: "xl",
+            textTransform: "none",
+            fontWeight: "bold",
+            px: 3,
+            py: 1,
+            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+            "&:hover": {
+              background: "linear-gradient(135deg, primary.dark, primary.main)",
+            },
+          }}
+        >
+          + Create New
+        </Button>
+      </Stack>
 
-      {/* Stats Cards */}
-      <StatsCards />
-
-      {/* Middle Section - Doctor Leaderboard & Revenue */}
-      <Grid container spacing={3} sx={{ mt: 3 }}  wrap="nowrap">
-        <Grid item xs={6}>
+      <Grid container spacing={3} width="100%">
+        {/* Stats Cards */}
+        <Grid item size={{ xs: 12, md: 6 }}>
+          <StatsCards />
+        </Grid>
+        <Grid item size={{ xs: 12, md: 6 }}>
           <DoctorLeaderboard />
         </Grid>
 
-        <Grid item xs={6}>
+        <Grid item size={{ xs: 12 }}>
           <RevenueSection />
         </Grid>
       </Grid>
 
       {/* Bottom Section - Bookings, Source Wise, Doctor Wise */}
       <Grid container spacing={3} sx={{ mt: 3 }}>
-        <Grid item xs={12} md={4}>
+        <Grid item size={{ xs: 12, md: 4 }}>
           <BookingsSection title="Bookings (Agent wise)" type="agent" />
         </Grid>
-        <Grid item xs={12} md={4}>
+        <Grid item size={{ xs: 12, md: 4 }}>
           <BookingsSection title="Source Wise Bookings" type="source" />
         </Grid>
-        <Grid item xs={12} md={4}>
+        <Grid item size={{ xs: 12, md: 4 }}>
           <BookingsSection title="Doctor Wise Bookings" type="doctor" />
         </Grid>
       </Grid>
