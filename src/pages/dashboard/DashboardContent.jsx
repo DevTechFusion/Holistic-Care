@@ -62,8 +62,8 @@ const DashboardContent = () => {
 
       {/* Bottom Section - Bookings, Source Wise, Doctor Wise */}
       <Grid container spacing={3} sx={{ mt: 3 }}>
-        <Grid item xs={12} md={4}>
-          <BookingsSection title="Bookings (Agent wise)" type="agent" />
+        <Grid item xs={12} md={3}>
+          <BookingsSection title="Agent wise Bookings " type="agent" />
         </Grid>
         <Grid item xs={12} md={4}>
           <BookingsSection title="Source Wise Bookings" type="source" />

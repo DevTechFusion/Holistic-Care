@@ -12,47 +12,42 @@ import {
   TableBody,
   TablePagination,
 } from "@mui/material";
-import { getDoctors } from "../../DAL/doctors"; 
-import CreateDoctorModal from "../../components/forms/DoctorForm"; 
+import { getAllDepartments } from "../../DAL/departments"; 
+import CreateDepartmentModal from "../../components/forms/DepartmentForm"; 
 
-const DoctorsPage = () => {
-  const [doctors, setDoctors] = useState([]);
+const DepartmentsPage = () => {
+  const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
 
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(0); // 0-based for MUI
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [total, setTotal] = useState(0);
 
-  const fetchDoctors = async () => {
+  const fetchDepartments = async () => {
     setLoading(true);
     try {
-      const res = await getDoctors(page + 1, rowsPerPage);
-      setDoctors(res?.data?.data || []);
+      const res = await getAllDepartments(page + 1, rowsPerPage); // backend expects 1-based
+      setDepartments(res?.data?.data || []);
       setTotal(res?.data?.total || 0);
     } catch (err) {
-      console.error("Failed to fetch doctors", err);
+      console.error("Failed to fetch departments", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchDoctors();
+    fetchDepartments();
   }, [page, rowsPerPage]);
 
   return (
     <Box p={3}>
       {/* Header */}
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={2}
-      >
-        <Typography variant="h5">Doctors</Typography>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        <Typography variant="h5">Departments</Typography>
         <Button variant="contained" onClick={() => setOpenModal(true)}>
-          + Add Doctor
+          + Add Department
         </Button>
       </Box>
 
@@ -69,26 +64,17 @@ const DoctorsPage = () => {
                 <TableRow>
                   <TableCell>#</TableCell>
                   <TableCell>Name</TableCell>
-                  <TableCell>Phone</TableCell>
-                  <TableCell>Department</TableCell>
-                  <TableCell>Procedures</TableCell>
+                  <TableCell>Description</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {" "}
-                {doctors.map((doctor, idx) => (
-                  <TableRow key={doctor.id}>
-                    {" "}
-                    <TableCell>{idx + 1}</TableCell>{" "}
-                    <TableCell>{doctor.name}</TableCell>{" "}
-                    <TableCell>{doctor.phone_number}</TableCell>{" "}
-                    <TableCell>{doctor.department?.name}</TableCell>{" "}
-                    <TableCell>
-                      {" "}
-                      {doctor.procedures?.map((p) => p.name).join(", ")}{" "}
-                    </TableCell>{" "}
+                {departments.map((dept, idx) => (
+                  <TableRow key={dept.id}>
+                    <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
+                    <TableCell>{dept.name}</TableCell>
+                    <TableCell>{dept.description}</TableCell>
                   </TableRow>
-                ))}{" "}
+                ))}
               </TableBody>
             </Table>
 
@@ -109,15 +95,15 @@ const DoctorsPage = () => {
       </Paper>
 
       {/* Modal */}
-      <CreateDoctorModal
+      <CreateDepartmentModal
         open={openModal}
         onClose={() => {
           setOpenModal(false);
-          fetchDoctors(); // refresh after add
+          fetchDepartments(); // refresh after add
         }}
       />
     </Box>
   );
 };
 
-export default DoctorsPage;
+export default DepartmentsPage;

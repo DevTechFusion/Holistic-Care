@@ -10,8 +10,10 @@ export const createDepartment = (data) => {
   return invokeApi(reqObj);
 };
 
-export const getDepartments = () => {
-  return invokeApi({ path: "api/departments" });
+export const getAllDepartments = (page = 1, perPage = 10) => {
+  return invokeApi({
+    path: `api/departments?page=${page}&per_page=${perPage}`,
+  });
 };
 
 export const getDepartmentById = (id) => {

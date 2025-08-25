@@ -9,8 +9,10 @@ export const createDoctor = (data) => {
   return invokeApi(reqObj);
 };
 
-export const getDoctors = () => {
-  return invokeApi({ path: "api/doctors" });
+export const getDoctors = (page = 1, perPage = 10) => {
+  return invokeApi({
+    path: `api/doctors?page=${page}&per_page=${perPage}`,
+  });
 };
 
 export const getDoctorById = (id) => {

@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import GenericFormModal from "./GenericForm";
 import { useSnackbar } from "notistack";
 import { createDoctor } from "../../DAL/doctors";
-import { getDepartments } from "../../DAL/departments";
+import { getAllDepartments } from "../../DAL/departments";
 import { getProcedures } from "../../DAL/procedure";
 import WeeklyAvailability from "./WeeklyAvailability";
 
@@ -24,7 +24,7 @@ const CreateDoctorModal = ({ open, onClose }) => {
 
   useEffect(() => {
     if (open) {
-      getDepartments().then((res) => setDepartments(res?.data?.data || []));
+      getAllDepartments().then((res) => setDepartments(res?.data?.data || []));
 
       getProcedures().then((res) => setProcedures(res?.data?.data || []));
     }
