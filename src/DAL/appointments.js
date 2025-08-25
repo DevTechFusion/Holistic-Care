@@ -9,8 +9,10 @@ export const createAppointment = (data) => {
     return invokeApi(reqObj);
 };
 
-export const getAppointments = () => {
-    return invokeApi({ path: "api/appointments" });
+export const getAppointments = (page = 1, perPage = 10) => {
+  return invokeApi({
+    path: `api/appointments?page=${page}&per_page=${perPage}`,
+  });
 };
 
 export const getAppointmentById = (id) => {
@@ -30,3 +32,10 @@ export const updateAppointment = (id, data) => {
     return invokeApi(reqObj);
 };
  
+export const getAppointmentsByDepartment = (id) => {
+    return invokeApi({ path: `api/appointments/department/${id}` });
+};
+
+export const getAppointmentsByDoctor = (id) => {
+    return invokeApi({ path: `api/appointments/doctor/${id}` });
+};  

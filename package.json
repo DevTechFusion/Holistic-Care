@@ -17,6 +17,7 @@
     "@mui/x-date-pickers": "^8.10.0",
     "@mui/x-date-pickers-pro": "^8.10.0",
     "@tailwindcss/vite": "^4.1.11",
+    "@tanstack/react-query": "^5.85.5",
     "axios": "^1.11.0",
     "dayjs": "^1.11.13",
     "lodash": "^4.17.21",
