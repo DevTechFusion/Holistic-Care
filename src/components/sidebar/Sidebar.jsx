@@ -80,7 +80,15 @@ const Sidebar = () => {
       </Box>
 
       {/* Scrollable Menu */}
-      <Box sx={{ flex: 1, overflowY: "auto" }}>
+      <Box
+        sx={{
+          flex: 1,
+          overflowY: "auto",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+        }}
+      >
         <List>
           {SidebarConfig.map((item) => {
             const parentActive =
@@ -201,10 +209,6 @@ const Sidebar = () => {
             );
           })}
         </List>
-      </Box>
-
-      {/* Logout Button at Bottom */}
-      <Box sx={{ borderTop: "1px solid #eee" }}>
         <List>
           <ListItem disablePadding>
             <ListItemButton

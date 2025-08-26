@@ -1,40 +1,9 @@
-import React, { useState } from "react";
-import {
-  Box,
-  TextField,
-  InputAdornment,
-  Typography,
-  Avatar,
-  IconButton,
-  Button,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Menu,
-  ListItemIcon,
-  ListItemText,
-} from "@mui/material";
-import {
-  Search as SearchIcon,
-  Notifications as NotificationsIcon,
-  CalendarToday as CalendarIcon,
-  Add as AddIcon,
-  LocalHospital as DoctorIcon,
-  Business as DepartmentIcon,
-  MedicalServices as ProcedureIcon,
-  Group as UserIcon,
-} from "@mui/icons-material";
+import { Box, Typography, Avatar } from "@mui/material";
+import { useAuth } from "../../contexts/AuthContext";
+import { isArray } from "lodash";
 
 const Topbar = () => {
-  const [createMenuAnchor, setCreateMenuAnchor] = useState(null);
-  const [openModals, setOpenModals] = useState({
-    doctor: false,
-    procedure: false,
-    department: false,
-    user: false,
-  });
-
+  const { user } = useAuth();
   return (
     <>
       <Box
@@ -44,7 +13,7 @@ const Topbar = () => {
           borderBottom: "1px solid #e0e0e0",
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between",
+          justifyContent: "end",
           px: 3,
           position: "sticky",
           top: 0,
@@ -53,7 +22,7 @@ const Topbar = () => {
         }}
       >
         {/* Left Section - Search Bar */}
-        <Box sx={{ display: "flex", alignItems: "center", minWidth: 350 }}>
+        {/* <Box sx={{ display: "flex", alignItems: "center", minWidth: 350 }}>
           <TextField
             placeholder="Search..."
             variant="outlined"
@@ -78,19 +47,19 @@ const Topbar = () => {
               },
             }}
           />
-        </Box>
+        </Box> */}
 
         {/* Right Section - User Info, Calendar, Create Button */}
         <Box
           sx={{
             display: "flex",
-            alignItems: "center",
+            alignItems: "end",
             gap: 2,
             flexWrap: "wrap",
           }}
         >
           {/* Notifications */}
-          <IconButton
+          {/* <IconButton
             sx={{
               color: "text.secondary",
               "&:hover": {
@@ -99,7 +68,7 @@ const Topbar = () => {
             }}
           >
             <NotificationsIcon />
-          </IconButton>
+          </IconButton> */}
 
           {/* User Profile */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -110,17 +79,17 @@ const Topbar = () => {
                 backgroundColor: "#23C7B7",
               }}
             >
-              AA
+              {user?.name?.charAt(0).toUpperCase()}
             </Avatar>
             <Box>
               <Typography
                 variant="body2"
                 sx={{ fontWeight: 600, color: "text.primary" }}
               >
-                Alina Amjad
+                {user?.name}
               </Typography>
               <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                Admin
+                {isArray(user?.roles) ? user.roles[0]?.name : ""}
               </Typography>
             </Box>
           </Box>
