@@ -1,10 +1,27 @@
-import { Box } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 import React from "react";
 import Topbar from "../components/topbar/Topbar";
 import { Outlet } from "react-router-dom";
 import Sidebar from "../components/sidebar/Sidebar";
+import { useAuth } from "../contexts/AuthContext";
 
 const AuthLayout = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <CircularProgress />
+      </div>
+    );
+  }
   return (
     <Box sx={{ display: "flex" }}>
       <Sidebar />

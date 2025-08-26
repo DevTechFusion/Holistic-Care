@@ -18,9 +18,13 @@ import SidebarConfig from "./SidebarConfig";
 import logo from "../../assets/images/logo.svg";
 import { logout } from "../../DAL/auth";
 import { enqueueSnackbar } from "notistack";
+import { useAuth } from "../../contexts/AuthContext";
 
 const Sidebar = () => {
   const [openDropdowns, setOpenDropdowns] = useState({});
+
+  const { user } = useAuth();
+
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -90,7 +94,7 @@ const Sidebar = () => {
         }}
       >
         <List>
-          {SidebarConfig.map((item) => {
+          {(SidebarConfig[user?.roles[0]?.name] || []).map((item) => {
             const parentActive =
               isActive(item.path) ||
               (item.children &&

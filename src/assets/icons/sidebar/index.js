@@ -5,3 +5,4 @@ export {default as AgentIcon} from './agent.svg';
 export {default as DoctorIcon} from './doctor.svg';
 export {default as ManagerIcon} from './manager.svg';
 export {default as ReportIcon} from './reports.svg';
+export {default as ComplaintIcon} from './complaint.svg';
