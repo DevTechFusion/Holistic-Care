@@ -27,6 +27,9 @@ class Appointment extends Model
         'category_id',
         'department_id',
         'source_id',
+        'remarks_1_id',
+        'remarks_2_id',
+        'status_id',
     ];
 
     /**
@@ -86,10 +89,29 @@ class Appointment extends Model
         return $this->belongsTo(User::class, 'agent_id');
     }
 
+    /**
+     * Get the remarks1 for this appointment.
+     */
+    public function remarks1()
+    {
+        return $this->belongsTo(Remarks1::class);
+    }
 
+    /**
+     * Get the remarks2 for this appointment.
+     */
+    public function remarks2()
+    {
+        return $this->belongsTo(Remarks2::class);
+    }
 
-
-
+    /**
+     * Get the status for this appointment.
+     */
+    public function status()
+    {
+        return $this->belongsTo(Status::class);
+    }
     /**
      * Get the reports for this appointment.
      */

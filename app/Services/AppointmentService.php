@@ -17,7 +17,7 @@ class AppointmentService extends CrudeService
     public function getAllAppointments($perPage = 20, $page = 1, $orderBy = 'date', $format = 'desc')
     {
         return $this->_paginate($perPage, $page, [], [
-            'doctor', 'procedure', 'category', 'department', 'source', 'agent'
+            'doctor', 'procedure', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
         ]);
     }
 
@@ -27,7 +27,7 @@ class AppointmentService extends CrudeService
     public function getAppointmentById($id)
     {
         return $this->_find($id, [
-            'doctor', 'procedure', 'category', 'department', 'source', 'agent'
+            'doctor', 'procedure', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
         ]);
     }
 
@@ -46,7 +46,7 @@ class AppointmentService extends CrudeService
     {
         $this->_update($id, $data);
         return $this->_find($id, [
-            'doctor', 'procedure', 'category', 'department', 'source', 'agent'
+            'doctor', 'procedure', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
         ]);
     }
 
@@ -65,7 +65,7 @@ class AppointmentService extends CrudeService
     {
         $query = $this->model
             ->byDateRange($startDate, $endDate)
-            ->with(['doctor', 'procedure', 'category', 'department', 'source', 'agent']);
+            ->with(['doctor', 'procedure', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status']);
 
         return $query->paginate($perPage, ['*'], 'page', $page);
     }
@@ -77,7 +77,7 @@ class AppointmentService extends CrudeService
     {
         $query = $this->model
             ->byDoctor($doctorId)
-            ->with(['doctor', 'procedure', 'category', 'department', 'source', 'agent']);
+            ->with(['doctor', 'procedure', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status']);
 
         return $query->paginate($perPage, ['*'], 'page', $page);
     }
@@ -89,7 +89,7 @@ class AppointmentService extends CrudeService
     {
         $query = $this->model
             ->byDepartment($departmentId)
-            ->with(['doctor', 'procedure', 'category', 'department', 'source', 'agent']);
+            ->with(['doctor', 'procedure', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status']);
 
         return $query->paginate($perPage, ['*'], 'page', $page);
     }
@@ -101,7 +101,7 @@ class AppointmentService extends CrudeService
     {
         $query = $this->model
             ->byCategory($categoryId)
-            ->with(['doctor', 'procedure', 'category', 'department', 'source', 'agent']);
+            ->with(['doctor', 'procedure', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status']);
 
         return $query->paginate($perPage, ['*'], 'page', $page);
     }
@@ -113,7 +113,7 @@ class AppointmentService extends CrudeService
     {
         $query = $this->model
             ->bySource($sourceId)
-            ->with(['doctor', 'procedure', 'category', 'department', 'source', 'agent']);
+            ->with(['doctor', 'procedure', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status']);
 
         return $query->paginate($perPage, ['*'], 'page', $page);
     }
@@ -127,7 +127,7 @@ class AppointmentService extends CrudeService
     {
         return $this->model
             ->whereDate('date', $date)
-            ->with(['doctor', 'procedure', 'category', 'department', 'source', 'agent'])
+            ->with(['doctor', 'procedure', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'])
             ->get();
     }
 

@@ -55,6 +55,9 @@ class AppointmentController extends Controller
                 'category_id' => 'required|exists:categories,id',
                 'department_id' => 'required|exists:departments,id',
                 'source_id' => 'required|exists:sources,id',
+                'remarks_1_id' => 'nullable|exists:remarks_1,id',
+                'remarks_2_id' => 'nullable|exists:remarks_2,id',
+                'status_id' => 'nullable|exists:statuses,id',
                 'notes' => 'nullable|string',
                 'mr_number' => 'nullable|string|max:255',
             ]);
@@ -120,6 +123,9 @@ class AppointmentController extends Controller
                 'category_id' => 'sometimes|required|exists:categories,id',
                 'department_id' => 'sometimes|required|exists:departments,id',
                 'source_id' => 'sometimes|required|exists:sources,id',
+                'remarks_1_id' => 'nullable|exists:remarks_1,id',
+                'remarks_2_id' => 'nullable|exists:remarks_2,id',
+                'status_id' => 'nullable|exists:statuses,id',
                 'notes' => 'nullable|string',
                 'mr_number' => 'nullable|string|max:255',
             ]);
