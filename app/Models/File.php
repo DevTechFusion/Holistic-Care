@@ -79,12 +79,44 @@ class File extends Model
      */
     public function getUrl(): string
     {
-        if ($this->is_public) {
-            return Storage::disk($this->disk)->url($this->path);
+        if ($this->is_public && $this->diskSupportsUrl()) {
+            try {
+                $disk = Storage::disk($this->disk);
+                
+                // Use reflection or direct call based on disk type
+                if ($this->disk === 'public' || $this->disk === 's3' || method_exists($disk, 'url')) {
+                    return call_user_func([$disk, 'url'], $this->path);
+                }
+                
+                // Fallback to API endpoint
+                return url('/api/files/' . $this->id . '/view');
+            } catch (\Exception $e) {
+                // If URL generation fails, fallback to API endpoint
+                return url('/api/files/' . $this->id . '/view');
+            }
         }
 
-        // For private files, return a secure URL through the API
-        return url('/api/files/' . $this->id . '/download');
+        // For private files or disks without URL support, return a secure URL through the API
+        return url('/api/files/' . $this->id . ($this->is_public ? '/view' : '/download'));
+    }
+
+    /**
+     * Check if the disk supports URL generation.
+     */
+    protected function diskSupportsUrl(): bool
+    {
+        try {
+            $disk = Storage::disk($this->disk);
+            
+            // Check if it's a public disk with URL configuration
+            $config = config("filesystems.disks.{$this->disk}");
+            
+            return isset($config['url']) || 
+                   (isset($config['driver']) && in_array($config['driver'], ['s3', 'gcs'])) ||
+                   method_exists($disk, 'url');
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 
     /**
