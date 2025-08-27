@@ -10,6 +10,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class User extends Authenticatable
@@ -74,6 +75,14 @@ class User extends Authenticatable
             ->where('type', 'profile_picture')
             ->whereNull('expires_at')
             ->orWhere('expires_at', '>', now());
+    }
+
+    /**
+     * Incentives earned by this user (as agent).
+     */
+    public function incentives(): HasMany
+    {
+        return $this->hasMany(Incentive::class, 'agent_id');
     }
 
     /**

@@ -20,6 +20,7 @@ Route::middleware(['sanctum.token', 'auth:sanctum'])->group(function () {
     Route::apiResource('users', App\Http\Controllers\Api\UserController::class);
     Route::post('users/{id}/assign-role', [App\Http\Controllers\Api\UserController::class, 'assignRole']);
     Route::post('users/{id}/remove-role', [App\Http\Controllers\Api\UserController::class, 'removeRole']);
+    Route::get('users/{id}/incentives', [App\Http\Controllers\Api\UserController::class, 'incentives']);
 
     // Department management routes
     Route::apiResource('departments', App\Http\Controllers\Api\DepartmentController::class);
@@ -129,4 +130,10 @@ Route::middleware(['sanctum.token', 'auth:sanctum'])->group(function () {
         Route::get('/admin/statistics', [App\Http\Controllers\Api\FileController::class, 'statistics'])->name('statistics');
         Route::post('/admin/cleanup-expired', [App\Http\Controllers\Api\FileController::class, 'cleanupExpired'])->name('cleanup-expired');
     });
+
+    // Admin Dashboard
+    Route::get('dashboard', [App\Http\Controllers\Api\AdminDashboardController::class, 'index']);
+
+    // Agent Dashboard (current authenticated agent)
+    Route::get('agent/dashboard', [App\Http\Controllers\Api\AgentDashboardController::class, 'index']);
 });

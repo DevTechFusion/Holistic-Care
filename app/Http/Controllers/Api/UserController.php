@@ -8,6 +8,7 @@ use App\Http\Requests\User\CheckPermissionRequest;
 use App\Http\Requests\User\CreateUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Services\UserService;
+use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
@@ -326,6 +327,51 @@ class UserController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to fetch users by roles',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * List incentives for a specific user, with optional date range filters
+     */
+    public function incentives($id, Request $request)
+    {
+        try {
+            $request->validate([
+                'start_date' => 'nullable|date',
+                'end_date' => 'nullable|date|after_or_equal:start_date',
+                'per_page' => 'nullable|integer|min:1',
+                'page' => 'nullable|integer|min:1',
+            ]);
+
+            $perPage = (int) $request->get('per_page', 20);
+            $page = (int) $request->get('page', 1);
+
+            $user = $this->userService->getUserById($id);
+            if (!$user) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'User not found'
+                ], 404);
+            }
+
+            $query = $user->incentives();
+            if ($request->filled('start_date') && $request->filled('end_date')) {
+                $query->whereBetween('created_at', [$request->start_date, $request->end_date]);
+            }
+
+            $incentives = $query->orderByDesc('created_at')
+                ->paginate($perPage, ['*'], 'page', $page);
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $incentives
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch incentives',
                 'error' => $e->getMessage()
             ], 500);
         }

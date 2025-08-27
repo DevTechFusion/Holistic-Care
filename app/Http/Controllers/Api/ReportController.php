@@ -315,13 +315,20 @@ class ReportController extends Controller
     {
         try {
             $request->validate([
-                'search' => 'required|string|min:2'
+                'search' => 'nullable|string|min:2',
+                'start_date' => 'nullable|date',
+                'end_date' => 'nullable|date|after_or_equal:start_date',
+                'type' => 'nullable|string',
+                'generated_by' => 'nullable|integer|exists:users,id',
+                'appointment_id' => 'nullable|integer|exists:appointments,id',
             ]);
 
             $perPage = request()->get('per_page', 20);
             $page = request()->get('page', 1);
-            $reports = $this->reportService->searchReports(
-                $request->search, $perPage, $page
+            $reports = $this->reportService->filterReports(
+                $request->only(['search', 'start_date', 'end_date', 'type', 'generated_by', 'appointment_id']),
+                $perPage,
+                $page
             );
 
             return response()->json([

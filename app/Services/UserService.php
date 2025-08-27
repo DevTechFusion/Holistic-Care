@@ -17,7 +17,9 @@ class UserService extends CrudeService
      */
     public function getAllUsers($perPage = 15, $page = 1)
     {
-        return $this->_paginate($perPage, $page, null, ['roles', 'permissions']);
+        return $this->model->with(['roles', 'permissions'])
+            ->withSum('incentives as incentives_sum', 'incentive_amount')
+            ->paginate($perPage, ['*'], 'page', $page);
     }
 
     /**
@@ -25,7 +27,9 @@ class UserService extends CrudeService
      */
     public function getUserById($id)
     {
-        return $this->_find($id, ['roles', 'permissions']);
+        return $this->model->with(['roles', 'permissions'])
+            ->withSum('incentives as incentives_sum', 'incentive_amount')
+            ->find($id);
     }
 
     /**
@@ -33,7 +37,10 @@ class UserService extends CrudeService
      */
     public function getUserByEmail($email)
     {
-        return $this->_findBy(['email' => $email], ['roles', 'permissions']);
+        return $this->model->where('email', $email)
+            ->with(['roles', 'permissions'])
+            ->withSum('incentives as incentives_sum', 'incentive_amount')
+            ->first();
     }
 
     /**
@@ -90,31 +97,33 @@ class UserService extends CrudeService
     public function deleteUser($id)
     {
         $user = $this->_find($id);
-
-        // Prevent deletion of super admin
-        if ($user->hasRole('super_admin')) {
-            throw new \Exception('Cannot delete super admin user');
-        }
-
         return $this->_delete($id);
     }
 
     /**
-     * Assign role to user
+     * Assign role to a user
      */
-    public function assignRole($userId, $roleName)
+    public function assignRole($id, string $role)
     {
-        $user = $this->_find($userId);
-        return $user->assignRole($roleName);
+        $user = $this->_find($id);
+        if (!$user) {
+            throw new \Exception('User not found');
+        }
+        $user->assignRole($role);
+        return $user->load('roles', 'permissions');
     }
 
     /**
-     * Remove role from user
+     * Remove role from a user
      */
-    public function removeRole($userId, $roleName)
+    public function removeRole($id, string $role)
     {
-        $user = $this->_find($userId);
-        return $user->removeRole($roleName);
+        $user = $this->_find($id);
+        if (!$user) {
+            throw new \Exception('User not found');
+        }
+        $user->removeRole($role);
+        return $user->load('roles', 'permissions');
     }
 
     /**
@@ -122,7 +131,7 @@ class UserService extends CrudeService
      */
     public function getAllRoles()
     {
-        return app(\Spatie\Permission\Models\Role::class)->all();
+        return \Spatie\Permission\Models\Role::all();
     }
 
     /**
@@ -130,26 +139,17 @@ class UserService extends CrudeService
      */
     public function getAllPermissions()
     {
-        return app(\Spatie\Permission\Models\Permission::class)->all();
+        return \Spatie\Permission\Models\Permission::all();
     }
 
     /**
-     * Get users by role(s)
+     * Get users filtered by roles
      */
-    public function getUsersByRoles($roles, $perPage = 15, $page = 1)
+    public function getUsersByRoles(array $roles, $perPage = 15, $page = 1)
     {
-        if (is_string($roles)) {
-            $roles = [$roles];
-        }
-
-        $query = $this->model->whereHas('roles', function ($q) use ($roles) {
-            $q->whereIn('name', $roles);
-        })->with(['roles', 'permissions']);
-
-        if ($perPage > 0) {
-            return $query->paginate($perPage, ['*'], 'page', $page);
-        }
-
-        return $query->get();
+        return $this->model->role($roles)
+            ->with(['roles', 'permissions'])
+            ->withSum('incentives as incentives_sum', 'incentive_amount')
+            ->paginate($perPage, ['*'], 'page', $page);
     }
 }

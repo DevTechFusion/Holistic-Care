@@ -1,0 +1,1552 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{booktabs}
+
+\geometry{left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{API Request Bodies Documentation}
+\lhead{Holisted Medical System}
+\cfoot{\thepage}
+
+\lstset{
+    basicstyle=\footnotesize\ttfamily,
+    backgroundcolor=\color{gray!10},
+    frame=single,
+    breaklines=true,
+    captionpos=b
+}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=cyan,
+}
+
+\title{\textbf{Holisted Medical System\\API Request Bodies Documentation}}
+\author{Generated from Laravel Codebase Analysis}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Introduction}
+
+This document provides comprehensive documentation for all API request bodies in the Holisted Medical System. The system is built using Laravel 10 and follows RESTful API principles with Laravel's resource routing conventions.
+
+All API endpoints require authentication using Laravel Sanctum, except for login and register endpoints. The base URL for all endpoints is \texttt{/api/}.
+
+\section{Authentication Endpoints}
+
+\subsection{User Registration}
+\textbf{Endpoint:} \texttt{POST /api/register}\\
+\textbf{Form Request Class:} \texttt{RegisterRequest}
+
+\begin{lstlisting}[caption=Register Request Body]
+{
+    "name": "string (required, max: 255)",
+    "email": "string (required, email, unique, max: 255)",
+    "password": "string (required, min: 8, confirmed)",
+    "password_confirmation": "string (required, must match password)",
+    "role": "string (optional, must exist in roles table)"
+}
+\end{lstlisting}
+
+\textbf{Example Request:}
+\begin{lstlisting}[caption=Register Example Request]
+{
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "password": "securePassword123",
+    "password_confirmation": "securePassword123",
+    "role": "agent"
+}
+\end{lstlisting}
+
+\textbf{Example Response:}
+\begin{lstlisting}[caption=Register Example Response]
+{
+    "status": "success",
+    "message": "User registered successfully",
+    "data": {
+        "user": {
+            "id": 1,
+            "name": "John Doe",
+            "email": "john.doe@example.com",
+            "created_at": "2024-01-15T10:30:00.000000Z",
+            "updated_at": "2024-01-15T10:30:00.000000Z"
+        },
+        "token": "1|abcdef123456789..."
+    }
+}
+\end{lstlisting}
+
+\subsection{User Login}
+\textbf{Endpoint:} \texttt{POST /api/login}\\
+\textbf{Form Request Class:} \texttt{LoginRequest}
+
+\begin{lstlisting}[caption=Login Request Body]
+{
+    "email": "string (required, email format)",
+    "password": "string (required)"
+}
+\end{lstlisting}
+
+\textbf{Example Request:}
+\begin{lstlisting}[caption=Login Example Request]
+{
+    "email": "john.doe@example.com",
+    "password": "securePassword123"
+}
+\end{lstlisting}
+
+\textbf{Example Response:}
+\begin{lstlisting}[caption=Login Example Response]
+{
+    "status": "success",
+    "message": "User logged in successfully",
+    "data": {
+        "user": {
+            "id": 1,
+            "name": "John Doe",
+            "email": "john.doe@example.com",
+            "roles": ["agent"]
+        },
+        "token": "2|xyz789def456abc..."
+    }
+}
+\end{lstlisting}
+
+\section{User Management}
+
+\subsection{Create User}
+\textbf{Endpoint:} \texttt{POST /api/users}\\
+\textbf{Form Request Class:} \texttt{CreateUserRequest}
+
+\begin{lstlisting}[caption=Create User Request Body]
+{
+    "name": "string (required, max: 255)",
+    "email": "string (required, email, unique, max: 255)",
+    "password": "string (required, min: 8)",
+    "role": "string (optional, must exist in roles table)"
+}
+\end{lstlisting}
+
+\textbf{Example Request:}
+\begin{lstlisting}[caption=Create User Example Request]
+{
+    "name": "Jane Smith",
+    "email": "jane.smith@example.com",
+    "password": "mySecurePass456",
+    "role": "doctor"
+}
+\end{lstlisting}
+
+\textbf{Example Response:}
+\begin{lstlisting}[caption=Create User Example Response]
+{
+    "status": "success",
+    "message": "User created successfully",
+    "data": {
+        "id": 2,
+        "name": "Jane Smith",
+        "email": "jane.smith@example.com",
+        "roles": ["doctor"],
+        "created_at": "2024-01-15T11:00:00.000000Z",
+        "updated_at": "2024-01-15T11:00:00.000000Z"
+    }
+}
+\end{lstlisting}
+
+\subsection{Update User}
+\textbf{Endpoint:} \texttt{PUT/PATCH /api/users/\{id\}}\\
+\textbf{Form Request Class:} \texttt{UpdateUserRequest}
+
+\begin{lstlisting}[caption=Update User Request Body]
+{
+    "name": "string (required, max: 255)",
+    "email": "string (required, email, unique except current, max: 255)",
+    "password": "string (optional, min: 8)",
+    "role": "string (optional, must exist in roles table)"
+}
+\end{lstlisting}
+
+\textbf{Example Request:}
+\begin{lstlisting}[caption=Update User Example Request]
+{
+    "name": "Jane Smith Updated",
+    "email": "jane.smith.updated@example.com",
+    "role": "admin"
+}
+\end{lstlisting}
+
+\textbf{Example Response:}
+\begin{lstlisting}[caption=Update User Example Response]
+{
+    "status": "success",
+    "message": "User updated successfully",
+    "data": {
+        "id": 2,
+        "name": "Jane Smith Updated",
+        "email": "jane.smith.updated@example.com",
+        "roles": ["admin"],
+        "created_at": "2024-01-15T11:00:00.000000Z",
+        "updated_at": "2024-01-15T11:30:00.000000Z"
+    }
+}
+\end{lstlisting}
+
+\subsection{Assign Role to User}
+\textbf{Endpoint:} \texttt{POST /api/users/\{id\}/assign-role}\\
+\textbf{Form Request Class:} \texttt{AssignRoleRequest}
+
+\begin{lstlisting}[caption=Assign Role Request Body]
+{
+    "role": "string (required, must exist in roles table)"
+}
+\end{lstlisting}
+
+\textbf{Example Request:}
+\begin{lstlisting}[caption=Assign Role Example Request]
+{
+    "role": "super-admin"
+}
+\end{lstlisting}
+
+\textbf{Example Response:}
+\begin{lstlisting}[caption=Assign Role Example Response]
+{
+    "status": "success",
+    "message": "Role assigned successfully",
+    "data": {
+        "user": {
+            "id": 2,
+            "name": "Jane Smith Updated",
+            "email": "jane.smith.updated@example.com",
+            "roles": ["super-admin"]
+        }
+    }
+}
+\end{lstlisting}
+
+\subsection{Check User Permission}
+\textbf{Endpoint:} \texttt{POST /api/user/check-permission}\\
+\textbf{Form Request Class:} \texttt{CheckPermissionRequest}
+
+\begin{lstlisting}[caption=Check Permission Request Body]
+{
+    "permission": "string (required)"
+}
+\end{lstlisting}
+
+\textbf{Example Request:}
+\begin{lstlisting}[caption=Check Permission Example Request]
+{
+    "permission": "users.create"
+}
+\end{lstlisting}
+
+\textbf{Example Response:}
+\begin{lstlisting}[caption=Check Permission Example Response]
+{
+    "status": "success",
+    "message": "Permission check completed",
+    "data": {
+        "has_permission": true,
+        "permission": "users.create",
+        "user_roles": ["super-admin"]
+    }
+}
+\end{lstlisting}
+
+\section{Department Management}
+
+\subsection{Create Department}
+\textbf{Endpoint:} \texttt{POST /api/departments}\\
+\textbf{Form Request Class:} \texttt{CreateDepartmentRequest}
+
+\begin{lstlisting}[caption=Create Department Request Body]
+{
+    "name": "string (required, unique, max: 255)"
+}
+\end{lstlisting}
+
+\textbf{Example Request:}
+\begin{lstlisting}[caption=Create Department Example Request]
+{
+    "name": "Neurology"
+}
+\end{lstlisting}
+
+\textbf{Example Response:}
+\begin{lstlisting}[caption=Create Department Example Response]
+{
+    "status": "success",
+    "message": "Department created successfully",
+    "data": {
+        "id": 3,
+        "name": "Neurology",
+        "created_at": "2024-01-15T12:00:00.000000Z",
+        "updated_at": "2024-01-15T12:00:00.000000Z"
+    }
+}
+\end{lstlisting}
+
+\subsection{Update Department}
+\textbf{Endpoint:} \texttt{PUT/PATCH /api/departments/\{id\}}\\
+\textbf{Form Request Class:} \texttt{UpdateDepartmentRequest}
+
+\begin{lstlisting}[caption=Update Department Request Body]
+{
+    "name": "string (required, unique except current, max: 255)"
+}
+\end{lstlisting}
+
+\textbf{Example Request:}
+\begin{lstlisting}[caption=Update Department Example Request]
+{
+    "name": "Neurological Sciences"
+}
+\end{lstlisting}
+
+\textbf{Example Response:}
+\begin{lstlisting}[caption=Update Department Example Response]
+{
+    "status": "success",
+    "message": "Department updated successfully",
+    "data": {
+        "id": 3,
+        "name": "Neurological Sciences",
+        "created_at": "2024-01-15T12:00:00.000000Z",
+        "updated_at": "2024-01-15T12:15:00.000000Z"
+    }
+}
+\end{lstlisting}
+
+\section{Doctor Management}
+
+\subsection{Create Doctor}
+\textbf{Endpoint:} \texttt{POST /api/doctors}\\
+\textbf{Form Request Class:} \texttt{CreateDoctorRequest}
+
+\begin{lstlisting}[caption=Create Doctor Request Body]
+{
+    "name": "string (required, max: 255)",
+    "phone_number": "string (required, max: 20)",
+    "department_id": "integer (required, must exist in departments)",
+    "procedures": "array (required, min: 1 item)",
+    "procedures.*": "integer (each must exist in procedures table)",
+    "availability": "array (optional)",
+    "availability.*.available": "boolean",
+    "availability.*.start_time": "string (required if available=true, format: HH:MM)",
+    "availability.*.end_time": "string (required if available=true, format: HH:MM, after start_time)"
+}
+\end{lstlisting}
+
+\textbf{Example Request:}
+\begin{lstlisting}[caption=Create Doctor Example Request]
+{
+    "name": "Dr. Sarah Johnson",
+    "phone_number": "+1-555-0199",
+    "department_id": 3,
+    "procedures": [1, 4, 7],
+    "availability": [
+        {
+            "available": true,
+            "start_time": "08:00",
+            "end_time": "16:00"
+        },
+        {
+            "available": true,
+            "start_time": "09:00",
+            "end_time": "15:00"
+        },
+        {
+            "available": false
+        },
+        {
+            "available": true,
+            "start_time": "10:00",
+            "end_time": "18:00"
+        },
+        {
+            "available": true,
+            "start_time": "08:30",
+            "end_time": "17:30"
+        },
+        {
+            "available": false
+        },
+        {
+            "available": false
+        }
+    ]
+}
+\end{lstlisting}
+
+\textbf{Example Response:}
+\begin{lstlisting}[caption=Create Doctor Example Response]
+{
+    "status": "success",
+    "message": "Doctor created successfully",
+    "data": {
+        "id": 4,
+        "name": "Dr. Sarah Johnson",
+        "phone_number": "+1-555-0199",
+        "department_id": 3,
+        "availability": [
+            {"available": true, "start_time": "08:00", "end_time": "16:00"},
+            {"available": true, "start_time": "09:00", "end_time": "15:00"},
+            {"available": false},
+            {"available": true, "start_time": "10:00", "end_time": "18:00"},
+            {"available": true, "start_time": "08:30", "end_time": "17:30"},
+            {"available": false},
+            {"available": false}
+        ],
+        "department": {
+            "id": 3,
+            "name": "Neurological Sciences"
+        },
+        "procedures": [
+            {"id": 1, "name": "MRI Scan"},
+            {"id": 4, "name": "CT Scan"},
+            {"id": 7, "name": "EEG"}
+        ],
+        "created_at": "2024-01-15T13:00:00.000000Z",
+        "updated_at": "2024-01-15T13:00:00.000000Z"
+    }
+}
+\end{lstlisting}
+
+\subsection{Update Doctor}
+\textbf{Endpoint:} \texttt{PUT/PATCH /api/doctors/\{id\}}\\
+\textbf{Form Request Class:} \texttt{UpdateDoctorRequest}
+
+\begin{lstlisting}[caption=Update Doctor Request Body]
+{
+    "name": "string (sometimes required, max: 255)",
+    "phone_number": "string (sometimes required, max: 20)",
+    "department_id": "integer (sometimes required, must exist in departments)",
+    "procedures": "array (sometimes required, min: 1 item)",
+    "procedures.*": "integer (each must exist in procedures table)",
+    "availability": "array (sometimes optional)",
+    "availability.*.available": "boolean",
+    "availability.*.start_time": "string (required if available=true, format: HH:MM)",
+    "availability.*.end_time": "string (required if available=true, format: HH:MM, after start_time)"
+}
+\end{lstlisting}
+
+\textbf{Example Request:}
+\begin{lstlisting}[caption=Update Doctor Example Request]
+{
+    "name": "Dr. Sarah Johnson-Smith",
+    "phone_number": "+1-555-0299",
+    "procedures": [1, 4, 7, 9]
+}
+\end{lstlisting}
+
+\textbf{Example Response:}
+\begin{lstlisting}[caption=Update Doctor Example Response]
+{
+    "status": "success",
+    "message": "Doctor updated successfully",
+    "data": {
+        "id": 4,
+        "name": "Dr. Sarah Johnson-Smith",
+        "phone_number": "+1-555-0299",
+        "department_id": 3,
+        "availability": [
+            {"available": true, "start_time": "08:00", "end_time": "16:00"},
+            {"available": true, "start_time": "09:00", "end_time": "15:00"},
+            {"available": false},
+            {"available": true, "start_time": "10:00", "end_time": "18:00"},
+            {"available": true, "start_time": "08:30", "end_time": "17:30"},
+            {"available": false},
+            {"available": false}
+        ],
+        "department": {
+            "id": 3,
+            "name": "Neurological Sciences"
+        },
+        "procedures": [
+            {"id": 1, "name": "MRI Scan"},
+            {"id": 4, "name": "CT Scan"},
+            {"id": 7, "name": "EEG"},
+            {"id": 9, "name": "Lumbar Puncture"}
+        ],
+        "created_at": "2024-01-15T13:00:00.000000Z",
+        "updated_at": "2024-01-15T13:30:00.000000Z"
+    }
+}
+\end{lstlisting}
+
+\section{Procedure Management}
+
+\subsection{Create Procedure}
+\textbf{Endpoint:} \texttt{POST /api/procedures}\\
+\textbf{Form Request Class:} \texttt{CreateProcedureRequest}
+
+\begin{lstlisting}[caption=Create Procedure Request Body]
+{
+    "name": "string (required, unique, max: 255)"
+}
+\end{lstlisting}
+
+\textbf{Example Request:}
+\begin{lstlisting}[caption=Create Procedure Example Request]
+{
+    "name": "Ultrasound Imaging"
+}
+\end{lstlisting}
+
+\textbf{Example Response:}
+\begin{lstlisting}[caption=Create Procedure Example Response]
+{
+    "status": "success",
+    "message": "Procedure created successfully",
+    "data": {
+        "id": 10,
+        "name": "Ultrasound Imaging",
+        "created_at": "2024-01-15T14:00:00.000000Z",
+        "updated_at": "2024-01-15T14:00:00.000000Z"
+    }
+}
+\end{lstlisting}
+
+\subsection{Update Procedure}
+\textbf{Endpoint:} \texttt{PUT/PATCH /api/procedures/\{id\}}\\
+\textbf{Form Request Class:} \texttt{UpdateProcedureRequest}
+
+\begin{lstlisting}[caption=Update Procedure Request Body]
+{
+    "name": "string (required, unique except current, max: 255)"
+}
+\end{lstlisting}
+
+\textbf{Example Request:}
+\begin{lstlisting}[caption=Update Procedure Example Request]
+{
+    "name": "Advanced Ultrasound Imaging"
+}
+\end{lstlisting}
+
+\textbf{Example Response:}
+\begin{lstlisting}[caption=Update Procedure Example Response]
+{
+    "status": "success",
+    "message": "Procedure updated successfully",
+    "data": {
+        "id": 10,
+        "name": "Advanced Ultrasound Imaging",
+        "created_at": "2024-01-15T14:00:00.000000Z",
+        "updated_at": "2024-01-15T14:15:00.000000Z"
+    }
+}
+\end{lstlisting}
+
+\section{Category Management}
+
+\subsection{Create Category}
+\textbf{Endpoint:} \texttt{POST /api/categories}\\
+\textbf{Validation:} Inline validation in controller
+
+\begin{lstlisting}[caption=Create Category Request Body]
+{
+    "name": "string (required, unique, max: 255)"
+}
+\end{lstlisting}
+
+\textbf{Example Request:}
+\begin{lstlisting}[caption=Create Category Example Request]
+{
+    "name": "Emergency"
+}
+\end{lstlisting}
+
+\textbf{Example Response:}
+\begin{lstlisting}[caption=Create Category Example Response]
+{
+    "status": "success",
+    "message": "Category created successfully",
+    "data": {
+        "id": 5,
+        "name": "Emergency",
+        "created_at": "2024-01-15T14:30:00.000000Z",
+        "updated_at": "2024-01-15T14:30:00.000000Z"
+    }
+}
+\end{lstlisting}
+
+\subsection{Update Category}
+\textbf{Endpoint:} \texttt{PUT/PATCH /api/categories/\{id\}}\\
+\textbf{Validation:} Inline validation in controller
+
+\begin{lstlisting}[caption=Update Category Request Body]
+{
+    "name": "string (required, unique except current, max: 255)"
+}
+\end{lstlisting}
+
+\textbf{Example Request:}
+\begin{lstlisting}[caption=Update Category Example Request]
+{
+    "name": "Emergency Care"
+}
+\end{lstlisting}
+
+\textbf{Example Response:}
+\begin{lstlisting}[caption=Update Category Example Response]
+{
+    "status": "success",
+    "message": "Category updated successfully",
+    "data": {
+        "id": 5,
+        "name": "Emergency Care",
+        "created_at": "2024-01-15T14:30:00.000000Z",
+        "updated_at": "2024-01-15T14:45:00.000000Z"
+    }
+}
+\end{lstlisting}
+
+\section{Source Management}
+
+\subsection{Create Source}
+\textbf{Endpoint:} \texttt{POST /api/sources}\\
+\textbf{Validation:} Inline validation in controller
+
+\begin{lstlisting}[caption=Create Source Request Body]
+{
+    "name": "string (required, unique, max: 255)"
+}
+\end{lstlisting}
+
+\textbf{Example Request:}
+\begin{lstlisting}[caption=Create Source Example Request]
+{
+    "name": "Online Booking"
+}
+\end{lstlisting}
+
+\textbf{Example Response:}
+\begin{lstlisting}[caption=Create Source Example Response]
+{
+    "status": "success",
+    "message": "Source created successfully",
+    "data": {
+        "id": 6,
+        "name": "Online Booking",
+        "created_at": "2024-01-15T15:00:00.000000Z",
+        "updated_at": "2024-01-15T15:00:00.000000Z"
+    }
+}
+\end{lstlisting}
+
+\subsection{Update Source}
+\textbf{Endpoint:} \texttt{PUT/PATCH /api/sources/\{id\}}\\
+\textbf{Validation:} Inline validation in controller
+
+\begin{lstlisting}[caption=Update Source Request Body]
+{
+    "name": "string (required, unique except current, max: 255)"
+}
+\end{lstlisting}
+
+\textbf{Example Request:}
+\begin{lstlisting}[caption=Update Source Example Request]
+{
+    "name": "Online Portal Booking"
+}
+\end{lstlisting}
+
+\textbf{Example Response:}
+\begin{lstlisting}[caption=Update Source Example Response]
+{
+    "status": "success",
+    "message": "Source updated successfully",
+    "data": {
+        "id": 6,
+        "name": "Online Portal Booking",
+        "created_at": "2024-01-15T15:00:00.000000Z",
+        "updated_at": "2024-01-15T15:15:00.000000Z"
+    }
+}
+\end{lstlisting}
+
+\section{Status Management}
+
+\subsection{Create Status}
+\textbf{Endpoint:} \texttt{POST /api/statuses}\\
+\textbf{Validation:} Inline validation in controller
+
+\begin{lstlisting}[caption=Create Status Request Body]
+{
+    "name": "string (required, unique, max: 255)"
+}
+\end{lstlisting}
+
+\textbf{Example Request:}
+\begin{lstlisting}[caption=Create Status Example Request]
+{
+    "name": "In Progress"
+}
+\end{lstlisting}
+
+\textbf{Example Response:}
+\begin{lstlisting}[caption=Create Status Example Response]
+{
+    "status": "success",
+    "message": "Status created successfully",
+    "data": {
+        "id": 7,
+        "name": "In Progress",
+        "created_at": "2024-01-15T15:30:00.000000Z",
+        "updated_at": "2024-01-15T15:30:00.000000Z"
+    }
+}
+\end{lstlisting}
+
+\subsection{Update Status}
+\textbf{Endpoint:} \texttt{PUT/PATCH /api/statuses/\{id\}}\\
+\textbf{Validation:} Inline validation in controller
+
+\begin{lstlisting}[caption=Update Status Request Body]
+{
+    "name": "string (required, unique except current, max: 255)"
+}
+\end{lstlisting}
+
+\textbf{Example Request:}
+\begin{lstlisting}[caption=Update Status Example Request]
+{
+    "name": "Processing"
+}
+\end{lstlisting}
+
+\textbf{Example Response:}
+\begin{lstlisting}[caption=Update Status Example Response]
+{
+    "status": "success",
+    "message": "Status updated successfully",
+    "data": {
+        "id": 7,
+        "name": "Processing",
+        "created_at": "2024-01-15T15:30:00.000000Z",
+        "updated_at": "2024-01-15T15:45:00.000000Z"
+    }
+}
+\end{lstlisting}
+
+\section{Remarks Management}
+
+\subsection{Remarks1}
+
+\subsubsection{Create Remarks1}
+\textbf{Endpoint:} \texttt{POST /api/remarks1}\\
+\textbf{Validation:} Inline validation in controller
+
+\begin{lstlisting}[caption=Create Remarks1 Request Body]
+{
+    "name": "string (required, unique in remarks_1 table, max: 255)"
+}
+\end{lstlisting}
+
+\textbf{Example Request:}
+\begin{lstlisting}[caption=Create Remarks1 Example Request]
+{
+    "name": "Patient arrived early"
+}
+\end{lstlisting}
+
+\textbf{Example Response:}
+\begin{lstlisting}[caption=Create Remarks1 Example Response]
+{
+    "status": "success",
+    "message": "Remarks1 created successfully",
+    "data": {
+        "id": 8,
+        "name": "Patient arrived early",
+        "created_at": "2024-01-15T16:00:00.000000Z",
+        "updated_at": "2024-01-15T16:00:00.000000Z"
+    }
+}
+\end{lstlisting}
+
+\subsubsection{Update Remarks1}
+\textbf{Endpoint:} \texttt{PUT/PATCH /api/remarks1/\{id\}}\\
+\textbf{Validation:} Inline validation in controller
+
+\begin{lstlisting}[caption=Update Remarks1 Request Body]
+{
+    "name": "string (required, unique except current in remarks_1 table, max: 255)"
+}
+\end{lstlisting}
+
+\textbf{Example Request:}
+\begin{lstlisting}[caption=Update Remarks1 Example Request]
+{
+    "name": "Patient arrived 15 minutes early"
+}
+\end{lstlisting}
+
+\textbf{Example Response:}
+\begin{lstlisting}[caption=Update Remarks1 Example Response]
+{
+    "status": "success",
+    "message": "Remarks1 updated successfully",
+    "data": {
+        "id": 8,
+        "name": "Patient arrived 15 minutes early",
+        "created_at": "2024-01-15T16:00:00.000000Z",
+        "updated_at": "2024-01-15T16:15:00.000000Z"
+    }
+}
+\end{lstlisting}
+
+\subsection{Remarks2}
+
+\subsubsection{Create Remarks2}
+\textbf{Endpoint:} \texttt{POST /api/remarks2}\\
+\textbf{Validation:} Inline validation in controller
+
+\begin{lstlisting}[caption=Create Remarks2 Request Body]
+{
+    "name": "string (required, unique in remarks_2 table, max: 255)"
+}
+\end{lstlisting}
+
+\textbf{Example Request:}
+\begin{lstlisting}[caption=Create Remarks2 Example Request]
+{
+    "name": "Follow-up required"
+}
+\end{lstlisting}
+
+\textbf{Example Response:}
+\begin{lstlisting}[caption=Create Remarks2 Example Response]
+{
+    "status": "success",
+    "message": "Remarks2 created successfully",
+    "data": {
+        "id": 9,
+        "name": "Follow-up required",
+        "created_at": "2024-01-15T16:30:00.000000Z",
+        "updated_at": "2024-01-15T16:30:00.000000Z"
+    }
+}
+\end{lstlisting}
+
+\subsubsection{Update Remarks2}
+\textbf{Endpoint:} \texttt{PUT/PATCH /api/remarks2/\{id\}}\\
+\textbf{Validation:} Inline validation in controller
+
+\begin{lstlisting}[caption=Update Remarks2 Request Body]
+{
+    "name": "string (required, unique except current in remarks_2 table, max: 255)"
+}
+\end{lstlisting}
+
+\textbf{Example Request:}
+\begin{lstlisting}[caption=Update Remarks2 Example Request]
+{
+    "name": "Follow-up in 2 weeks required"
+}
+\end{lstlisting}
+
+\textbf{Example Response:}
+\begin{lstlisting}[caption=Update Remarks2 Example Response]
+{
+    "status": "success",
+    "message": "Remarks2 updated successfully",
+    "data": {
+        "id": 9,
+        "name": "Follow-up in 2 weeks required",
+        "created_at": "2024-01-15T16:30:00.000000Z",
+        "updated_at": "2024-01-15T16:45:00.000000Z"
+    }
+}
+\end{lstlisting}
+
+\section{Appointment Management}
+
+\subsection{Create Appointment}
+\textbf{Endpoint:} \texttt{POST /api/appointments}\\
+\textbf{Validation:} Inline validation in controller
+
+\begin{lstlisting}[caption=Create Appointment Request Body]
+{
+    "date": "string (required, date format)",
+    "time_slot": "string (required, max: 255)",
+    "patient_name": "string (required, max: 255)",
+    "contact_number": "string (required, max: 255)",
+    "agent_id": "integer (required, must exist in users table)",
+    "doctor_id": "integer (required, must exist in doctors table)",
+    "procedure_id": "integer (required, must exist in procedures table)",
+    "category_id": "integer (required, must exist in categories table)",
+    "department_id": "integer (required, must exist in departments table)",
+    "source_id": "integer (required, must exist in sources table)",
+    "notes": "string (optional)",
+    "mr_number": "string (optional, max: 255)"
+}
+\end{lstlisting}
+
+\textbf{Example Request:}
+\begin{lstlisting}[caption=Create Appointment Example Request]
+{
+    "date": "2024-01-20",
+    "time_slot": "10:00 - 11:00",
+    "patient_name": "Michael Brown",
+    "contact_number": "+1-555-0345",
+    "agent_id": 1,
+    "doctor_id": 4,
+    "procedure_id": 1,
+    "category_id": 5,
+    "department_id": 3,
+    "source_id": 6,
+    "notes": "Patient has claustrophobia, may need sedation",
+    "mr_number": "MR2024001"
+}
+\end{lstlisting}
+
+\textbf{Example Response:}
+\begin{lstlisting}[caption=Create Appointment Example Response]
+{
+    "status": "success",
+    "message": "Appointment created successfully",
+    "data": {
+        "id": 10,
+        "date": "2024-01-20",
+        "time_slot": "10:00 - 11:00",
+        "patient_name": "Michael Brown",
+        "contact_number": "+1-555-0345",
+        "notes": "Patient has claustrophobia, may need sedation",
+        "mr_number": "MR2024001",
+        "agent": {
+            "id": 1,
+            "name": "John Doe"
+        },
+        "doctor": {
+            "id": 4,
+            "name": "Dr. Sarah Johnson-Smith"
+        },
+        "procedure": {
+            "id": 1,
+            "name": "MRI Scan"
+        },
+        "category": {
+            "id": 5,
+            "name": "Emergency Care"
+        },
+        "department": {
+            "id": 3,
+            "name": "Neurological Sciences"
+        },
+        "source": {
+            "id": 6,
+            "name": "Online Portal Booking"
+        },
+        "created_at": "2024-01-15T17:00:00.000000Z",
+        "updated_at": "2024-01-15T17:00:00.000000Z"
+    }
+}
+\end{lstlisting}
+
+\subsection{Update Appointment}
+\textbf{Endpoint:} \texttt{PUT/PATCH /api/appointments/\{id\}}\\
+\textbf{Validation:} Inline validation in controller
+
+\begin{lstlisting}[caption=Update Appointment Request Body]
+{
+    "date": "string (sometimes required, date format)",
+    "time_slot": "string (sometimes required, max: 255)",
+    "patient_name": "string (sometimes required, max: 255)",
+    "contact_number": "string (sometimes required, max: 255)",
+    "agent_id": "integer (sometimes required, must exist in users table)",
+    "doctor_id": "integer (sometimes required, must exist in doctors table)",
+    "procedure_id": "integer (sometimes required, must exist in procedures table)",
+    "category_id": "integer (sometimes required, must exist in categories table)",
+    "department_id": "integer (sometimes required, must exist in departments table)",
+    "source_id": "integer (sometimes required, must exist in sources table)",
+    "notes": "string (optional)",
+    "mr_number": "string (optional, max: 255)"
+}
+\end{lstlisting}
+
+\textbf{Example Request:}
+\begin{lstlisting}[caption=Update Appointment Example Request]
+{
+    "time_slot": "11:00 - 12:00",
+    "notes": "Patient rescheduled due to traffic. Sedation confirmed."
+}
+\end{lstlisting}
+
+\textbf{Example Response:}
+\begin{lstlisting}[caption=Update Appointment Example Response]
+{
+    "status": "success",
+    "message": "Appointment updated successfully",
+    "data": {
+        "id": 10,
+        "date": "2024-01-20",
+        "time_slot": "11:00 - 12:00",
+        "patient_name": "Michael Brown",
+        "contact_number": "+1-555-0345",
+        "notes": "Patient rescheduled due to traffic. Sedation confirmed.",
+        "mr_number": "MR2024001",
+        "agent": {
+            "id": 1,
+            "name": "John Doe"
+        },
+        "doctor": {
+            "id": 4,
+            "name": "Dr. Sarah Johnson-Smith"
+        },
+        "procedure": {
+            "id": 1,
+            "name": "MRI Scan"
+        },
+        "category": {
+            "id": 5,
+            "name": "Emergency Care"
+        },
+        "department": {
+            "id": 3,
+            "name": "Neurological Sciences"
+        },
+        "source": {
+            "id": 6,
+            "name": "Online Portal Booking"
+        },
+        "created_at": "2024-01-15T17:00:00.000000Z",
+        "updated_at": "2024-01-15T17:30:00.000000Z"
+    }
+}
+\end{lstlisting}
+
+\section{Report Management}
+
+\subsection{Create Report}
+\textbf{Endpoint:} \texttt{POST /api/reports}\\
+\textbf{Validation:} Inline validation in controller
+
+\begin{lstlisting}[caption=Create Report Request Body]
+{
+    "appointment_id": "integer (required, must exist in appointments table)",
+    "report_type": "string (required, max: 255)",
+    "summary_data": "array (optional)",
+    "notes": "string (optional)",
+    "generated_by_id": "integer (optional, must exist in users table)",
+    "amount": "numeric (optional, min: 0)",
+    "payment_method": "string (optional, max: 255)",
+    "remarks_1_id": "integer (optional, must exist in remarks_1 table)",
+    "remarks_2_id": "integer (optional, must exist in remarks_2 table)",
+    "status_id": "integer (optional, must exist in statuses table)"
+}
+\end{lstlisting}
+
+\textbf{Example Request:}
+\begin{lstlisting}[caption=Create Report Example Request]
+{
+    "appointment_id": 10,
+    "report_type": "MRI Results",
+    "summary_data": {
+        "findings": "Normal brain structure",
+        "contrast_used": true,
+        "duration": "45 minutes"
+    },
+    "notes": "Patient tolerated procedure well with mild sedation",
+    "generated_by_id": 4,
+    "amount": 1500.00,
+    "payment_method": "Insurance",
+    "remarks_1_id": 8,
+    "remarks_2_id": 9,
+    "status_id": 7
+}
+\end{lstlisting}
+
+\textbf{Example Response:}
+\begin{lstlisting}[caption=Create Report Example Response]
+{
+    "status": "success",
+    "message": "Report created successfully",
+    "data": {
+        "id": 11,
+        "appointment_id": 10,
+        "report_type": "MRI Results",
+        "summary_data": {
+            "findings": "Normal brain structure",
+            "contrast_used": true,
+            "duration": "45 minutes"
+        },
+        "notes": "Patient tolerated procedure well with mild sedation",
+        "amount": 1500.00,
+        "payment_method": "Insurance",
+        "appointment": {
+            "id": 10,
+            "patient_name": "Michael Brown",
+            "date": "2024-01-20"
+        },
+        "generated_by": {
+            "id": 4,
+            "name": "Dr. Sarah Johnson-Smith"
+        },
+        "remarks_1": {
+            "id": 8,
+            "name": "Patient arrived 15 minutes early"
+        },
+        "remarks_2": {
+            "id": 9,
+            "name": "Follow-up in 2 weeks required"
+        },
+        "status": {
+            "id": 7,
+            "name": "Processing"
+        },
+        "created_at": "2024-01-15T18:00:00.000000Z",
+        "updated_at": "2024-01-15T18:00:00.000000Z"
+    }
+}
+\end{lstlisting}
+
+\subsection{Update Report}
+\textbf{Endpoint:} \texttt{PUT/PATCH /api/reports/\{id\}}\\
+\textbf{Validation:} Inline validation in controller
+
+\begin{lstlisting}[caption=Update Report Request Body]
+{
+    "report_type": "string (sometimes required, max: 255)",
+    "summary_data": "array (optional)",
+    "notes": "string (optional)",
+    "generated_by_id": "integer (optional, must exist in users table)",
+    "amount": "numeric (optional, min: 0)",
+    "payment_method": "string (optional, max: 255)",
+    "remarks_1_id": "integer (optional, must exist in remarks_1 table)",
+    "remarks_2_id": "integer (optional, must exist in remarks_2 table)",
+    "status_id": "integer (optional, must exist in statuses table)"
+}
+\end{lstlisting}
+
+\subsection{Generate Report from Appointment}
+\textbf{Endpoint:} \texttt{POST /api/reports/generate-from-appointment}\\
+\textbf{Validation:} Inline validation in controller
+
+\begin{lstlisting}[caption=Generate Report from Appointment Request Body]
+{
+    "appointment_id": "integer (required, must exist in appointments table)",
+    "report_type": "string (required, max: 255)",
+    "notes": "string (optional)",
+    "generated_by_id": "integer (optional, must exist in users table)",
+    "amount": "numeric (optional, min: 0)",
+    "payment_method": "string (optional, max: 255)",
+    "remarks_1_id": "integer (optional, must exist in remarks_1 table)",
+    "remarks_2_id": "integer (optional, must exist in remarks_2 table)",
+    "status_id": "integer (optional, must exist in statuses table)"
+}
+\end{lstlisting}
+
+\section{Role Management}
+
+\subsection{Create Role}
+\textbf{Endpoint:} \texttt{POST /api/roles}\\
+\textbf{Form Request Class:} \texttt{CreateRoleRequest}
+
+\begin{lstlisting}[caption=Create Role Request Body]
+{
+    "name": "string (required, unique, max: 255)",
+    "guard_name": "string (optional, max: 255)",
+    "permissions": "array (optional)",
+    "permissions.*": "string (each must exist in permissions table)"
+}
+\end{lstlisting}
+
+\textbf{Example Request:}
+\begin{lstlisting}[caption=Create Role Example Request]
+{
+    "name": "radiologist",
+    "guard_name": "web",
+    "permissions": ["reports.create", "reports.view", "appointments.view"]
+}
+\end{lstlisting}
+
+\textbf{Example Response:}
+\begin{lstlisting}[caption=Create Role Example Response]
+{
+    "status": "success",
+    "message": "Role created successfully",
+    "data": {
+        "id": 12,
+        "name": "radiologist",
+        "guard_name": "web",
+        "permissions": [
+            {"name": "reports.create", "display_name": "Create Reports"},
+            {"name": "reports.view", "display_name": "View Reports"},
+            {"name": "appointments.view", "display_name": "View Appointments"}
+        ],
+        "created_at": "2024-01-15T18:30:00.000000Z",
+        "updated_at": "2024-01-15T18:30:00.000000Z"
+    }
+}
+\end{lstlisting}
+
+\subsection{Update Role}
+\textbf{Endpoint:} \texttt{PUT/PATCH /api/roles/\{id\}}\\
+\textbf{Form Request Class:} \texttt{UpdateRoleRequest}
+
+\begin{lstlisting}[caption=Update Role Request Body]
+{
+    "name": "string (required, unique except current, max: 255)",
+    "guard_name": "string (optional, max: 255)",
+    "permissions": "array (optional)",
+    "permissions.*": "string (each must exist in permissions table)"
+}
+\end{lstlisting}
+
+\subsection{Assign Permissions to Role}
+\textbf{Endpoint:} \texttt{POST /api/roles/\{id\}/assign-permissions}\\
+\textbf{Form Request Class:} \texttt{AssignPermissionsRequest}
+
+\begin{lstlisting}[caption=Assign Permissions Request Body]
+{
+    "permissions": "array (required)",
+    "permissions.*": "string (each must exist in permissions table)"
+}
+\end{lstlisting}
+
+\subsection{Check Role Permissions}
+\textbf{Endpoint:} \texttt{POST /api/roles/check-permissions}\\
+\textbf{Form Request Class:} \texttt{CheckRolePermissionsRequest}
+
+\begin{lstlisting}[caption=Check Role Permissions Request Body]
+{
+    "role_id": "integer (required, must exist in roles table)",
+    "permissions": "array (required)",
+    "permissions.*": "string"
+}
+\end{lstlisting}
+
+\section{Permission Management}
+
+\subsection{Create Permission}
+\textbf{Endpoint:} \texttt{POST /api/permissions}\\
+\textbf{Form Request Class:} \texttt{CreatePermissionRequest}
+
+\begin{lstlisting}[caption=Create Permission Request Body]
+{
+    "name": "string (required, unique, max: 255)",
+    "guard_name": "string (optional, max: 255)"
+}
+\end{lstlisting}
+
+\textbf{Example Request:}
+\begin{lstlisting}[caption=Create Permission Example Request]
+{
+    "name": "files.upload",
+    "guard_name": "web"
+}
+\end{lstlisting}
+
+\textbf{Example Response:}
+\begin{lstlisting}[caption=Create Permission Example Response]
+{
+    "status": "success",
+    "message": "Permission created successfully",
+    "data": {
+        "id": 13,
+        "name": "files.upload",
+        "guard_name": "web",
+        "display_name": "Upload Files",
+        "module": "files",
+        "created_at": "2024-01-15T19:00:00.000000Z",
+        "updated_at": "2024-01-15T19:00:00.000000Z"
+    }
+}
+\end{lstlisting}
+
+\subsection{Update Permission}
+\textbf{Endpoint:} \texttt{PUT/PATCH /api/permissions/\{id\}}\\
+\textbf{Form Request Class:} \texttt{UpdatePermissionRequest}
+
+\begin{lstlisting}[caption=Update Permission Request Body]
+{
+    "name": "string (required, unique except current, max: 255)",
+    "guard_name": "string (optional, max: 255)"
+}
+\end{lstlisting}
+
+\subsection{Assign Permission to Roles}
+\textbf{Endpoint:} \texttt{POST /api/permissions/\{id\}/assign-to-roles}\\
+\textbf{Form Request Class:} \texttt{AssignToRolesRequest}
+
+\begin{lstlisting}[caption=Assign to Roles Request Body]
+{
+    "role_ids": "array (required)",
+    "role_ids.*": "integer (each must exist in roles table)"
+}
+\end{lstlisting}
+
+\section{Laravel Resource Routes}
+
+The following endpoints follow Laravel's resource route conventions and do not require request bodies:
+
+\begin{longtable}{|l|l|l|}
+\hline
+\textbf{Method} & \textbf{URI} & \textbf{Action} \\
+\hline
+GET & /api/\{resource\} & index \\
+\hline
+GET & /api/\{resource\}/\{id\} & show \\
+\hline
+DELETE & /api/\{resource\}/\{id\} & destroy \\
+\hline
+\end{longtable}
+
+\noindent Where \texttt{\{resource\}} can be any of:
+\begin{itemize}
+    \item users
+    \item departments
+    \item doctors
+    \item procedures
+    \item categories
+    \item sources
+    \item statuses
+    \item remarks1
+    \item remarks2
+    \item appointments
+    \item reports
+    \item roles
+    \item permissions
+\end{itemize}
+
+\section{Special GET Endpoints}
+
+The following GET endpoints may accept query parameters but do not require request bodies:
+
+\begin{itemize}
+    \item \texttt{GET /api/categories/select} - Get categories for dropdown
+    \item \texttt{GET /api/sources/select} - Get sources for dropdown
+    \item \texttt{GET /api/remarks1/select} - Get remarks1 for dropdown
+    \item \texttt{GET /api/remarks2/select} - Get remarks2 for dropdown
+    \item \texttt{GET /api/statuses/select} - Get statuses for dropdown
+    \item \texttt{GET /api/appointments/search} - Search appointments
+    \item \texttt{GET /api/appointments/date-range} - Get appointments by date range
+    \item \texttt{GET /api/appointments/doctor/\{doctorId\}} - Get appointments by doctor
+    \item \texttt{GET /api/appointments/department/\{departmentId\}} - Get appointments by department
+    \item \texttt{GET /api/appointments/stats} - Get appointment statistics
+    \item \texttt{GET /api/reports/search} - Search reports
+    \item \texttt{GET /api/reports/date-range} - Get reports by date range
+    \item \texttt{GET /api/reports/type/\{type\}} - Get reports by type
+    \item \texttt{GET /api/reports/generated-by/\{user\}} - Get reports by generator
+    \item \texttt{GET /api/reports/appointment/\{appointmentId\}} - Get reports for appointment
+    \item \texttt{GET /api/reports/stats} - Get report statistics
+    \item \texttt{GET /api/doctors/department/\{departmentId\}} - Get doctors by department
+    \item \texttt{GET /api/doctors/procedure/\{procedureId\}} - Get doctors by procedure
+    \item \texttt{GET /api/doctors/available} - Get available doctors
+    \item \texttt{GET /api/roles/\{id\}/permissions} - Get role permissions
+    \item \texttt{GET /api/roles-permissions/all-permissions} - Get all permissions
+    \item \texttt{GET /api/permissions/\{id\}/roles} - Get permission roles
+    \item \texttt{GET /api/permissions-roles/all-roles} - Get all roles
+    \item \texttt{GET /api/user/permissions} - Get current user permissions
+    \item \texttt{GET /api/user/roles} - Get current user roles
+    \item \texttt{GET /api/roles/\{id\}/available-permissions} - Get available permissions for role
+\end{itemize}
+
+\section{Complete Example}
+
+\subsection{Creating a Doctor with Procedures - Full Workflow}
+
+This example demonstrates how to create a doctor with associated procedures and availability schedule.
+
+\subsubsection{Step 1: Create Department (if needed)}
+\textbf{Request:}
+\begin{lstlisting}[caption=POST /api/departments]
+{
+    "name": "Cardiology"
+}
+\end{lstlisting}
+
+\textbf{Response:}
+\begin{lstlisting}[caption=Department Creation Response]
+{
+    "status": "success",
+    "message": "Department created successfully",
+    "data": {
+        "id": 1,
+        "name": "Cardiology",
+        "created_at": "2024-01-15T10:30:00.000000Z",
+        "updated_at": "2024-01-15T10:30:00.000000Z"
+    }
+}
+\end{lstlisting}
+
+\subsubsection{Step 2: Create Procedures (if needed)}
+\textbf{Request:}
+\begin{lstlisting}[caption=POST /api/procedures]
+{
+    "name": "Echocardiography"
+}
+\end{lstlisting}
+
+\textbf{Response:}
+\begin{lstlisting}[caption=Procedure Creation Response]
+{
+    "status": "success",
+    "message": "Procedure created successfully",
+    "data": {
+        "id": 1,
+        "name": "Echocardiography",
+        "created_at": "2024-01-15T10:35:00.000000Z",
+        "updated_at": "2024-01-15T10:35:00.000000Z"
+    }
+}
+\end{lstlisting}
+
+\subsubsection{Step 3: Create Doctor with Complete Information}
+\textbf{Request:}
+\begin{lstlisting}[caption=POST /api/doctors]
+{
+    "name": "Dr. John Smith",
+    "phone_number": "+1-555-0123",
+    "department_id": 1,
+    "procedures": [1, 2, 3],
+    "availability": [
+        {
+            "available": true,
+            "start_time": "09:00",
+            "end_time": "17:00"
+        },
+        {
+            "available": true,
+            "start_time": "09:00",
+            "end_time": "13:00"
+        },
+        {
+            "available": false
+        },
+        {
+            "available": true,
+            "start_time": "10:00",
+            "end_time": "16:00"
+        },
+        {
+            "available": false
+        },
+        {
+            "available": false
+        },
+        {
+            "available": false
+        }
+    ]
+}
+\end{lstlisting}
+
+\textbf{Response:}
+\begin{lstlisting}[caption=Doctor Creation Response]
+{
+    "status": "success",
+    "message": "Doctor created successfully",
+    "data": {
+        "id": 1,
+        "name": "Dr. John Smith",
+        "phone_number": "+1-555-0123",
+        "department_id": 1,
+        "availability": [
+            {"available": true, "start_time": "09:00", "end_time": "17:00"},
+            {"available": true, "start_time": "09:00", "end_time": "13:00"},
+            {"available": false},
+            {"available": true, "start_time": "10:00", "end_time": "16:00"},
+            {"available": false},
+            {"available": false},
+            {"available": false}
+        ],
+        "department": {
+            "id": 1,
+            "name": "Cardiology"
+        },
+        "procedures": [
+            {"id": 1, "name": "Echocardiography"},
+            {"id": 2, "name": "Stress Test"},
+            {"id": 3, "name": "Holter Monitor"}
+        ],
+        "created_at": "2024-01-15T10:40:00.000000Z",
+        "updated_at": "2024-01-15T10:40:00.000000Z"
+    }
+}
+\end{lstlisting}
+
+\textbf{Notes about this example:}
+\begin{itemize}
+    \item The availability array represents Monday through Sunday (0-6 index)
+    \item When \texttt{available} is false, \texttt{start\_time} and \texttt{end\_time} are not required
+    \item All procedure IDs in the procedures array must exist in the procedures table
+    \item The department\_id must exist in the departments table
+    \item Time format must be HH:MM (24-hour format)
+    \item \texttt{end\_time} must be after \texttt{start\_time}
+\end{itemize}
+
+\section{Notes and Conventions}
+
+\subsection{General Validation Rules}
+\begin{itemize}
+    \item \textbf{required}: Field must be present and not empty
+    \item \textbf{sometimes}: Field is only validated if present
+    \item \textbf{nullable}: Field can be null or empty
+    \item \textbf{string}: Field must be a string
+    \item \textbf{integer/numeric}: Field must be numeric
+    \item \textbf{array}: Field must be an array
+    \item \textbf{email}: Field must be a valid email format
+    \item \textbf{date}: Field must be a valid date
+    \item \textbf{boolean}: Field must be true or false
+    \item \textbf{max:n}: Field cannot exceed n characters/value
+    \item \textbf{min:n}: Field must be at least n characters/value
+    \item \textbf{unique}: Field value must be unique in the specified table
+    \item \textbf{exists}: Field value must exist in the specified table
+    \item \textbf{confirmed}: Field must have a matching \_confirmation field
+\end{itemize}
+
+\subsection{Authentication}
+All protected endpoints require a valid Sanctum token in the Authorization header:
+\begin{verbatim}
+Authorization: Bearer {your-token-here}
+\end{verbatim}
+
+\subsection{Response Format}
+All API responses follow a consistent JSON structure:
+\begin{lstlisting}[caption=Standard Response Format]
+{
+    "status": "success|error",
+    "message": "Description of the operation",
+    "data": {} // Response data (on success),
+    "error": "Error details (on error)"
+}
+\end{lstlisting}
+
+\subsection{Error Handling}
+The API returns appropriate HTTP status codes:
+\begin{itemize}
+    \item \textbf{200}: Success
+    \item \textbf{201}: Created
+    \item \textbf{400}: Bad Request (validation errors)
+    \item \textbf{401}: Unauthorized
+    \item \textbf{403}: Forbidden
+    \item \textbf{404}: Not Found
+    \item \textbf{422}: Unprocessable Entity (validation errors)
+    \item \textbf{500}: Internal Server Error
+\end{itemize}
+
+\end{document}
