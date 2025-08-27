@@ -281,7 +281,7 @@ class FileService
         }
 
         return response()->download(
-            Storage::disk($file->disk)->path($file->path),
+            Storage::path($file->path),
             $file->name,
             ['Content-Type' => $file->mime_type]
         );
@@ -300,7 +300,19 @@ class FileService
             abort(410, 'File has expired');
         }
 
-        $path = Storage::disk($file->disk)->path($file->path);
+        // Get the absolute path for local disk, or use temp file for other disks
+        if ($file->disk === 'local') {
+            $path = storage_path('app/' . $file->path);
+        } elseif ($file->disk === 'public') {
+            $path = Storage::path($file->path);
+        } else {
+            // For non-local disks, copy to temp and serve
+            $tmpPath = storage_path('app/tmp/' . $file->filename);
+            if (!file_exists($tmpPath)) {
+                Storage::disk($file->disk)->copy($file->path, 'tmp/' . $file->filename);
+            }
+            $path = $tmpPath;
+        }
 
         return response()->file($path, [
             'Content-Type' => $file->mime_type,
