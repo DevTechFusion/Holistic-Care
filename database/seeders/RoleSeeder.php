@@ -15,15 +15,21 @@ class RoleSeeder extends Seeder
         // Create agent role
         Role::firstOrCreate([
             'name' => 'agent',
-            'guard_name' => 'web',
+            'guard_name' => 'sanctum',
         ]);
 
         // Create managerly role
         Role::firstOrCreate([
             'name' => 'managerly',
-            'guard_name' => 'web',
+            'guard_name' => 'sanctum',
         ]);
 
-        $this->command->info('Agent and Managerly roles created successfully!');
+        // Create super_admin role
+        Role::firstOrCreate([
+            'name' => 'super_admin',
+            'guard_name' => 'sanctum',
+        ]);
+
+        $this->command->info('Agent, Managerly, and Super Admin roles created successfully!');
     }
 }

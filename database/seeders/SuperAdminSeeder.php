@@ -17,7 +17,7 @@ class SuperAdminSeeder extends Seeder
         // Create or get the super_admin role
         $role = Role::firstOrCreate([
             'name' => 'super_admin',
-            'guard_name' => 'web',
+            'guard_name' => 'sanctum',
         ]);
 
         // Assign all permissions to the super_admin role

@@ -227,6 +227,47 @@ $result = $authService->login([
 ]);
 ```
 
+### ComplaintTypeService
+
+**Extends**: `CrudeService`
+**Model**: `ComplaintType`
+
+**Constructor Setup**:
+```php
+public function __construct()
+{
+    $this->model(ComplaintType::class);
+}
+```
+
+**Key Methods**:
+```php
+public function getAllComplaintTypes($perPage = 15)
+public function getComplaintTypeById($id)
+public function getComplaintTypeByName($name)
+public function createComplaintType($data)
+public function updateComplaintType($id, $data)
+public function deleteComplaintType($id)
+public function complaintTypeExists($name)
+public function getComplaintTypesForSelect()
+```
+
+**Usage Example**:
+```php
+$complaintTypeService = new ComplaintTypeService();
+
+// Get all complaint types with pagination
+$complaintTypes = $complaintTypeService->getAllComplaintTypes(15);
+
+// Create new complaint type
+$complaintType = $complaintTypeService->createComplaintType([
+    'name' => 'Technical Issue'
+]);
+
+// Get for select dropdown
+$selectOptions = $complaintTypeService->getComplaintTypesForSelect();
+```
+
 ## Benefits of Using CrudeService
 
 ### 1. **Consistency**

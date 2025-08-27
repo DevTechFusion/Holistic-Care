@@ -12,11 +12,11 @@ class DepartmentService extends CrudeService
     }
 
     /**
-     * Get all departments with optional ordering
+     * Get all departments with pagination
      */
-    public function getAllDepartments($orderBy = 'name', $format = 'asc')
+    public function getAllDepartments($perPage = 15, $page = 1, $orderBy = 'name', $format = 'asc')
     {
-        return $this->_all(null, null, $orderBy, $format);
+        return $this->_paginate($perPage, $page, null, []);
     }
 
     /**

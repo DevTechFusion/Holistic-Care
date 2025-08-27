@@ -25,7 +25,8 @@ class UserController extends Controller
     {
         try {
             $perPage = request()->get('per_page', 15);
-            $users = $this->userService->getAllUsers($perPage);
+            $page = request()->get('page', 1);
+            $users = $this->userService->getAllUsers($perPage, $page);
 
             return response()->json([
                 'status' => 'success',
@@ -288,6 +289,43 @@ class UserController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to fetch user roles',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get users by role(s)
+     */
+    public function getUsersByRoles()
+    {
+        try {
+            $roles = request()->get('roles');
+            $perPage = request()->get('per_page', 15);
+            $page = request()->get('page', 1);
+
+            if (!$roles) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Roles parameter is required'
+                ], 400);
+            }
+
+            // Handle comma-separated roles
+            if (is_string($roles)) {
+                $roles = array_map('trim', explode(',', $roles));
+            }
+
+            $users = $this->userService->getUsersByRoles($roles, $perPage, $page);
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $users
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch users by roles',
                 'error' => $e->getMessage()
             ], 500);
         }

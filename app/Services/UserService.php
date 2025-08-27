@@ -15,9 +15,9 @@ class UserService extends CrudeService
     /**
      * Get all users with pagination
      */
-    public function getAllUsers($perPage = 15)
+    public function getAllUsers($perPage = 15, $page = 1)
     {
-        return $this->_paginate($perPage, 1, null, ['roles', 'permissions']);
+        return $this->_paginate($perPage, $page, null, ['roles', 'permissions']);
     }
 
     /**
@@ -131,5 +131,25 @@ class UserService extends CrudeService
     public function getAllPermissions()
     {
         return app(\Spatie\Permission\Models\Permission::class)->all();
+    }
+
+    /**
+     * Get users by role(s)
+     */
+    public function getUsersByRoles($roles, $perPage = 15, $page = 1)
+    {
+        if (is_string($roles)) {
+            $roles = [$roles];
+        }
+
+        $query = $this->model->whereHas('roles', function ($q) use ($roles) {
+            $q->whereIn('name', $roles);
+        })->with(['roles', 'permissions']);
+
+        if ($perPage > 0) {
+            return $query->paginate($perPage, ['*'], 'page', $page);
+        }
+
+        return $query->get();
     }
 }

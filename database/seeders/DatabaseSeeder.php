@@ -8,14 +8,22 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->call([
-            PermissionSeeder::class,
-            RoleSeeder::class,
-            SuperAdminSeeder::class,
-            DepartmentSeeder::class,
-            ProcedureSeeder::class,
-            DoctorSeeder::class,
-            AppointmentSeeder::class,
-        ]);
+        // \App\Models\User::factory(10)->create();
+
+        // \App\Models\User::factory()->create([
+        //     'name' => 'Test User',
+        //     'email' => 'test@example.com',
+        // ]);
+        $this->call(PermissionSeeder::class);
+        $this->call(RoleSeeder::class);
+        $this->call(SuperAdminSeeder::class);
+        $this->call(DepartmentSeeder::class);
+        $this->call(ProcedureSeeder::class);
+        $this->call(CategorySeeder::class);
+        $this->call(SourceSeeder::class);
+        $this->call(Remarks1Seeder::class);
+        $this->call(Remarks2Seeder::class);
+        $this->call(StatusSeeder::class);
+        $this->call(ComplaintTypeSeeder::class);
     }
 }

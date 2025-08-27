@@ -12,11 +12,11 @@ class ProcedureService extends CrudeService
     }
 
     /**
-     * Get all procedures with optional ordering
+     * Get all procedures with pagination
      */
-    public function getAllProcedures($orderBy = 'name', $format = 'asc')
+    public function getAllProcedures($perPage = 20, $page = 1, $orderBy = 'name', $format = 'asc')
     {
-        return $this->_all(null, null, $orderBy, $format);
+        return $this->_paginate($perPage, $page, null, []);
     }
 
     /**

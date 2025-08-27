@@ -24,7 +24,8 @@ class PermissionController extends Controller
     {
         try {
             $perPage = request()->get('per_page', 15);
-            $permissions = $this->permissionService->getAllPermissions($perPage);
+            $page = request()->get('page', 1);
+            $permissions = $this->permissionService->getAllPermissions($perPage, $page);
 
             return response()->json([
                 'status' => 'success',

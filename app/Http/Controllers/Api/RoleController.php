@@ -25,7 +25,8 @@ class RoleController extends Controller
     {
         try {
             $perPage = request()->get('per_page', 15);
-            $roles = $this->roleService->getAllRoles($perPage);
+            $page = request()->get('page', 1);
+            $roles = $this->roleService->getAllRoles($perPage, $page);
 
             return response()->json([
                 'status' => 'success',
