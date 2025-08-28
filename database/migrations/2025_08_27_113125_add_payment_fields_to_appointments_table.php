@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('appointments', function (Blueprint $table) {
             $table->string('payment_mode')->nullable()->after('notes');
-            $table->decimal('amount', 10, 2)->nullable()->after('payment_mode');
+            // removed duplicate amount column (already exists)
         });
     }
 
@@ -23,7 +23,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('appointments', function (Blueprint $table) {
-            $table->dropColumn(['payment_mode', 'amount']);
+            $table->dropColumn('payment_mode');
+            // don't drop amount, since we didn’t add it here
         });
     }
 };
