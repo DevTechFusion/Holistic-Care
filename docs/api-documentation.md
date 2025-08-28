@@ -17,6 +17,7 @@ Complete API Reference for Frontend Developers
 - [Report Management](#report-management)
 - [Procedure Management](#procedure-management)
 - [Doctor Management](#doctor-management)
+ - [Mistake Management](#mistake-management)
 - [Role Management](#role-management)
 - [Permission Management](#permission-management)
 - [Request/Response Examples](#requestresponse-examples)
@@ -269,6 +270,30 @@ All API responses follow this standard format:
 | GET | `/api/doctors/department/{departmentId}` | Get doctors by department |
 | GET | `/api/doctors/procedure/{procedureId}` | Get doctors by procedure |
 | GET | `/api/doctors/available` | Get available doctors |
+
+## Mistake Management
+
+### Mistake CRUD Operations (alias of Complaints)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/mistakes` | Get all mistakes (paginated) |
+| POST | `/api/mistakes` | Create a new mistake |
+| GET | `/api/mistakes/{id}` | Get specific mistake by ID |
+| PUT/PATCH | `/api/mistakes/{id}` | Update specific mistake |
+| DELETE | `/api/mistakes/{id}` | Delete specific mistake |
+
+### Mistake Search and Filtering
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/mistakes/search` | Search mistakes with filters |
+| GET | `/api/mistakes/agent/{agentId}` | Get mistakes by agent |
+| GET | `/api/mistakes/doctor/{doctorId}` | Get mistakes by doctor |
+| GET | `/api/mistakes/type/{complaintTypeId}` | Get mistakes by type |
+| GET | `/api/mistakes/stats` | Get mistakes statistics |
+
+For detailed payloads and examples, see `docs/mistakes.md`.
 
 ## Role Management
 

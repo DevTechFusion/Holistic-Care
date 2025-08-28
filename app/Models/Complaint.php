@@ -19,6 +19,9 @@ class Complaint extends Model
         'agent_id',
         'doctor_id',
         'complaint_type_id',
+        'submitted_by',
+        'platform',
+        'occurred_at',
     ];
 
     /**
@@ -44,4 +47,19 @@ class Complaint extends Model
     {
         return $this->belongsTo(ComplaintType::class, 'complaint_type_id');
     }
+
+    /**
+     * Get the manager who submitted the complaint.
+     */
+    public function submittedBy()
+    {
+        return $this->belongsTo(User::class, 'submitted_by');
+    }
+
+    /**
+     * Attribute casting.
+     */
+    protected $casts = [
+        'occurred_at' => 'datetime',
+    ];
 }

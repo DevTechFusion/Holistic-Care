@@ -57,6 +57,14 @@ Route::middleware(['sanctum.token', 'auth:sanctum'])->group(function () {
     Route::get('complaints/stats', [App\Http\Controllers\Api\ComplaintController::class, 'stats']);
     Route::apiResource('complaints', App\Http\Controllers\Api\ComplaintController::class);
 
+    // Mistake management routes (alias for complaints for frontend compatibility)
+    Route::get('mistakes/search', [App\Http\Controllers\Api\ComplaintController::class, 'search']);
+    Route::get('mistakes/agent/{agentId}', [App\Http\Controllers\Api\ComplaintController::class, 'byAgent']);
+    Route::get('mistakes/doctor/{doctorId}', [App\Http\Controllers\Api\ComplaintController::class, 'byDoctor']);
+    Route::get('mistakes/type/{complaintTypeId}', [App\Http\Controllers\Api\ComplaintController::class, 'byType']);
+    Route::get('mistakes/stats', [App\Http\Controllers\Api\ComplaintController::class, 'stats']);
+    Route::apiResource('mistakes', App\Http\Controllers\Api\ComplaintController::class);
+
     // Appointment management routes
     Route::get('appointments/search', [App\Http\Controllers\Api\AppointmentController::class, 'search']);
     Route::get('appointments/date-range', [App\Http\Controllers\Api\AppointmentController::class, 'byDateRange']);
@@ -136,4 +144,7 @@ Route::middleware(['sanctum.token', 'auth:sanctum'])->group(function () {
 
     // Agent Dashboard (current authenticated agent)
     Route::get('agent/dashboard', [App\Http\Controllers\Api\AgentDashboardController::class, 'index']);
+
+    // Manager Dashboard
+    Route::get('manager/dashboard', [App\Http\Controllers\Api\ManagerDashboardController::class, 'index']);
 });

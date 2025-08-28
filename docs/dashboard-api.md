@@ -43,3 +43,70 @@ Notes:
 - Yearly: `GET /api/dashboard?range=yearly`
 
 
+## Manager Dashboard API
+
+### GET /api/manager/dashboard
+
+- **Auth**: Sanctum auth required
+- **Query Params**:
+  - **range**: `daily` | `weekly` | `monthly` | `yearly` (default: `daily`)
+  - **per_page**: integer (default: 10) — for detailed log
+  - **page**: integer (default: 1) — for detailed log
+
+### Behavior
+- A single filter (range) applies across the entire dashboard.
+- Cards displayed: `total_mistakes`, `most_frequent_type`, `top_agent`, `total_appointments`.
+- Detailed Mistake Log (paginated) with columns: Date, Day, Agent, Mistake Type, Platform, Description.
+- Mistake Count by Agent: Each row lists an agent with a `total` column and separate columns per mistake type.
+
+### Response (200)
+```json
+{
+  "status": "success",
+  "data": {
+    "filters": {
+      "range": "monthly",
+      "start_date": "2025-02-01 00:00:00",
+      "end_date": "2025-02-28 23:59:59"
+    },
+    "cards": {
+      "total_mistakes": 94,
+      "most_frequent_type": { "complaint_type_id": 1, "count": 45, "complaint_type": {"id": 1, "name": "Missed reply"} },
+      "top_agent": { "agent_id": 5, "mistakes": 31, "agent": {"id": 5, "name": "Wajeeha"} },
+      "total_appointments": 25
+    },
+    "detailed_log": {
+      "current_page": 1,
+      "data": [
+        {
+          "id": 12,
+          "occurred_at": "2025-02-25T10:30:00.000000Z",
+          "created_at": "2025-02-25T10:35:00.000000Z",
+          "agent": {"id": 5, "name": "Wajeeha"},
+          "complaint_type": {"id": 1, "name": "Missed reply"},
+          "platform": "Insta",
+          "description": "Did not reply to pt"
+        }
+      ],
+      "per_page": 10,
+      "total": 94
+    },
+    "mistake_count_by_agent": [
+      { "agent_id": 5, "agent_name": "Wajeeha", "type_1": 19, "type_2": 5, "type_3": 3, "total": 31 },
+      { "agent_id": 7, "agent_name": "Nimrah", "type_1": 6, "type_2": 2, "type_3": 3, "total": 12 }
+    ]
+  }
+}
+```
+
+### Example
+```bash
+BASE="http://127.0.0.1:8000"
+TOKEN="<your-sanctum-token>"
+
+curl -s "$BASE/api/manager/dashboard?range=weekly&per_page=10" \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer $TOKEN" | jq .
+```
+
+

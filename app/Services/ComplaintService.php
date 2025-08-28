@@ -115,4 +115,153 @@ class ComplaintService extends CrudeService
             'by_doctor' => $byDoctor,
         ];
     }
+
+    /**
+     * Count mistakes in a datetime range using occurred_at if present, else created_at.
+     */
+    public function countInRange(string $startDateTime, string $endDateTime): int
+    {
+        return $this->model
+            ->where(function ($q) use ($startDateTime, $endDateTime) {
+                $q->whereBetween('occurred_at', [$startDateTime, $endDateTime])
+                  ->orWhere(function ($q2) use ($startDateTime, $endDateTime) {
+                      $q2->whereNull('occurred_at')
+                         ->whereBetween('created_at', [$startDateTime, $endDateTime]);
+                  });
+            })
+            ->count();
+    }
+
+    /**
+     * Most frequent mistake type in range.
+     */
+    public function mostFrequentType(string $startDateTime, string $endDateTime)
+    {
+        return $this->model
+            ->selectRaw('complaint_type_id, COUNT(*) as count')
+            ->where(function ($q) use ($startDateTime, $endDateTime) {
+                $q->whereBetween('occurred_at', [$startDateTime, $endDateTime])
+                  ->orWhere(function ($q2) use ($startDateTime, $endDateTime) {
+                      $q2->whereNull('occurred_at')
+                         ->whereBetween('created_at', [$startDateTime, $endDateTime]);
+                  });
+            })
+            ->groupBy('complaint_type_id')
+            ->orderByDesc('count')
+            ->with('complaintType')
+            ->first();
+    }
+
+    /**
+     * Top agent by mistakes in range.
+     */
+    public function topAgentByMistakes(string $startDateTime, string $endDateTime)
+    {
+        return $this->model
+            ->selectRaw('agent_id, COUNT(*) as mistakes')
+            ->whereNotNull('agent_id')
+            ->where(function ($q) use ($startDateTime, $endDateTime) {
+                $q->whereBetween('occurred_at', [$startDateTime, $endDateTime])
+                  ->orWhere(function ($q2) use ($startDateTime, $endDateTime) {
+                      $q2->whereNull('occurred_at')
+                         ->whereBetween('created_at', [$startDateTime, $endDateTime]);
+                  });
+            })
+            ->groupBy('agent_id')
+            ->orderByDesc('mistakes')
+            ->with(['agent:id,name'])
+            ->first();
+    }
+
+    /**
+     * Detailed log for table (date, day, agent, type, platform, description).
+     */
+    public function getDetailedLog(string $startDateTime, string $endDateTime, int $perPage = 10, int $page = 1)
+    {
+        return $this->model
+            ->with(['agent:id,name', 'complaintType:id,name'])
+            ->where(function ($q) use ($startDateTime, $endDateTime) {
+                $q->whereBetween('occurred_at', [$startDateTime, $endDateTime])
+                  ->orWhere(function ($q2) use ($startDateTime, $endDateTime) {
+                      $q2->whereNull('occurred_at')
+                         ->whereBetween('created_at', [$startDateTime, $endDateTime]);
+                  });
+            })
+            ->orderByDesc('occurred_at')
+            ->orderByDesc('created_at')
+            ->paginate($perPage, ['*'], 'page', $page);
+    }
+
+    /**
+     * Counts by agent with each type as separate columns and a total column.
+     */
+    public function mistakeCountByAgentWithTypes(string $startDateTime, string $endDateTime)
+    {
+        // Get all complaint types
+        $types = $this->model->distinct()->pluck('complaint_type_id')->filter();
+
+        $base = $this->model
+            ->where(function ($q) use ($startDateTime, $endDateTime) {
+                $q->whereBetween('occurred_at', [$startDateTime, $endDateTime])
+                  ->orWhere(function ($q2) use ($startDateTime, $endDateTime) {
+                      $q2->whereNull('occurred_at')
+                         ->whereBetween('created_at', [$startDateTime, $endDateTime]);
+                  });
+            })
+            ->whereNotNull('agent_id');
+
+        $totals = $base->clone()
+            ->selectRaw('agent_id, COUNT(*) as total')
+            ->groupBy('agent_id')
+            ->pluck('total', 'agent_id');
+
+        $result = [];
+
+        // Prepare per-agent rows
+        foreach ($totals as $agentId => $total) {
+            $result[$agentId] = [
+                'agent_id' => $agentId,
+                'total' => (int) $total,
+            ];
+        }
+
+        // For each type, compute counts per agent
+        foreach ($types as $typeId) {
+            $counts = $this->model
+                ->selectRaw('agent_id, COUNT(*) as count')
+                ->where('complaint_type_id', $typeId)
+                ->where(function ($q) use ($startDateTime, $endDateTime) {
+                    $q->whereBetween('occurred_at', [$startDateTime, $endDateTime])
+                      ->orWhere(function ($q2) use ($startDateTime, $endDateTime) {
+                          $q2->whereNull('occurred_at')
+                             ->whereBetween('created_at', [$startDateTime, $endDateTime]);
+                      });
+                })
+                ->groupBy('agent_id')
+                ->pluck('count', 'agent_id');
+
+            foreach ($counts as $agentId => $count) {
+                if (!isset($result[$agentId])) {
+                    $result[$agentId] = [
+                        'agent_id' => $agentId,
+                        'total' => 0,
+                    ];
+                }
+                $result[$agentId]['type_'.$typeId] = (int) $count;
+            }
+        }
+
+        // Attach agent names
+        $agentNames = $this->model->with('agent:id,name')
+            ->whereIn('agent_id', array_keys($result))
+            ->get()
+            ->pluck('agent.name', 'agent_id');
+
+        foreach ($result as $agentId => &$row) {
+            $row['agent_name'] = $agentNames[$agentId] ?? null;
+        }
+
+        // Return indexed by agent_id
+        return array_values($row = $result);
+    }
 }
