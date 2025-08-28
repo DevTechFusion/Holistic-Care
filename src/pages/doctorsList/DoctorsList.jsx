@@ -12,16 +12,21 @@ import {
   TableBody,
   TablePagination,
 } from "@mui/material";
-import { getDoctors } from "../../DAL/doctors"; 
+import { getDoctors,
+        deleteDoctor,
+        updateDoctor
+ } from "../../DAL/doctors"; 
 import CreateDoctorModal from "../../components/forms/DoctorForm"; 
+import { useSnackbar } from "notistack";
+import ActionButtons from "../../constants/actionButtons";
 
 const DoctorsPage = () => {
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
-
+  const enqueueSnackbar = useSnackbar();
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(15);
   const [total, setTotal] = useState(0);
 
   const fetchDoctors = async () => {
@@ -40,6 +45,30 @@ const DoctorsPage = () => {
   useEffect(() => {
     fetchDoctors();
   }, [page, rowsPerPage]);
+
+  const handleDelete = async (id) => {
+      try {
+        await deleteDoctor(id);
+        fetchDoctors();
+        enqueueSnackbar("Doctor deleted successfully", { variant: "success" });
+      } catch (err) {
+        console.error("Failed to delete doctor", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const handleUpdate = async (id, updatedData) => {
+      try {
+        await updateDoctor(id, updatedData);
+        fetchDoctors();
+        enqueueSnackbar("Doctor updated successfully", { variant: "success" });
+      } catch (err) {
+        console.error("Failed to update doctor", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
   return (
     <Box p={3}>
@@ -72,23 +101,30 @@ const DoctorsPage = () => {
                   <TableCell>Phone</TableCell>
                   <TableCell>Department</TableCell>
                   <TableCell>Procedures</TableCell>
+                  <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {" "}
+                
                 {doctors.map((doctor, idx) => (
                   <TableRow key={doctor.id}>
-                    {" "}
-                    <TableCell>{idx + 1}</TableCell>{" "}
-                    <TableCell>{doctor.name}</TableCell>{" "}
-                    <TableCell>{doctor.phone_number}</TableCell>{" "}
-                    <TableCell>{doctor.department?.name}</TableCell>{" "}
+                    
+                    <TableCell>{idx + 1}</TableCell>
+                    <TableCell>{doctor.name}</TableCell>
+                    <TableCell>{doctor.phone_number}</TableCell>
+                    <TableCell>{doctor.department?.name}</TableCell>
                     <TableCell>
-                      {" "}
-                      {doctor.procedures?.map((p) => p.name).join(", ")}{" "}
-                    </TableCell>{" "}
+                      
+                      {doctor.procedures?.map((p) => p.name).join(", ")}
+                    </TableCell>
+                    <TableCell>
+                      <ActionButtons
+                        onEdit={() => { handleEdit(doctor.id, doctor) }}
+                        onDelete={() => handleDelete(doctor.id)}
+                      />
+                    </TableCell>
                   </TableRow>
-                ))}{" "}
+                ))}
               </TableBody>
             </Table>
 
@@ -100,9 +136,10 @@ const DoctorsPage = () => {
               onPageChange={(e, newPage) => setPage(newPage)}
               rowsPerPage={rowsPerPage}
               onRowsPerPageChange={(e) => {
-                setRowsPerPage(parseInt(e.target.value, 10));
+                setRowsPerPage(parseInt(e.target.value));
                 setPage(0);
               }}
+              rowsPerPageOptions={[15, 25, 50, 100]}
             />
           </>
         )}

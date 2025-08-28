@@ -10,12 +10,12 @@ import {
   TextField,
   MenuItem,
 } from "@mui/material";
-import ConstTime from "../../contants/timeSlots";
+import ConstTime from "../../constants/timeSlots";
 
 const AvailabilityCard = ({ day, setFormData }) => {
   const [available, setAvailable] = useState(false);
-  const [startTime, setStartTime] = useState("09:00"); // default 9:00 AM
-  const [endTime, setEndTime] = useState("10:00"); // default 10:00 AM
+  const [startTime, setStartTime] = useState("09:00");
+  const [endTime, setEndTime] = useState("10:00");
 
   useEffect(() => {
     setFormData((prevFormData) => {

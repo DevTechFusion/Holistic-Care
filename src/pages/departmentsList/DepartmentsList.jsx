@@ -12,22 +12,25 @@ import {
   TableBody,
   TablePagination,
 } from "@mui/material";
-import { getAllDepartments } from "../../DAL/departments"; 
-import CreateDepartmentModal from "../../components/forms/DepartmentForm"; 
-
+import {
+  getAllDepartments, deleteDepartment
+} from "../../DAL/departments";
+import CreateDepartmentModal from "../../components/forms/DepartmentForm";
+import ActionButtons from "../../constants/actionButtons";
 const DepartmentsPage = () => {
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
 
-  const [page, setPage] = useState(0); // 0-based for MUI
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(15);
   const [total, setTotal] = useState(0);
+  const [targetItem, setTargetItem] = useState(null);
 
   const fetchDepartments = async () => {
     setLoading(true);
     try {
-      const res = await getAllDepartments(page + 1, rowsPerPage); // backend expects 1-based
+      const res = await getAllDepartments(page + 1, rowsPerPage);
       setDepartments(res?.data?.data || []);
       setTotal(res?.data?.total || 0);
     } catch (err) {
@@ -41,10 +44,29 @@ const DepartmentsPage = () => {
     fetchDepartments();
   }, [page, rowsPerPage]);
 
+  const handleDelete = async (id) => {
+    try {
+      await deleteDepartment(id);
+      fetchDepartments();
+    } catch (err) {
+      console.error("Delete failed", err);
+    }
+  };
+
+  const handleEdit = (dept) => {
+    setTargetItem(dept);
+    setOpenModal(true);
+  };
+
   return (
     <Box p={3}>
       {/* Header */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
         <Typography variant="h5">Departments</Typography>
         <Button variant="contained" onClick={() => setOpenModal(true)}>
           + Add Department
@@ -64,7 +86,7 @@ const DepartmentsPage = () => {
                 <TableRow>
                   <TableCell>#</TableCell>
                   <TableCell>Name</TableCell>
-                  <TableCell>Description</TableCell>
+                  <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -72,7 +94,12 @@ const DepartmentsPage = () => {
                   <TableRow key={dept.id}>
                     <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
                     <TableCell>{dept.name}</TableCell>
-                    <TableCell>{dept.description}</TableCell>
+                    <TableCell>
+                      <ActionButtons
+                        onEdit={() => handleEdit(dept)}
+                        onDelete={() => handleDelete(dept.id)}
+                      />
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -89,6 +116,7 @@ const DepartmentsPage = () => {
                 setRowsPerPage(parseInt(e.target.value, 10));
                 setPage(0);
               }}
+              rowsPerPageOptions={[15, 25, 50, 100]}
             />
           </>
         )}
@@ -96,10 +124,13 @@ const DepartmentsPage = () => {
 
       {/* Modal */}
       <CreateDepartmentModal
+        isEditing={!!targetItem}
+        data={targetItem}
         open={openModal}
         onClose={() => {
           setOpenModal(false);
-          fetchDepartments(); // refresh after add
+          fetchDepartments(); // refresh after add/edit
+          setTargetItem(null);
         }}
       />
     </Box>

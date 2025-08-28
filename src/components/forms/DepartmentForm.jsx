@@ -1,10 +1,10 @@
 // src/components/forms/DeperatmentForm.jsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import GenericFormModal from "./GenericForm";
 import { useSnackbar } from "notistack";
-import { createDepartment } from "../../DAL/departments";
+import { createDepartment, updateDepartment } from "../../DAL/departments";
 
-const CreateDepartmentModal = ({ open, onClose }) => {
+const CreateDepartmentModal = ({ open, onClose, isEditing, data }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [name, setName] = useState("");
   const { enqueueSnackbar } = useSnackbar();
@@ -12,7 +12,9 @@ const CreateDepartmentModal = ({ open, onClose }) => {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      const res = await createDepartment({ name });
+      const res = isEditing
+        ? await updateDepartment(data.id, { name })
+        : await createDepartment({ name });
 
       // Example structure check — adjust based on your API's actual response
       if (res?.status === 200 || res?.status === "success") {
@@ -42,12 +44,18 @@ const CreateDepartmentModal = ({ open, onClose }) => {
     }
   };
 
+  useEffect(() => {
+    if (open && isEditing && data) {
+      setName(data.name);
+    }
+  }, [open, data, isEditing]);
+
   const fields = [
     {
       name: "name",
       label: "Department",
       required: true,
-      defaultValue: "",
+      defaultValue: isEditing ? data.name : "",
       value: name,
       onChange: (e) => setName(e.target.value),
     },
@@ -57,7 +65,7 @@ const CreateDepartmentModal = ({ open, onClose }) => {
     <GenericFormModal
       open={open}
       onClose={onClose}
-      onSubmit={handleSubmit  }
+      onSubmit={handleSubmit}
       title="Create Department"
       fields={fields}
       isSubmitting={isSubmitting}

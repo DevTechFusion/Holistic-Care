@@ -25,7 +25,7 @@ const CreateDoctorModal = ({ open, onClose }) => {
   useEffect(() => {
     if (open) {
       getAllDepartments().then((res) => setDepartments(res?.data?.data || []));
-
+      console.log("Departments fetched:", departments);
       getProcedures().then((res) => setProcedures(res?.data?.data || []));
     }
   }, [open]);

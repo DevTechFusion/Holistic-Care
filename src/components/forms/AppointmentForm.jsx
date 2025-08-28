@@ -21,7 +21,7 @@ const CreateAppointmentModal = ({ open, onClose }) => {
   const { enqueueSnackbar } = useSnackbar();
 
   const [formData, setFormData] = useState({
-    date: "", 
+    date: "",
     time_slot: "",
     patient_name: "",
     contact_number: "",
@@ -106,6 +106,7 @@ const CreateAppointmentModal = ({ open, onClose }) => {
     {
       name: "date",
       label: "Date",
+      type: "date",
       required: true,
       value: formData.date,
       onChange: (e) => setFormData((p) => ({ ...p, date: e.target.value })),
@@ -113,6 +114,7 @@ const CreateAppointmentModal = ({ open, onClose }) => {
     {
       name: "time_slot",
       label: "Time Slot",
+      type: "time",
       placeholder: "10:00 - 11:00",
       required: true,
       value: formData.time_slot,

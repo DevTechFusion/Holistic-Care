@@ -9,15 +9,15 @@ export const createUser = (data) => {
   return invokeApi(reqObj);
 };
 
-export const getUsers = () => {
-  return invokeApi({ path: "api/users" });
+export const getUsers = (page = 1, perPage = 15) => {
+  return invokeApi({ path: `api/users?page=${page}&per_page=${perPage}` });
 };
 
 export const  getUsersById = (id) => {
   return invokeApi({ path: `api/users/${id}` });
 };
 
-export const updateUser = (id, data) => {
+export const updateUser = (id) => {
   const reqObj = {
     method: "PUT",
     postData: data,

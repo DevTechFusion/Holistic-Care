@@ -17,7 +17,6 @@ import CreateProcedureModal from "../../components/forms/ProcedureForm";
 import CreateDepartmentModal from "../../components/forms/DepartmentForm";
 import CreateDoctorModal from "../../components/forms/DoctorForm";
 import DashboardContent from "./DashboardContent";
-import WeeklyAvailability from "../../components/forms/WeeklyAvailability";
 import CreateAppointmentModal from "../../components/forms/AppointmentForm";
 
 const Dashboard = () => {

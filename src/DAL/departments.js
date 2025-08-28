@@ -10,9 +10,9 @@ export const createDepartment = (data) => {
   return invokeApi(reqObj);
 };
 
-export const getAllDepartments = (page = 1, perPage = 10) => {
+export const getAllDepartments = (page = 1, perPage = 15) => {
   return invokeApi({
-    path: `api/departments?page=${page}&per_page=${perPage}`,
+    path: `api/departments?page=${page}&per_page=${perPage}`
   });
 };
 
@@ -20,7 +20,7 @@ export const getDepartmentById = (id) => {
   return invokeApi({ path: `api/departments/${id}` });
 };
 
-export const updateDepartment = (id, data) => {
+export const updateDepartment = (id,data) => {
   const reqObj = {
     method: "PUT",
     postData: data,

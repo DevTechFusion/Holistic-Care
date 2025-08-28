@@ -1,10 +1,10 @@
 // src/components/forms/ProcedureForm.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import GenericFormModal from "./GenericForm";
 import { useSnackbar } from "notistack";
-import { createProcedure } from "../../DAL/procedure"; 
+import { createProcedure, updateProcedure } from "../../DAL/procedure"; 
 
-const CreateProcedureModal = ({ open, onClose }) => {
+const CreateProcedureModal = ({ open, onClose , isEditing, data }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [name, setName] = useState("");
   const { enqueueSnackbar } = useSnackbar();
@@ -12,7 +12,9 @@ const CreateProcedureModal = ({ open, onClose }) => {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      const res = await createProcedure({ name });
+      const res = isEditing 
+      ? await updateProcedure(data.id, { name }) 
+      : await createProcedure({ name });
 
       if (res?.status === 200 || res?.status === "success") {
         enqueueSnackbar("Procedure created successfully!", {
@@ -38,6 +40,12 @@ const CreateProcedureModal = ({ open, onClose }) => {
       setIsSubmitting(false);
     }
   };
+
+   useEffect(() => {
+    if (open && isEditing && data) {
+      setName(data.name);
+    }
+  }, [open, data, isEditing]);
 
   const fields = [
     {
