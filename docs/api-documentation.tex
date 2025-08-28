@@ -1,0 +1,1168 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+% Page setup
+\geometry{margin=1in}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{Holisted API Documentation}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% Code listing setup
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!60!black},
+    stringstyle=\color{red},
+    backgroundcolor=\color{gray!10}
+}
+
+% Custom colors
+\definecolor{methodget}{RGB}{61, 153, 112}
+\definecolor{methodpost}{RGB}{204, 121, 167}
+\definecolor{methodput}{RGB}{250, 200, 99}
+\definecolor{methoddelete}{RGB}{235, 87, 87}
+
+% Title formatting
+\titleformat{\section}{\Large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{}
+
+\begin{document}
+
+\title{\Huge\textbf{Holisted API Documentation}\\[0.5cm]\large Complete API Reference for Frontend Developers}
+\author{Backend Development Team}
+\date{\today}
+
+\maketitle
+
+\tableofcontents
+\newpage
+
+\section{Introduction}
+
+This document provides a comprehensive reference for all API endpoints available in the Holisted application. All endpoints require authentication via Bearer token unless otherwise specified.
+
+\subsection{Base URL}
+All API endpoints are prefixed with: \texttt{/api}
+
+\subsection{Authentication}
+Most endpoints require authentication. Include the Bearer token in the Authorization header:
+\begin{lstlisting}
+Authorization: Bearer {your_token_here}
+\end{lstlisting}
+
+\subsection{Response Format}
+All API responses follow this standard format:
+\begin{lstlisting}
+{
+    "status": "success|error",
+    "message": "Optional message",
+    "data": {...}
+}
+\end{lstlisting}
+
+\section{Authentication Endpoints}
+
+\subsection{Public Authentication Routes}
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.25\textwidth}|p{0.5\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\endhead
+
+POST & \texttt{/api/login} & User login with email and password \\
+POST & \texttt{/api/register} & User registration with email, password, and name \\
+\hline
+\end{longtable}
+
+\subsection{Protected Authentication Routes}
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.25\textwidth}|p{0.5\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\endhead
+
+POST & \texttt{/api/logout} & Logout user and invalidate token \\
+GET & \texttt{/api/profile} & Get current user profile \\
+POST & \texttt{/api/refresh} & Refresh authentication token \\
+\hline
+\end{longtable}
+
+\section{User Management}
+
+\subsection{User CRUD Operations}
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.25\textwidth}|p{0.5\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\endhead
+
+GET & \texttt{/api/users} & Get all users (paginated) \\
+POST & \texttt{/api/users} & Create a new user \\
+GET & \texttt{/api/users/\{id\}} & Get specific user by ID \\
+PUT/PATCH & \texttt{/api/users/\{id\}} & Update specific user \\
+DELETE & \texttt{/api/users/\{id\}} & Delete specific user \\
+\hline
+\end{longtable}
+
+\subsection{User Role Management}
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.25\textwidth}|p{0.5\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\endhead
+
+POST & \texttt{/api/users/\{id\}/assign-role} & Assign role to user \\
+POST & \texttt{/api/users/\{id\}/remove-role} & Remove role from user \\
+\hline
+\end{longtable}
+
+\subsection{User Permission Management}
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.25\textwidth}|p{0.5\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\endhead
+
+GET & \texttt{/api/user/permissions} & Get current user's permissions \\
+POST & \texttt{/api/user/check-permission} & Check if user has specific permission \\
+GET & \texttt{/api/user/roles} & Get current user's roles \\
+\hline
+\end{longtable}
+
+\section{Department Management}
+
+\subsection{Department CRUD Operations}
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.25\textwidth}|p{0.5\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\endhead
+
+GET & \texttt{/api/departments} & Get all departments (paginated) \\
+POST & \texttt{/api/departments} & Create a new department \\
+GET & \texttt{/api/departments/\{id\}} & Get specific department by ID \\
+PUT/PATCH & \texttt{/api/departments/\{id\}} & Update specific department \\
+DELETE & \texttt{/api/departments/\{id\}} & Delete specific department \\
+\hline
+\end{longtable}
+
+\section{Category Management}
+
+\subsection{Category CRUD Operations}
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.25\textwidth}|p{0.5\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\endhead
+
+GET & \texttt{/api/categories} & Get all categories (paginated) \\
+POST & \texttt{/api/categories} & Create a new category \\
+GET & \texttt{/api/categories/\{id\}} & Get specific category by ID \\
+PUT/PATCH & \texttt{/api/categories/\{id\}} & Update specific category \\
+DELETE & \texttt{/api/categories/\{id\}} & Delete specific category \\
+\hline
+\end{longtable}
+
+\subsection{Category Selection}
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.25\textwidth}|p{0.5\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\endhead
+
+GET & \texttt{/api/categories/select} & Get categories for dropdown selection \\
+\hline
+\end{longtable}
+
+\section{Source Management}
+
+\subsection{Source CRUD Operations}
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.25\textwidth}|p{0.5\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\endhead
+
+GET & \texttt{/api/sources} & Get all sources (paginated) \\
+POST & \texttt{/api/sources} & Create a new source \\
+GET & \texttt{/api/sources/\{id\}} & Get specific source by ID \\
+PUT/PATCH & \texttt{/api/sources/\{id\}} & Update specific source \\
+DELETE & \texttt{/api/sources/\{id\}} & Delete specific source \\
+\hline
+\end{longtable}
+
+\subsection{Source Selection}
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.25\textwidth}|p{0.5\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\endhead
+
+GET & \texttt{/api/sources/select} & Get sources for dropdown selection \\
+\hline
+\end{longtable}
+
+\section{Remarks1 Management}
+
+\subsection{Remarks1 CRUD Operations}
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.25\textwidth}|p{0.5\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\endhead
+
+GET & \texttt{/api/remarks1} & Get all remarks1 (paginated) \\
+POST & \texttt{/api/remarks1} & Create a new remarks1 \\
+GET & \texttt{/api/remarks1/\{id\}} & Get specific remarks1 by ID \\
+PUT/PATCH & \texttt{/api/remarks1/\{id\}} & Update specific remarks1 \\
+DELETE & \texttt{/api/remarks1/\{id\}} & Delete specific remarks1 \\
+\hline
+\end{longtable}
+
+\subsection{Remarks1 Selection}
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.25\textwidth}|p{0.5\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\endhead
+
+GET & \texttt{/api/remarks1/select} & Get remarks1 for dropdown selection \\
+\hline
+\end{longtable}
+
+\section{Remarks2 Management}
+
+\subsection{Remarks2 CRUD Operations}
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.25\textwidth}|p{0.5\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\endhead
+
+GET & \texttt{/api/remarks2} & Get all remarks2 (paginated) \\
+POST & \texttt{/api/remarks2} & Create a new remarks2 \\
+GET & \texttt{/api/remarks2/\{id\}} & Get specific remarks2 by ID \\
+PUT/PATCH & \texttt{/api/remarks2/\{id\}} & Update specific remarks2 \\
+DELETE & \texttt{/api/remarks2/\{id\}} & Delete specific remarks2 \\
+\hline
+\end{longtable}
+
+\subsection{Remarks2 Selection}
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.25\textwidth}|p{0.5\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\endhead
+
+GET & \texttt{/api/remarks2/select} & Get remarks2 for dropdown selection \\
+\hline
+\end{longtable}
+
+\section{Status Management}
+
+\subsection{Status CRUD Operations}
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.25\textwidth}|p{0.5\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\endhead
+
+GET & \texttt{/api/statuses} & Get all statuses (paginated) \\
+POST & \texttt{/api/statuses} & Create a new status \\
+GET & \texttt{/api/statuses/\{id\}} & Get specific status by ID \\
+PUT/PATCH & \texttt{/api/statuses/\{id\}} & Update specific status \\
+DELETE & \texttt{/api/statuses/\{id\}} & Delete specific status \\
+\hline
+\end{longtable}
+
+\subsection{Status Selection}
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.25\textwidth}|p{0.5\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\endhead
+
+GET & \texttt{/api/statuses/select} & Get statuses for dropdown selection \\
+\hline
+\end{longtable}
+
+\section{Appointment Management}
+
+\subsection{Appointment CRUD Operations}
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.25\textwidth}|p{0.5\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\endhead
+
+GET & \texttt{/api/appointments} & Get all appointments (paginated) \\
+POST & \texttt{/api/appointments} & Create a new appointment \\
+GET & \texttt{/api/appointments/\{id\}} & Get specific appointment by ID \\
+PUT/PATCH & \texttt{/api/appointments/\{id\}} & Update specific appointment \\
+DELETE & \texttt{/api/appointments/\{id\}} & Delete specific appointment \\
+\hline
+\end{longtable}
+
+\subsection{Appointment Search and Filtering}
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.25\textwidth}|p{0.5\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\endhead
+
+GET & \texttt{/api/appointments/search} & Search appointments with filters \\
+GET & \texttt{/api/appointments/date-range} & Get appointments by date range \\
+GET & \texttt{/api/appointments/doctor/\{doctorId\}} & Get appointments by doctor \\
+GET & \texttt{/api/appointments/department/\{departmentId\}} & Get appointments by department \\
+GET & \texttt{/api/appointments/stats} & Get appointment statistics \\
+\hline
+\end{longtable}
+
+\section{Report Management}
+
+\subsection{Report CRUD Operations}
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.25\textwidth}|p{0.5\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\endhead
+
+GET & \texttt{/api/reports} & Get all reports (paginated) \\
+POST & \texttt{/api/reports} & Create a new report \\
+GET & \texttt{/api/reports/\{id\}} & Get specific report by ID \\
+PUT/PATCH & \texttt{/api/reports/\{id\}} & Update specific report \\
+DELETE & \texttt{/api/reports/\{id\}} & Delete specific report \\
+\hline
+\end{longtable}
+
+\subsection{Report Search and Filtering}
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.25\textwidth}|p{0.5\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\endhead
+
+GET & \texttt{/api/reports/search} & Search reports with filters \\
+GET & \texttt{/api/reports/date-range} & Get reports by date range \\
+GET & \texttt{/api/reports/type/\{type\}} & Get reports by type \\
+GET & \texttt{/api/reports/generated-by/\{user\}} & Get reports by generated user \\
+GET & \texttt{/api/reports/appointment/\{appointmentId\}} & Get reports for specific appointment \\
+GET & \texttt{/api/reports/stats} & Get report statistics \\
+POST & \texttt{/api/reports/generate-from-appointment} & Generate report from appointment \\
+\hline
+\end{longtable}
+
+\section{Procedure Management}
+
+\subsection{Procedure CRUD Operations}
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.25\textwidth}|p{0.5\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\endhead
+
+GET & \texttt{/api/procedures} & Get all procedures (paginated) \\
+POST & \texttt{/api/procedures} & Create a new procedure \\
+GET & \texttt{/api/procedures/\{id\}} & Get specific procedure by ID \\
+PUT/PATCH & \texttt{/api/procedures/\{id\}} & Update specific procedure \\
+DELETE & \texttt{/api/procedures/\{id\}} & Delete specific procedure \\
+\hline
+\end{longtable}
+
+\section{Doctor Management}
+
+\subsection{Doctor CRUD Operations}
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.25\textwidth}|p{0.5\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\endhead
+
+GET & \texttt{/api/doctors} & Get all doctors (paginated) \\
+POST & \texttt{/api/doctors} & Create a new doctor \\
+GET & \texttt{/api/doctors/\{id\}} & Get specific doctor by ID \\
+PUT/PATCH & \texttt{/api/doctors/\{id\}} & Update specific doctor \\
+DELETE & \texttt{/api/doctors/\{id\}} & Delete specific doctor \\
+\hline
+\end{longtable}
+
+\subsection{Doctor Search and Filtering}
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.25\textwidth}|p{0.5\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\endhead
+
+GET & \texttt{/api/doctors/department/\{departmentId\}} & Get doctors by department \\
+GET & \texttt{/api/doctors/procedure/\{procedureId\}} & Get doctors by procedure \\
+GET & \texttt{/api/doctors/available} & Get available doctors (basic or with filters) \\
+GET & \texttt{/api/doctors/\{id\}/slots} & Get available time slots for specific doctor \\
+\hline
+\end{longtable}
+
+\section{Role Management}
+
+\subsection{Role CRUD Operations}
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.25\textwidth}|p{0.5\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\endhead
+
+GET & \texttt{/api/roles} & Get all roles (paginated) \\
+POST & \texttt{/api/roles} & Create a new role \\
+GET & \texttt{/api/roles/\{id\}} & Get specific role by ID \\
+PUT/PATCH & \texttt{/api/roles/\{id\}} & Update specific role \\
+DELETE & \texttt{/api/roles/\{id\}} & Delete specific role \\
+\hline
+\end{longtable}
+
+\subsection{Role Permission Management}
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.25\textwidth}|p{0.5\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\endhead
+
+POST & \texttt{/api/roles/\{id\}/assign-permissions} & Assign permissions to role \\
+POST & \texttt{/api/roles/\{id\}/remove-permissions} & Remove permissions from role \\
+POST & \texttt{/api/roles/\{id\}/sync-permissions} & Sync permissions with role \\
+GET & \texttt{/api/roles/\{id\}/permissions} & Get role permissions \\
+GET & \texttt{/api/roles-permissions/all-permissions} & Get all available permissions \\
+POST & \texttt{/api/roles/check-permissions} & Check role permissions \\
+GET & \texttt{/api/roles/\{id\}/available-permissions} & Get available permissions for role \\
+\hline
+\end{longtable}
+
+\section{File Management}
+
+\subsection{File Upload Operations}
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.25\textwidth}|p{0.5\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\endhead
+
+POST & \texttt{/api/files/upload} & Upload a general file (documents, attachments) \\
+POST & \texttt{/api/files/profile-picture} & Upload user profile picture \\
+\hline
+\end{longtable}
+
+\subsection{File Retrieval Operations}
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.25\textwidth}|p{0.5\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\endhead
+
+GET & \texttt{/api/files} & Get user's uploaded files (paginated) \\
+GET & \texttt{/api/files/model-files} & Get files associated with a specific model \\
+GET & \texttt{/api/files/profile-picture} & Get user's profile picture \\
+GET & \texttt{/api/files/\{id\}} & Get file details by ID \\
+\hline
+\end{longtable}
+
+\subsection{File Access Operations}
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.25\textwidth}|p{0.5\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\endhead
+
+GET & \texttt{/api/files/\{id\}/download} & Download file (force download) \\
+GET & \texttt{/api/files/\{id\}/stream} & Stream file (view in browser) \\
+DELETE & \texttt{/api/files/\{id\}} & Delete file \\
+\hline
+\end{longtable}
+
+\subsection{File Administration (Admin Only)}
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.25\textwidth}|p{0.5\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\endhead
+
+GET & \texttt{/api/files/admin/statistics} & Get file storage statistics \\
+POST & \texttt{/api/files/admin/cleanup-expired} & Clean up expired files \\
+\hline
+\end{longtable}
+
+\section{Permission Management}
+
+\subsection{Permission CRUD Operations}
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.25\textwidth}|p{0.5\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\endhead
+
+GET & \texttt{/api/permissions} & Get all permissions (paginated) \\
+POST & \texttt{/api/permissions} & Create a new permission \\
+GET & \texttt{/api/permissions/\{id\}} & Get specific permission by ID \\
+PUT/PATCH & \texttt{/api/permissions/\{id\}} & Update specific permission \\
+DELETE & \texttt{/api/permissions/\{id\}} & Delete specific permission \\
+\hline
+\end{longtable}
+
+\subsection{Permission Role Management}
+
+\begin{longtable}{|p{0.15\textwidth}|p{0.25\textwidth}|p{0.5\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\hline
+\endhead
+
+GET & \texttt{/api/permissions/\{id\}/roles} & Get roles for permission \\
+POST & \texttt{/api/permissions/\{id\}/assign-to-roles} & Assign permission to roles \\
+POST & \texttt{/api/permissions/\{id\}/remove-from-roles} & Remove permission from roles \\
+GET & \texttt{/api/permissions-roles/all-roles} & Get all available roles \\
+\hline
+\end{longtable}
+
+\section{Request/Response Examples}
+
+\subsection{Authentication Example}
+
+\textbf{Login Request:}
+\begin{lstlisting}
+POST /api/login
+Content-Type: application/json
+
+{
+    "email": "user@example.com",
+    "password": "password123"
+}
+\end{lstlisting}
+
+\textbf{Login Response:}
+\begin{lstlisting}
+{
+    "status": "success",
+    "message": "Login successful",
+    "data": {
+        "user": {
+            "id": 1,
+            "name": "John Doe",
+            "email": "user@example.com",
+            "roles": [...]
+        },
+        "token": "1|abc123...",
+        "token_type": "Bearer",
+        "expires_at": "2024-01-01T12:00:00.000000Z"
+    }
+}
+\end{lstlisting}
+
+\subsection{Appointment Creation Example}
+
+\textbf{Create Appointment Request:}
+\begin{lstlisting}
+POST /api/appointments
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+    "date": "2024-01-15",
+    "time_slot": "09:00",
+    "patient_name": "Jane Smith",
+    "contact_number": "+1234567890",
+    "agent_id": 1,
+    "doctor_id": 2,
+    "procedure_id": 3,
+    "category_id": 1,
+    "department_id": 1,
+    "source_id": 1,
+    "notes": "Patient prefers morning appointments",
+    "mr_number": "MR123456"
+}
+\end{lstlisting}
+
+\subsection{File Upload Examples}
+
+\textbf{General File Upload Request:}
+\begin{lstlisting}
+POST /api/files/upload
+Authorization: Bearer {token}
+Content-Type: multipart/form-data
+
+Form Data:
+- file: [binary file data]
+- type: "document" (optional: attachment|document|profile_picture)
+- is_public: false (optional)
+- expires_at: "2024-12-31T23:59:59Z" (optional)
+- fileable_type: "App\\Models\\Appointment" (optional)
+- fileable_id: 123 (optional)
+- metadata: {"category": "report", "tags": ["urgent"]} (optional)
+\end{lstlisting}
+
+\textbf{File Upload Response:}
+\begin{lstlisting}
+{
+    "success": true,
+    "message": "File uploaded successfully",
+    "data": {
+        "file": {
+            "id": 1,
+            "filename": "document.pdf",
+            "original_name": "Patient Report.pdf",
+            "mime_type": "application/pdf",
+            "size": 2048576,
+            "type": "document",
+            "is_public": false,
+            "uploaded_by": 1,
+            "fileable_type": "App\\Models\\Appointment",
+            "fileable_id": 123,
+            "expires_at": "2024-12-31T23:59:59.000000Z",
+            "created_at": "2024-01-15T10:30:00.000000Z",
+            "uploadedBy": {
+                "id": 1,
+                "name": "John Doe",
+                "email": "john@example.com"
+            }
+        }
+    }
+}
+\end{lstlisting}
+
+\textbf{Profile Picture Upload Request:}
+\begin{lstlisting}
+POST /api/files/profile-picture
+Authorization: Bearer {token}
+Content-Type: multipart/form-data
+
+Form Data:
+- file: [image file data] (jpeg, png, jpg, gif, webp)
+  Requirements: 100x100 to 2000x2000 pixels, max 5MB
+\end{lstlisting}
+
+\textbf{Get User Files Request:}
+\begin{lstlisting}
+GET /api/files?type=document&limit=10&page=1
+Authorization: Bearer {token}
+\end{lstlisting}
+
+\textbf{Get Model Files Request:}
+\begin{lstlisting}
+GET /api/files/model-files?fileable_type=App\\Models\\Appointment&fileable_id=123&type=document
+Authorization: Bearer {token}
+\end{lstlisting}
+
+\textbf{Upload File with Model Association:}
+\begin{lstlisting}
+POST /api/files/upload
+Authorization: Bearer {token}
+Content-Type: multipart/form-data
+
+Form Data:
+- file: [patient_report.pdf]
+- type: "document"
+- is_public: false
+- fileable_type: "App\\Models\\Appointment"
+- fileable_id: 123
+- metadata: {
+    "category": "medical_report",
+    "department": "cardiology",
+    "urgency": "high",
+    "reviewed_by": "Dr. Johnson"
+  }
+\end{lstlisting}
+
+\textbf{Upload Temporary File with Expiration:}
+\begin{lstlisting}
+POST /api/files/upload
+Authorization: Bearer {token}
+Content-Type: multipart/form-data
+
+Form Data:
+- file: [temp_document.pdf]
+- type: "attachment"
+- is_public: true
+- expires_at: "2024-06-30T23:59:59Z"
+- metadata: {
+    "purpose": "temporary_sharing",
+    "shared_with": ["external_partner"]
+  }
+\end{lstlisting}
+
+\textbf{Get User Files with Filtering:}
+\begin{lstlisting}
+GET /api/files?type=document&limit=20&page=2
+Authorization: Bearer {token}
+
+// Response includes pagination and filtered results
+\end{lstlisting}
+
+\textbf{File Download/Stream:}
+\begin{lstlisting}
+GET /api/files/{id}/download  // Force download
+GET /api/files/{id}/stream    // View in browser
+Authorization: Bearer {token}
+\end{lstlisting}
+
+\subsection{Enhanced Doctor Availability Examples}
+
+\textbf{Basic Available Doctors Request:}
+\begin{lstlisting}
+GET /api/doctors/available
+Authorization: Bearer {token}
+\end{lstlisting}
+
+\textbf{Enhanced Available Doctors with Filters:}
+\begin{lstlisting}
+GET /api/doctors/available?date=2024-01-15&time=14:00&procedure_id=3&department_id=1&duration=90
+Authorization: Bearer {token}
+\end{lstlisting}
+
+\textbf{Enhanced Available Doctors Response:}
+\begin{lstlisting}
+{
+    "status": "success",
+    "data": [
+        {
+            "id": 2,
+            "name": "Dr. Sarah Johnson",
+            "phone_number": "+1234567890",
+            "department_id": 1,
+            "availability": {
+                "monday": {
+                    "available": true,
+                    "start_time": "09:00",
+                    "end_time": "17:00",
+                    "lunch_break": {
+                        "start": "12:00",
+                        "end": "13:00"
+                    }
+                },
+                "tuesday": {
+                    "available": true,
+                    "start_time": "10:00",
+                    "end_time": "16:00"
+                }
+            },
+            "department": {
+                "id": 1,
+                "name": "Cardiology",
+                "description": "Heart and cardiovascular care"
+            },
+            "procedures": [
+                {
+                    "id": 3,
+                    "name": "ECG",
+                    "description": "Electrocardiogram test",
+                    "duration": 60
+                }
+            ]
+        }
+    ],
+    "filters_applied": {
+        "date": "2024-01-15",
+        "time": "14:00",
+        "procedure_id": 3,
+        "department_id": 1,
+        "duration": 90
+    }
+}
+\end{lstlisting}
+
+\textbf{Get Doctor Time Slots Request:}
+\begin{lstlisting}
+GET /api/doctors/2/slots?date=2024-01-15&duration=60
+Authorization: Bearer {token}
+\end{lstlisting}
+
+\textbf{Doctor Time Slots Response:}
+\begin{lstlisting}
+{
+    "status": "success",
+    "data": {
+        "doctor_id": 2,
+        "date": "2024-01-15",
+        "slot_duration": 60,
+        "slots": [
+            {
+                "time": "09:00",
+                "available": true,
+                "duration": 60
+            },
+            {
+                "time": "10:00",
+                "available": true,
+                "duration": 60
+            },
+            {
+                "time": "11:00",
+                "available": false,
+                "duration": 60
+            },
+            {
+                "time": "12:00",
+                "available": false,
+                "duration": 60
+            },
+            {
+                "time": "13:00",
+                "available": true,
+                "duration": 60
+            },
+            {
+                "time": "14:00",
+                "available": true,
+                "duration": 60
+            },
+            {
+                "time": "15:00",
+                "available": false,
+                "duration": 60
+            },
+            {
+                "time": "16:00",
+                "available": true,
+                "duration": 60
+            }
+        ]
+    }
+}
+\end{lstlisting}
+
+\textbf{Get User Files Response:}
+\begin{lstlisting}
+{
+    "success": true,
+    "data": {
+        "files": [
+            {
+                "id": 1,
+                "filename": "report_2024.pdf",
+                "original_name": "Monthly Report January 2024.pdf",
+                "mime_type": "application/pdf",
+                "size": 1024768,
+                "type": "document",
+                "is_public": false,
+                "uploaded_by": 1,
+                "fileable_type": "App\\Models\\Appointment",
+                "fileable_id": 123,
+                "expires_at": null,
+                "metadata": {
+                    "category": "report",
+                    "department": "cardiology"
+                },
+                "created_at": "2024-01-15T10:30:00.000000Z",
+                "updated_at": "2024-01-15T10:30:00.000000Z"
+            }
+        ],
+        "pagination": {
+            "current_page": 1,
+            "last_page": 3,
+            "per_page": 15,
+            "total": 42
+        }
+    }
+}
+\end{lstlisting}
+
+\textbf{Get Model Files Response:}
+\begin{lstlisting}
+{
+    "success": true,
+    "data": {
+        "files": [
+            {
+                "id": 5,
+                "filename": "patient_xray.jpg",
+                "original_name": "X-Ray Results.jpg",
+                "mime_type": "image/jpeg",
+                "size": 2048576,
+                "type": "attachment",
+                "is_public": false,
+                "uploaded_by": 2,
+                "fileable_type": "App\\Models\\Appointment",
+                "fileable_id": 123,
+                "expires_at": "2024-12-31T23:59:59.000000Z",
+                "metadata": {
+                    "medical_type": "x-ray",
+                    "body_part": "chest"
+                },
+                "created_at": "2024-01-10T14:20:00.000000Z",
+                "uploadedBy": {
+                    "id": 2,
+                    "name": "Dr. Smith",
+                    "email": "dr.smith@hospital.com"
+                }
+            }
+        ]
+    }
+}
+\end{lstlisting}
+
+\textbf{Get Profile Picture Response:}
+\begin{lstlisting}
+{
+    "success": true,
+    "data": {
+        "profile_picture": {
+            "id": 8,
+            "filename": "profile_user_1.jpg",
+            "original_name": "my_photo.jpg",
+            "mime_type": "image/jpeg",
+            "size": 512000,
+            "type": "profile_picture",
+            "is_public": true,
+            "uploaded_by": 1,
+            "fileable_type": "App\\Models\\User",
+            "fileable_id": 1,
+            "expires_at": null,
+            "url": "https://yourapp.com/storage/files/profile_user_1.jpg",
+            "created_at": "2024-01-05T09:15:00.000000Z"
+        }
+    }
+}
+\end{lstlisting}
+
+\textbf{File Details Response:}
+\begin{lstlisting}
+{
+    "success": true,
+    "data": {
+        "file": {
+            "id": 1,
+            "filename": "contract_2024.pdf",
+            "original_name": "Service Contract 2024.pdf",
+            "mime_type": "application/pdf",
+            "size": 3145728,
+            "type": "document",
+            "is_public": false,
+            "uploaded_by": 1,
+            "fileable_type": "App\\Models\\Appointment",
+            "fileable_id": 123,
+            "expires_at": null,
+            "metadata": {
+                "category": "legal",
+                "importance": "high",
+                "tags": ["contract", "2024", "services"]
+            },
+            "created_at": "2024-01-15T10:30:00.000000Z",
+            "updated_at": "2024-01-15T10:30:00.000000Z",
+            "uploadedBy": {
+                "id": 1,
+                "name": "John Administrator",
+                "email": "admin@hospital.com",
+                "roles": ["admin"]
+            },
+            "fileable": {
+                "id": 123,
+                "date": "2024-01-20",
+                "patient_name": "Jane Doe",
+                "status": "scheduled"
+            }
+        }
+    }
+}
+\end{lstlisting}
+
+\textbf{File Statistics Response (Admin):}
+\begin{lstlisting}
+{
+    "success": true,
+    "data": {
+        "statistics": {
+            "total_files": 1247,
+            "total_size_bytes": 524288000,
+            "total_size_human": "500 MB",
+            "files_by_type": {
+                "document": 856,
+                "attachment": 312,
+                "profile_picture": 79
+            },
+            "files_by_month": {
+                "2024-01": 156,
+                "2023-12": 198,
+                "2023-11": 134
+            },
+            "public_files": 145,
+            "private_files": 1102,
+            "expired_files": 23,
+            "largest_file": {
+                "id": 456,
+                "filename": "presentation.pptx",
+                "size": 15728640,
+                "size_human": "15 MB"
+            }
+        }
+    }
+}
+\end{lstlisting}
+
+\textbf{File Upload Error Examples:}
+\begin{lstlisting}
+// File too large
+{
+    "success": false,
+    "message": "Failed to upload file: The file may not be greater than 20480 kilobytes."
+}
+
+// Invalid file type for profile picture
+{
+    "success": false,
+    "message": "The file must be an image.",
+    "errors": {
+        "file": [
+            "The file must be an image.",
+            "The image must be of type: jpeg, png, jpg, gif, or webp."
+        ]
+    }
+}
+
+// Access denied
+{
+    "success": false,
+    "message": "Access denied"
+}
+
+// File not found
+{
+    "success": false,
+    "message": "File not found"
+}
+\end{lstlisting}
+
+\textbf{File Deletion Response:}
+\begin{lstlisting}
+{
+    "success": true,
+    "message": "File deleted successfully"
+}
+\end{lstlisting}
+
+\textbf{Cleanup Expired Files Response (Admin):}
+\begin{lstlisting}
+{
+    "success": true,
+    "message": "Cleaned up 12 expired files",
+    "data": {
+        "deleted_count": 12
+    }
+}
+\end{lstlisting}
+
+\section{Error Handling}
+
+All API endpoints return consistent error responses:
+
+\begin{lstlisting}
+{
+    "status": "error",
+    "message": "Error description",
+    "error": "Detailed error message"
+}
+\end{lstlisting}
+
+Common HTTP status codes:
+\begin{itemize}
+    \item \textbf{200}: Success
+    \item \textbf{201}: Created
+    \item \textbf{400}: Bad Request
+    \item \textbf{401}: Unauthorized
+    \item \textbf{403}: Forbidden
+    \item \textbf{404}: Not Found
+    \item \textbf{422}: Validation Error
+    \item \textbf{500}: Internal Server Error
+\end{itemize}
+
+\section{Authentication Token}
+
+The authentication token expires after 8 hours. When the token expires, the frontend should:
+\begin{enumerate}
+    \item Redirect to login page
+    \item Clear stored token
+    \item Show appropriate message to user
+\end{enumerate}
+
+\section{Notes for Frontend Developers}
+
+\begin{itemize}
+    \item All endpoints require authentication except \texttt{/api/login} and \texttt{/api/register}
+    \item Include \texttt{Authorization: Bearer \{token\}} header for protected routes
+    \item Handle token expiration gracefully
+    \item Use appropriate HTTP methods (GET, POST, PUT, DELETE)
+    \item Implement proper error handling for all API calls
+    \item Consider implementing request/response interceptors for consistent error handling
+\end{itemize}
+
+\subsection{File Upload Guidelines}
+
+\begin{itemize}
+    \item \textbf{General File Uploads:} Use \texttt{/api/files/upload} with \texttt{multipart/form-data}
+    \item \textbf{File Size Limits:} General files max 20MB, profile pictures max 5MB
+    \item \textbf{Profile Pictures:} Must be images (jpeg, png, jpg, gif, webp) with dimensions 100x100 to 2000x2000 pixels
+    \item \textbf{File Types:} Specify type as \texttt{attachment}, \texttt{document}, or \texttt{profile\_picture}
+    \item \textbf{File Association:} Use \texttt{fileable\_type} and \texttt{fileable\_id} to associate files with models
+    \item \textbf{Public vs Private:} Set \texttt{is\_public} to control file access permissions
+    \item \textbf{File Expiration:} Use \texttt{expires\_at} for temporary files
+    \item \textbf{Metadata:} Store additional information in the \texttt{metadata} JSON field
+    \item \textbf{File Access Control:} Users can access their own files, public files, and files they have permission to view
+    \item \textbf{Download vs Stream:} Use \texttt{/download} endpoint to force download, \texttt{/stream} to view in browser
+\end{itemize}
+
+\subsection{Doctor Availability Guidelines}
+
+\begin{itemize}
+    \item \textbf{Basic Availability:} Use \texttt{/api/doctors/available} without parameters for doctors with general availability
+    \item \textbf{Filtered Availability:} Add query parameters to check real-time availability for specific dates/times
+    \item \textbf{Date Format:} Use \texttt{YYYY-MM-DD} format for dates (e.g., \texttt{2024-01-15})
+    \item \textbf{Time Format:} Use \texttt{HH:MM} format in 24-hour notation (e.g., \texttt{14:30} for 2:30 PM)
+    \item \textbf{Duration:} Specify in minutes (15-480), defaults to 60 minutes if not provided
+    \item \textbf{Procedure Filtering:} Use \texttt{procedure\_id} to find doctors who can perform specific procedures
+    \item \textbf{Department Filtering:} Use \texttt{department\_id} to filter by medical department
+    \item \textbf{Time Slots:} Use \texttt{/api/doctors/\{id\}/slots} to get detailed hourly availability for appointment scheduling
+    \item \textbf{Conflict Detection:} System automatically excludes time slots with existing appointments
+    \item \textbf{Working Hours:} Respects doctor's individual schedule including lunch breaks and days off
+    \item \textbf{Future Dates Only:} Availability checking only works for today or future dates
+\end{itemize}
+
+\end{document}

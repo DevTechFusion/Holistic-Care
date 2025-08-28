@@ -21,6 +21,8 @@ class Appointment extends Model
         'contact_number',
         'agent_id',
         'notes',
+        'payment_mode',
+        'amount',
         'mr_number',
         'doctor_id',
         'procedure_id',
@@ -39,6 +41,7 @@ class Appointment extends Model
      */
     protected $casts = [
         'date' => 'date',
+        'amount' => 'decimal:2',
     ];
 
     /**

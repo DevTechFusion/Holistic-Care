@@ -202,4 +202,52 @@ class ReportService extends CrudeService
 
         return $query->paginate($perPage, ['*'], 'page', $page);
     }
+
+    /**
+     * Unified filter + search for reports.
+     * Supported filters: search (string), start_date, end_date, type, generated_by, appointment_id
+     */
+    public function filterReports(array $params, $perPage = 20, $page = 1)
+    {
+        $query = $this->model->query();
+
+        if (!empty($params['search'])) {
+            $search = $params['search'];
+            $query->where(function($q) use ($search) {
+                $q->where('report_type', 'like', "%{$search}%")
+                  ->orWhere('notes', 'like', "%{$search}%")
+                  ->orWhereHas('generatedBy', function($userQuery) use ($search) {
+                      $userQuery->where('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('appointment', function($appointmentQuery) use ($search) {
+                      $appointmentQuery->where('patient_name', 'like', "%{$search}%")
+                                      ->orWhere('contact_number', 'like', "%{$search}%")
+                                      ->orWhere('mr_number', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        if (!empty($params['start_date']) && !empty($params['end_date'])) {
+            $query->byDateRange($params['start_date'], $params['end_date']);
+        }
+
+        if (!empty($params['type'])) {
+            $query->byType($params['type']);
+        }
+
+        if (!empty($params['generated_by'])) {
+            $query->byGeneratedBy($params['generated_by']);
+        }
+
+        if (!empty($params['appointment_id'])) {
+            $query->where('appointment_id', $params['appointment_id']);
+        }
+
+        $query->with([
+            'appointment.doctor', 'appointment.procedure', 'appointment.category',
+            'appointment.department', 'appointment.source', 'appointment.agent', 'remarks1', 'remarks2', 'status', 'generatedBy'
+        ]);
+
+        return $query->paginate($perPage, ['*'], 'page', $page);
+    }
 }

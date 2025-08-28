@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Appointment;
+use App\Models\Incentive;
 
 class AppointmentService extends CrudeService
 {
@@ -36,7 +37,9 @@ class AppointmentService extends CrudeService
      */
     public function createAppointment($data)
     {
-        return $this->_create($data);
+        $appointment = $this->_create($data);
+        $this->upsertIncentiveForAppointment($appointment);
+        return $appointment;
     }
 
     /**
@@ -45,9 +48,11 @@ class AppointmentService extends CrudeService
     public function updateAppointment($id, $data)
     {
         $this->_update($id, $data);
-        return $this->_find($id, [
+        $appointment = $this->_find($id, [
             'doctor', 'procedure', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
         ]);
+        $this->upsertIncentiveForAppointment($appointment);
+        return $appointment;
     }
 
     /**
@@ -153,6 +158,147 @@ class AppointmentService extends CrudeService
                 ->groupBy('category.name')
                 ->map->count(),
         ];
+    }
+
+    /**
+     * Get top agents with bookings count in the given date range.
+     */
+    public function getTopAgentsByBookings(string $startDate, string $endDate, int $limit = 5)
+    {
+        return $this->model
+            ->selectRaw('agent_id, COUNT(*) as bookings')
+            ->byDateRange($startDate, $endDate)
+            ->whereNotNull('agent_id')
+            ->groupBy('agent_id')
+            ->orderByDesc('bookings')
+            ->with(['agent:id,name'])
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * Get top sources with bookings count in the given date range.
+     */
+    public function getTopSourcesByBookings(string $startDate, string $endDate, int $limit = 5)
+    {
+        return $this->model
+            ->selectRaw('source_id, COUNT(*) as bookings')
+            ->byDateRange($startDate, $endDate)
+            ->whereNotNull('source_id')
+            ->groupBy('source_id')
+            ->orderByDesc('bookings')
+            ->with(['source:id,name'])
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * Get top doctors with bookings count in the given date range.
+     */
+    public function getTopDoctorsByBookings(string $startDate, string $endDate, int $limit = 5)
+    {
+        return $this->model
+            ->selectRaw('doctor_id, COUNT(*) as bookings')
+            ->byDateRange($startDate, $endDate)
+            ->whereNotNull('doctor_id')
+            ->groupBy('doctor_id')
+            ->orderByDesc('bookings')
+            ->with(['doctor:id,name'])
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * Count total bookings in the given date range.
+     */
+    public function countBookingsInRange(string $startDate, string $endDate): int
+    {
+        return $this->model
+            ->byDateRange($startDate, $endDate)
+            ->count();
+    }
+
+    /**
+     * Create or update incentive (1%) for an appointment when amount is present.
+     */
+    protected function upsertIncentiveForAppointment(Appointment $appointment): void
+    {
+        if (empty($appointment->amount) || empty($appointment->agent_id)) {
+            return;
+        }
+
+        $amount = (float) $appointment->amount;
+        $percentage = 1.00; // 1%
+        $incentiveAmount = round(($amount * $percentage) / 100, 2);
+
+        Incentive::updateOrCreate(
+            ['appointment_id' => $appointment->id],
+            [
+                'agent_id' => $appointment->agent_id,
+                'amount' => $amount,
+                'percentage' => $percentage,
+                'incentive_amount' => $incentiveAmount,
+            ]
+        );
+    }
+
+    /**
+     * Agent dashboard counters by status within date range.
+     */
+    public function getAgentCounters(int $agentId, string $startDate, string $endDate): array
+    {
+        $base = $this->model->byDateRange($startDate, $endDate)->where('agent_id', $agentId);
+
+        $total = (clone $base)->count();
+
+        // Map canonical status names
+        $arrived = (clone $base)->whereHas('status', function ($q) {
+            $q->where('name', 'Arrived');
+        })->count();
+
+        $notArrived = (clone $base)->whereHas('status', function ($q) {
+            $q->where('name', 'Not Show');
+        })->count();
+
+        $rescheduled = (clone $base)->whereHas('status', function ($q) {
+            $q->where('name', 'Rescheduled');
+        })->count();
+
+        return [
+            'total_bookings' => $total,
+            'arrived' => $arrived,
+            'not_arrived' => $notArrived,
+            'rescheduled' => $rescheduled,
+        ];
+    }
+
+    /**
+     * Today's appointment leaderboard for a specific agent (top 5 by time descending).
+     * Unaffected by selected filter.
+     */
+    public function getAgentTodayLeaderboard(int $agentId, int $limit = 5)
+    {
+        return $this->model
+            ->whereDate('date', now()->toDateString())
+            ->where('agent_id', $agentId)
+            ->with(['doctor', 'status', 'procedure'])
+            ->orderByDesc('time_slot')
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * Agent appointments table for date range, paginated.
+     */
+    public function getAgentAppointmentsTable(int $agentId, string $startDate, string $endDate, int $perPage = 20, int $page = 1)
+    {
+        return $this->model
+            ->byDateRange($startDate, $endDate)
+            ->where('agent_id', $agentId)
+            ->with(['doctor', 'procedure', 'category', 'department', 'source', 'status'])
+            ->orderByDesc('date')
+            ->orderByDesc('time_slot')
+            ->paginate($perPage, ['*'], 'page', $page);
     }
 
                 /**
