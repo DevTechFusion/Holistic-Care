@@ -2,18 +2,16 @@
 import { useState, useEffect } from "react";
 import GenericFormModal from "./GenericForm";
 import { useSnackbar } from "notistack";
-import { createDoctor } from "../../DAL/doctors";
+import { createDoctor, updateDoctor } from "../../DAL/doctors";
 import { getAllDepartments } from "../../DAL/departments";
 import { getProcedures } from "../../DAL/procedure";
 import WeeklyAvailability from "./WeeklyAvailability";
 
-const CreateDoctorModal = ({ open, onClose }) => {
+const CreateDoctorModal = ({ open, onClose, isEditing, data }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
-
   const [departments, setDepartments] = useState([]);
   const [procedures, setProcedures] = useState([]);
-
   const [formData, setFormData] = useState({
     name: "",
     department_id: "",
@@ -33,7 +31,9 @@ const CreateDoctorModal = ({ open, onClose }) => {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      const res = await createDoctor(formData);
+      const res = isEditing
+        ? await updateDoctor(data.id, formData)
+        : await createDoctor(formData);
       if (res?.status === 200 || res?.status === "success") {
         enqueueSnackbar("Doctor created successfully!", { variant: "success" });
         console.log("Doctor created:", res);
@@ -60,6 +60,18 @@ const CreateDoctorModal = ({ open, onClose }) => {
       setIsSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    if (open && isEditing && data) {
+      setFormData({
+        name: data.name || "",
+        department_id: data.department_id || "",
+        procedures: data.procedures || [],
+        phone_number: data.phone_number || "",
+        availability: data.availability || [],
+      });
+    }
+  }, [open, isEditing, data]);
 
   const fields = [
     {

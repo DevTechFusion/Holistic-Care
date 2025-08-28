@@ -17,7 +17,7 @@ export const  getUsersById = (id) => {
   return invokeApi({ path: `api/users/${id}` });
 };
 
-export const updateUser = (id) => {
+export const updateUser = (id, data) => {
   const reqObj = {
     method: "PUT",
     postData: data,

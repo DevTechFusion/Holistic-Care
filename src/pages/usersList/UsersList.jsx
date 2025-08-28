@@ -13,19 +13,15 @@ import {
   TableBody,
   TablePagination,
 } from "@mui/material";
-import { getUsers,
-        updateUser,
-        deleteUser
-
-} from "../../DAL/users";
-import CreateUserModal from "../../components/forms/UserForm"; // you'll create this like DepartmentForm
+import { getUsers, deleteUser } from "../../DAL/users";
+import CreateUserModal from "../../components/forms/UserForm";
 import ActionButtons from "../../constants/actionButtons";
 
 const UsersPage = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
-
+  const [targetItem, setTargetItem] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [total, setTotal] = useState(0);
@@ -49,16 +45,16 @@ const UsersPage = () => {
   }, [page, rowsPerPage]);
 
   const handleDeleteUser = async (id) => {
-      try {
-        await deleteUser(id);
-        fetchUsers();
-      } catch (err) {
-        console.error("Failed to delete user", err);
-    } 
-  }
+    try {
+      await deleteUser(id);
+      fetchUsers();
+    } catch (err) {
+      console.error("Failed to delete user", err);
+    }
+  };
 
   const handleEditUser = (user) => {
-  
+    setTargetItem(user);
     setOpenModal(true);
   };
 
@@ -96,7 +92,7 @@ const UsersPage = () => {
               <TableBody>
                 {users.map((user, idx) => (
                   <TableRow key={user.id}>
-                    <TableCell>{idx + 1}</TableCell>
+                    <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
                     <TableCell>{user.name}</TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
@@ -130,10 +126,13 @@ const UsersPage = () => {
 
       {/* Create User Modal */}
       <CreateUserModal
+        isEditing={!!targetItem}
+        data={targetItem}
         open={openModal}
         onClose={() => {
           setOpenModal(false);
-          fetchUsers(); // refresh after creating user
+          fetchUsers();
+          setTargetItem(null);
         }}
       />
     </Box>

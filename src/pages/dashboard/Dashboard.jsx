@@ -79,6 +79,7 @@ const Dashboard = () => {
           </ListItemIcon>
           <ListItemText primary="Doctor" />
         </MenuItem>
+        <Divider />
 
         <MenuItem onClick={() => handleClose("appointment")}>
           <ListItemIcon>

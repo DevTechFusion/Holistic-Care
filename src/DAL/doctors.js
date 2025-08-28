@@ -19,7 +19,7 @@ export const getDoctorById = (id) => {
   return invokeApi({ path: `api/doctors/${id}` });
 };
 
-export const updateDoctor = (id) => {
+export const updateDoctor = (id, data) => {
   const reqObj = {
     method: "PUT",
     postData: data,

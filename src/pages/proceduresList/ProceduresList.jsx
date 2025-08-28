@@ -14,9 +14,7 @@ import {
   TablePagination,
 } from "@mui/material";
 import { useSnackbar } from "notistack";
-import { getProcedures,
-         deleteProcedure
- } from "../../DAL/procedure";
+import { getProcedures, deleteProcedure } from "../../DAL/procedure";
 import CreateProcedureModal from "../../components/forms/ProcedureForm";
 import ActionButtons from "../../constants/actionButtons";
 
@@ -62,7 +60,6 @@ const ProceduresPage = () => {
   const handleUpdateProcedure = (proc) => {
     setTargetItem(proc);
     setOpenModal(true);
-   
   };
 
   return (
@@ -88,38 +85,38 @@ const ProceduresPage = () => {
           </Box>
         ) : (
           <>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Sr#</TableCell>
-                <TableCell>Procedure Name</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {procedures.length > 0 ? (
-                procedures.map((proc, idx) => (
-                  <TableRow key={proc.id || idx}>
-                    <TableCell>{idx + 1}</TableCell>
-                    <TableCell>{proc.name}</TableCell>
-                    <TableCell>
-                      <ActionButtons
-                        onEdit={() => handleUpdateProcedure(proc)}
-                        onDelete={() => handleDeleteProcedure(proc.id)}
-                      />
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Sr#</TableCell>
+                  <TableCell>Procedure Name</TableCell>
+                  <TableCell>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {procedures.length > 0 ? (
+                  procedures.map((proc, idx) => (
+                    <TableRow key={proc.id || idx}>
+                      <TableCell>{idx + 1}</TableCell>
+                      <TableCell>{proc.name}</TableCell>
+                      <TableCell>
+                        <ActionButtons
+                          onEdit={() => handleUpdateProcedure(proc)}
+                          onDelete={() => handleDeleteProcedure(proc.id)}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={2} align="center">
+                      No procedures found
                     </TableCell>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={2} align="center">
-                    No procedures found
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-          <TablePagination
+                )}
+              </TableBody>
+            </Table>
+            <TablePagination
               component="div"
               count={total}
               page={page}
@@ -132,14 +129,13 @@ const ProceduresPage = () => {
               rowsPerPageOptions={[15, 25, 50, 100]}
             />
           </>
-
         )}
       </Paper>
 
       {/* Create Procedure Modal */}
       <CreateProcedureModal
-          isEditing={Boolean(targetItem)}
-          data={targetItem}
+        isEditing={Boolean(targetItem)}
+        data={targetItem}
         open={openModal}
         onClose={() => {
           setOpenModal(false);

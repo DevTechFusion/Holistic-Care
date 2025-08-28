@@ -12,11 +12,8 @@ import {
   TableBody,
   TablePagination,
 } from "@mui/material";
-import { getDoctors,
-        deleteDoctor,
-        updateDoctor
- } from "../../DAL/doctors"; 
-import CreateDoctorModal from "../../components/forms/DoctorForm"; 
+import { getDoctors, deleteDoctor } from "../../DAL/doctors";
+import CreateDoctorModal from "../../components/forms/DoctorForm";
 import { useSnackbar } from "notistack";
 import ActionButtons from "../../constants/actionButtons";
 
@@ -28,6 +25,7 @@ const DoctorsPage = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [total, setTotal] = useState(0);
+  const [targetItem, setTargetItem] = useState(null);
 
   const fetchDoctors = async () => {
     setLoading(true);
@@ -47,28 +45,21 @@ const DoctorsPage = () => {
   }, [page, rowsPerPage]);
 
   const handleDelete = async (id) => {
-      try {
-        await deleteDoctor(id);
-        fetchDoctors();
-        enqueueSnackbar("Doctor deleted successfully", { variant: "success" });
-      } catch (err) {
-        console.error("Failed to delete doctor", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    try {
+      await deleteDoctor(id);
+      fetchDoctors();
+      enqueueSnackbar("Doctor deleted successfully", { variant: "success" });
+    } catch (err) {
+      console.error("Failed to delete doctor", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const handleUpdate = async (id, updatedData) => {
-      try {
-        await updateDoctor(id, updatedData);
-        fetchDoctors();
-        enqueueSnackbar("Doctor updated successfully", { variant: "success" });
-      } catch (err) {
-        console.error("Failed to update doctor", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const handleEdit = (doc) => {
+    setTargetItem(doc);
+    setOpenModal(true);
+  };
 
   return (
     <Box p={3}>
@@ -105,21 +96,18 @@ const DoctorsPage = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                
                 {doctors.map((doctor, idx) => (
                   <TableRow key={doctor.id}>
-                    
-                    <TableCell>{idx + 1}</TableCell>
+                    <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
                     <TableCell>{doctor.name}</TableCell>
                     <TableCell>{doctor.phone_number}</TableCell>
                     <TableCell>{doctor.department?.name}</TableCell>
                     <TableCell>
-                      
                       {doctor.procedures?.map((p) => p.name).join(", ")}
                     </TableCell>
                     <TableCell>
                       <ActionButtons
-                        onEdit={() => { handleEdit(doctor.id, doctor) }}
+                        onEdit={() => handleEdit(doctor)}
                         onDelete={() => handleDelete(doctor.id)}
                       />
                     </TableCell>
@@ -147,10 +135,13 @@ const DoctorsPage = () => {
 
       {/* Modal */}
       <CreateDoctorModal
+        isEditing={!!targetItem}
+        data={targetItem}
         open={openModal}
         onClose={() => {
           setOpenModal(false);
-          fetchDoctors(); // refresh after add
+          fetchDoctors();
+          setTargetItem(null);
         }}
       />
     </Box>

@@ -156,7 +156,7 @@ const AppointmentsPage = () => {
         open={openModal}
         onClose={() => {
           setOpenModal(false);
-          fetchAppointments(); // refresh after creating
+          fetchAppointments(); 
         }}
       />
     </Box>

@@ -1,10 +1,10 @@
 // src/components/forms/CreateUserModal.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import GenericFormModal from "./GenericForm";
 import { useSnackbar } from "notistack";
-import { createUser } from "../../DAL/users";
+import { createUser, updateUser } from "../../DAL/users";
 
-const CreateUserModal = ({ open, onClose }) => {
+const CreateUserModal = ({ open, onClose, isEditing, data }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
   const [formData, setFormData] = useState({
@@ -17,7 +17,10 @@ const CreateUserModal = ({ open, onClose }) => {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      const res = await createUser(formData);
+      const res = isEditing
+        ? await updateUser(data.id, formData)
+        
+        : await createUser(formData);
 
       if (res?.status === 200 || res?.status === "success") {
         enqueueSnackbar("User created successfully!", { variant: "success" });
@@ -46,6 +49,17 @@ const CreateUserModal = ({ open, onClose }) => {
       setIsSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    if (open && isEditing && data) {
+      setFormData({
+        name: data.name || "",
+        email: data.email || "",
+        password: "",
+        role: data.role || "",
+      });
+    }
+  }, [open, isEditing, data]);
 
   const fields = [
     {

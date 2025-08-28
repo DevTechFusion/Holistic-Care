@@ -12,9 +12,7 @@ import {
   TableBody,
   TablePagination,
 } from "@mui/material";
-import {
-  getAllDepartments, deleteDepartment
-} from "../../DAL/departments";
+import { getAllDepartments, deleteDepartment } from "../../DAL/departments";
 import CreateDepartmentModal from "../../components/forms/DepartmentForm";
 import ActionButtons from "../../constants/actionButtons";
 const DepartmentsPage = () => {
@@ -129,7 +127,7 @@ const DepartmentsPage = () => {
         open={openModal}
         onClose={() => {
           setOpenModal(false);
-          fetchDepartments(); // refresh after add/edit
+          fetchDepartments();
           setTargetItem(null);
         }}
       />

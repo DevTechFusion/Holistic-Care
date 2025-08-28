@@ -15,8 +15,6 @@ const CreateDepartmentModal = ({ open, onClose, isEditing, data }) => {
       const res = isEditing
         ? await updateDepartment(data.id, { name })
         : await createDepartment({ name });
-
-      // Example structure check — adjust based on your API's actual response
       if (res?.status === 200 || res?.status === "success") {
         enqueueSnackbar("Department created successfully!", {
           variant: "success",
@@ -25,14 +23,14 @@ const CreateDepartmentModal = ({ open, onClose, isEditing, data }) => {
         setName("");
         onClose();
       } else {
-        // If API returned an error in the body
+        
         enqueueSnackbar(res?.message || "Failed to create department", {
           variant: "error",
         });
         console.warn("API error response:", res);
       }
     } catch (error) {
-      // Network errors or unexpected exceptions
+      
       console.error("Error creating department:", error);
       enqueueSnackbar(
         error?.response?.data?.message ||
