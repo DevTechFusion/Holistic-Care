@@ -8,6 +8,9 @@ import { getAllDepartments } from "../../DAL/departments";
 import { getCategories } from "../../DAL/category";
 import { getSources } from "../../DAL/source";
 import { getRoles } from "../../DAL/modelRoles";
+import { getAllRemarks1 } from "../../DAL/remarks1";
+import { getAllRemarks2 } from "../../DAL/remarks2";
+import { getAllStatuses } from "../../DAL/status";
 
 const CreateAppointmentModal = ({ open, onClose }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -17,6 +20,9 @@ const CreateAppointmentModal = ({ open, onClose }) => {
   const [categories, setCategories] = useState([]);
   const [sources, setSources] = useState([]);
   const [roles, setRoles] = useState([]);
+  const [remarks1, setRemarks1] = useState([]);
+  const [remarks2, setRemarks2] = useState([]);
+  const [statuses, setStatuses] = useState([]);
 
   const { enqueueSnackbar } = useSnackbar();
 
@@ -33,6 +39,12 @@ const CreateAppointmentModal = ({ open, onClose }) => {
     department_id: "",
     notes: "",
     mr_number: "",
+    remarks_1_id: "",
+    remarks_2_id: "",
+    status_id: "",
+    amount: "",
+    payment_mode: "",
+
   });
 
   useEffect(() => {
@@ -43,6 +55,9 @@ const CreateAppointmentModal = ({ open, onClose }) => {
       getCategories().then((res) => setCategories(res?.data?.data || []));
       getSources().then((res) => setSources(res?.data?.data || []));
       getRoles().then((res) => setRoles(res?.data?.data || []));
+      getAllRemarks1().then((res) => setRemarks1(res?.data?.data || []));
+      getAllRemarks2().then((res) => setRemarks2(res?.data?.data || []));
+      getAllStatuses().then((res) => setStatuses(res?.data?.data || []));
     }
   }, [open]);
 
@@ -62,6 +77,9 @@ const CreateAppointmentModal = ({ open, onClose }) => {
         category_id: Number(formData.category_id),
         department_id: Number(formData.department_id),
         source_id: Number(formData.source_id),
+        remarks_1_id: Number(formData.remarks_1_id),
+        remarks_2_id: Number(formData.remarks_2_id),
+        status_id: Number(formData.status_id),
       };
 
       const res = await createAppointment(payload);
@@ -83,6 +101,11 @@ const CreateAppointmentModal = ({ open, onClose }) => {
           department_id: "",
           notes: "",
           mr_number: "",
+          remarks_1_id: "",
+          remarks_2_id: "",
+          status_id: "",
+          amount: "",
+          payment_mode: "",
         });
         onClose();
       } else {
@@ -213,6 +236,56 @@ const CreateAppointmentModal = ({ open, onClose }) => {
       onChange: (e) =>
         setFormData((p) => ({ ...p, mr_number: e.target.value })),
     },
+    {
+      name: "remarks_1_id",
+      label: "Remarks 1",
+      type: "select",
+      required: true,
+      value: formData.remarks_1_id,
+      onChange: (e) =>
+        setFormData((p) => ({ ...p, remarks_1_id: e.target.value })),
+      options: remarks1.map((r) => ({ value: r.id, label: r.name })),
+    },
+    {
+      name: "remarks_2_id",
+      label: "Remarks 2",
+      type: "select",
+      required: true,
+      value: formData.remarks_2_id,
+      onChange: (e) =>
+        setFormData((p) => ({ ...p, remarks_2_id: e.target.value })),
+      options: remarks2.map((r) => ({ value: r.id, label: r.name })),
+    },
+    {
+      name: "status_id",
+      label: "Status",
+      type: "select",
+      required: true,
+      value: formData.status_id,
+      onChange: (e) => setFormData((p) => ({ ...p, status_id: e.target.value })),
+      options: statuses.map((s) => ({ value: s.id, label: s.name })),
+    },
+    {
+      name: "amount",
+      label: "Amount",
+      type: "number",
+      required: true,
+      value: formData.amount,
+      onChange: (e) => setFormData((p) => ({ ...p, amount: e.target.value })),
+    },
+    {
+      name: "payment_mode",
+      label: "Payment Mode",
+      type: "select",
+      required: true,
+      value: formData.payment_mode,
+      onChange: (e) => setFormData((p) => ({ ...p, payment_mode: e.target.value })),
+      options: [
+  { value: "cash", label: "Cash" },
+  { value: "card", label: "Card" },
+  { value: "online", label: "Online Transfer" },
+],
+    }
   ];
 
   return (

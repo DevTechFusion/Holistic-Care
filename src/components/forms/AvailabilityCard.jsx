@@ -12,10 +12,16 @@ import {
 } from "@mui/material";
 import ConstTime from "../../constants/timeSlots";
 
-const AvailabilityCard = ({ day, setFormData }) => {
-  const [available, setAvailable] = useState(false);
-  const [startTime, setStartTime] = useState("09:00");
-  const [endTime, setEndTime] = useState("10:00");
+const AvailabilityCard = ({
+  day,
+  setFormData,
+  prevAvailability = false,
+  prevStartTime = "09:00",
+  prevEndTime = "10:00",
+}) => {
+  const [available, setAvailable] = useState(prevAvailability);
+  const [startTime, setStartTime] = useState(prevStartTime);
+  const [endTime, setEndTime] = useState(prevEndTime);
 
   useEffect(() => {
     setFormData((prevFormData) => {

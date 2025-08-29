@@ -12,7 +12,8 @@ import { SnackbarProvider } from "notistack";
 import LoginPage from "./pages/login/LoginPage";
 import Dashboard from "./pages/dashboard/Dashboard";
 import DepartmentsPage from "./pages/departmentsList/DepartmentsList";
-import UsersPage from "./pages/usersList/UsersList";
+import AgentList from "./pages/usersList/AgentList";
+import ManagerList from "./pages/usersList/ManagerList";
 import ProceduresPage from "./pages/proceduresList/ProceduresList";
 import DoctorsList from "./pages/doctorsList/DoctorsList";
 import AppointmentsList from "./pages/appointmentList/AppointmentList";
@@ -50,7 +51,8 @@ const AppRoutes = () => {
       <Route element={<AuthLayout />}>
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="departments" element={<DepartmentsPage />} />
-        <Route path="users" element={<UsersPage/>} />
+        <Route path="agents" element={<AgentList/>} />
+        <Route path="managers" element={<ManagerList/>} />
         <Route path="procedures" element={<ProceduresPage/>} />
         <Route path="doctors" element={<DoctorsList/>} />
         <Route path="appointments" element={<AppointmentsList/>} />

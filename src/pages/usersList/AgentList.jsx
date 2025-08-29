@@ -1,5 +1,5 @@
 // src/pages/users/UsersPage.jsx
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -16,6 +16,7 @@ import {
 import { getUsers, deleteUser } from "../../DAL/users";
 import CreateUserModal from "../../components/forms/UserForm";
 import ActionButtons from "../../constants/actionButtons";
+import { useLocation } from "react-router-dom";
 
 const UsersPage = () => {
   const [users, setUsers] = useState([]);
@@ -26,11 +27,13 @@ const UsersPage = () => {
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [total, setTotal] = useState(0);
 
+  const {pathname} = useLocation();
+
   // Fetch Users
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const res = await getUsers(page + 1, rowsPerPage);
+      const res = await getUsers(page + 1, rowsPerPage, pathname==="/agents"?"agent":"managerly" );
       setUsers(res?.data?.data || []);
       setTotal(res?.data?.total || 0);
     } catch (err) {

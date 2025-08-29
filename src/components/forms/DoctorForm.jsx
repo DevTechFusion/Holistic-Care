@@ -25,6 +25,7 @@ const CreateDoctorModal = ({ open, onClose, isEditing, data }) => {
       getAllDepartments().then((res) => setDepartments(res?.data?.data || []));
       console.log("Departments fetched:", departments);
       getProcedures().then((res) => setProcedures(res?.data?.data || []));
+      console.log("Procedures fetched:", procedures);
     }
   }, [open]);
 
@@ -62,16 +63,17 @@ const CreateDoctorModal = ({ open, onClose, isEditing, data }) => {
   };
 
   useEffect(() => {
-    if (open && isEditing && data) {
+    if (isEditing && data) {
       setFormData({
         name: data.name || "",
         department_id: data.department_id || "",
-        procedures: data.procedures || [],
+        procedures: data.procedures.map((item) => item.id) || "",
         phone_number: data.phone_number || "",
-        availability: data.availability || [],
+        availability: data.availability || "",
       });
+      console.log("FormData set for editing:", data);
     }
-  }, [open, isEditing, data]);
+  }, [isEditing, data]);
 
   const fields = [
     {
@@ -121,7 +123,7 @@ const CreateDoctorModal = ({ open, onClose, isEditing, data }) => {
       options: procedures.map((p) => ({ value: p.id, label: p.name })),
     },
   ];
-
+  console.log(formData);
   return (
     <GenericFormModal
       open={open}
@@ -131,7 +133,7 @@ const CreateDoctorModal = ({ open, onClose, isEditing, data }) => {
       fields={fields}
       isSubmitting={isSubmitting}
     >
-      <WeeklyAvailability setFormData={setFormData} />
+      <WeeklyAvailability setFormData={setFormData} formData={formData} />
     </GenericFormModal>
   );
 };

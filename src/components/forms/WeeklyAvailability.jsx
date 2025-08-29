@@ -12,7 +12,10 @@ const days = [
   { id: 7, name: "Sunday" },
 ];
 
-const WeeklyAvailability = ({  setFormData=() => {} }) => {
+const WeeklyAvailability = ({
+  setFormData = () => {},
+  formData = { formData },
+}) => {
   return (
     <Grid container spacing={2} width="100%">
       {days.map((day) => (
@@ -20,6 +23,9 @@ const WeeklyAvailability = ({  setFormData=() => {} }) => {
           <AvailabilityCard
             day={day}
             setFormData={setFormData}
+            prevAvailability={formData?.availability[day.id - 1]?.available}
+            prevStartTime={formData?.availability[day.id - 1]?.start_time}
+            prevEndTime={formData?.availability[day.id - 1]?.end_time}
           />
         </Grid>
       ))}

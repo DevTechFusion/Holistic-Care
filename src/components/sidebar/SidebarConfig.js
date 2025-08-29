@@ -29,7 +29,7 @@ const SidebarConfig = {
         {
           title: "Agent List",
           icon: AgentIcon,
-          path: "#",
+          path: "agents",
         },
         {
           title: "Doctor List",
@@ -44,7 +44,7 @@ const SidebarConfig = {
         {
           title: "Manager List",
           icon: ManagerIcon,
-          path: "/users",
+          path: "/managers",
         },
         {
           title: "Procedures List",

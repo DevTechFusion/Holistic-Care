@@ -9,8 +9,8 @@ export const createUser = (data) => {
   return invokeApi(reqObj);
 };
 
-export const getUsers = (page = 1, perPage = 15) => {
-  return invokeApi({ path: `api/users?page=${page}&per_page=${perPage}` });
+export const getUsers = (page = 1, perPage = 15, role) => {
+  return invokeApi({ path: `api/users/by-roles?page=${page}&per_page=${perPage}&roles=${role}` });
 };
 
 export const  getUsersById = (id) => {

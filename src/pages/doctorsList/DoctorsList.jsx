@@ -77,46 +77,57 @@ const DoctorsPage = () => {
       </Box>
 
       {/* Table */}
-      <Paper>
-        {loading ? (
-          <Box display="flex" justifyContent="center" alignItems="center" p={3}>
-            <CircularProgress />
-          </Box>
-        ) : (
-          <>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>#</TableCell>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Phone</TableCell>
-                  <TableCell>Department</TableCell>
-                  <TableCell>Procedures</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {doctors.map((doctor, idx) => (
-                  <TableRow key={doctor.id}>
-                    <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
-                    <TableCell>{doctor.name}</TableCell>
-                    <TableCell>{doctor.phone_number}</TableCell>
-                    <TableCell>{doctor.department?.name}</TableCell>
-                    <TableCell>
-                      {doctor.procedures?.map((p) => p.name).join(", ")}
-                    </TableCell>
-                    <TableCell>
-                      <ActionButtons
-                        onEdit={() => handleEdit(doctor)}
-                        onDelete={() => handleDelete(doctor.id)}
-                      />
-                    </TableCell>
-                  </TableRow>
+        <Paper>
+          {loading ? (
+            <Box display="flex" justifyContent="center" alignItems="center" p={3}>
+          <CircularProgress />
+            </Box>
+          ) : (
+            <>
+          <Table>
+            <TableHead>
+              <TableRow>
+            <TableCell>#</TableCell>
+            <TableCell>Name</TableCell>
+            <TableCell>Phone</TableCell>
+            <TableCell>Department</TableCell>
+            <TableCell>Procedures</TableCell>
+            <TableCell>Availability</TableCell>
+            <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {doctors.map((doctor, idx) => (
+            <TableRow key={doctor.id}>
+              <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
+              <TableCell>{doctor.name}</TableCell>
+              <TableCell>{doctor.phone_number}</TableCell>
+              <TableCell>{doctor.department?.name}</TableCell>
+              <TableCell>
+                {doctor.procedures?.map((p) => p.name).join(", ")}
+              </TableCell>
+              <TableCell>
+                {doctor.availability?.map((a) => (
+              <Box key={a.day}>
+                <strong>{a.day}</strong>:{" "}
+                <span style={{ color: a.available ? "green" : "red" }}>
+                  {a.available ? "Available" : "Unavailable"}
+                </span>
+              </Box>
                 ))}
-              </TableBody>
-            </Table>
+              </TableCell>
+              <TableCell>
+                <ActionButtons
+              onEdit={() => handleEdit(doctor)}
+              onDelete={() => handleDelete(doctor.id)}
+                />
+              </TableCell>
+            </TableRow>
+              ))}
+            </TableBody>
+          </Table>
 
-            {/* Pagination */}
+          {/* Pagination */}
             <TablePagination
               component="div"
               count={total}
