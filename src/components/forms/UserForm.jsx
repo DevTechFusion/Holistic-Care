@@ -116,8 +116,8 @@ const CreateUserModal = ({ open, onClose, isEditing, data }) => {
       open={open}
       onClose={onClose}
       onSubmit={handleSubmit}
-      title="Create User"
-      fields={fields}
+      title={isEditing ? "Edit User" : "Create User"}
+      fields={fields || []}
       isSubmitting={isSubmitting}
     />
   );

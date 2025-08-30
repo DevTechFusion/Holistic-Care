@@ -1,4 +1,3 @@
-// src/pages/appointments/AppointmentsPage.jsx
 import { useEffect, useState } from "react";
 import {
   Box,
@@ -16,7 +15,6 @@ import {
 import {
   getAppointments,
   deleteAppointment,
-  updateAppointment,
 } from "../../DAL/appointments";
 import CreateAppointmentModal from "../../components/forms/AppointmentForm";
 import ActionButtons from "../../constants/actionButtons";
@@ -29,6 +27,7 @@ const AppointmentsPage = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [total, setTotal] = useState(0);
+  const [targetItem, setTargetItem] = useState(null);
   const { enqueueSnackbar } = useSnackbar();
 
   // Fetch Appointments
@@ -58,19 +57,23 @@ const AppointmentsPage = () => {
       });
     } catch (err) {
       console.error("Failed to delete appointment", err);
+      enqueueSnackbar("Failed to delete appointment", {
+        variant: "error",
+      });
     }
   };
 
-  const handleUpdateAppointment = async (id, updatedData) => {
-    try {
-      await updateAppointment(id, updatedData);
-      fetchAppointments();
-      enqueueSnackbar("Appointment updated successfully", {
-        variant: "success",
-      });
-    } catch (err) {
-      console.error("Failed to update appointment", err);
-    }
+  // ✅ Fixed: Corrected function to properly pass appointment data
+  const handleUpdateAppointment = (appointment) => {
+    console.log("Opening edit modal with data:", appointment);
+    setTargetItem(appointment); // Pass the full appointment object
+    setOpenModal(true);
+  };
+
+  // ✅ Fixed: Separate handler for creating new appointment
+  const handleCreateAppointment = () => {
+    setTargetItem(null); // Clear any previous data
+    setOpenModal(true);
   };
 
   return (
@@ -82,7 +85,7 @@ const AppointmentsPage = () => {
         mb={2}
       >
         <Typography variant="h5">Appointments</Typography>
-        <Button variant="contained" onClick={() => setOpenModal(true)}>
+        <Button variant="contained" onClick={handleCreateAppointment}>
           + Add Appointment
         </Button>
       </Box>
@@ -97,12 +100,13 @@ const AppointmentsPage = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>#</TableCell>
+                  <TableCell>Sr#</TableCell>
                   <TableCell>Date</TableCell>
                   <TableCell>Time Slot</TableCell>
                   <TableCell>Patient</TableCell>
                   <TableCell>Contact</TableCell>
                   <TableCell>Doctor</TableCell>
+                  <TableCell>Agent</TableCell>
                   <TableCell>Procedure</TableCell>
                   <TableCell>Department</TableCell>
                   <TableCell>Source</TableCell>
@@ -118,14 +122,13 @@ const AppointmentsPage = () => {
                     <TableCell>{appt.patient_name}</TableCell>
                     <TableCell>{appt.contact_number}</TableCell>
                     <TableCell>{appt.doctor?.name}</TableCell>
+                    <TableCell>{appt.agent?.name}</TableCell>
                     <TableCell>{appt.procedure?.name}</TableCell>
                     <TableCell>{appt.department?.name}</TableCell>
                     <TableCell>{appt.source?.name}</TableCell>
                     <TableCell>
                       <ActionButtons
-                        onEdit={() =>
-                          handleUpdateAppointment(appt.id, { ...appt })
-                        }
+                        onEdit={() => handleUpdateAppointment(appt)} // ✅ Fixed: Pass full object
                         onDelete={() => handleDeleteAppointment(appt.id)}
                       />
                     </TableCell>
@@ -151,12 +154,15 @@ const AppointmentsPage = () => {
         )}
       </Paper>
 
-      {/* Create Appointment Modal */}
+      {/* Create/Edit Appointment Modal */}
       <CreateAppointmentModal
+        isEditing={!!targetItem}
+        data={targetItem}
         open={openModal}
         onClose={() => {
           setOpenModal(false);
           fetchAppointments(); 
+          setTargetItem(null);
         }}
       />
     </Box>

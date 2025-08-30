@@ -24,12 +24,11 @@ const SidebarConfig = {
     {
       title: "Management",
       icon: UserIcon,
-      path: "",
       children: [
         {
           title: "Agent List",
           icon: AgentIcon,
-          path: "agents",
+          path: "/agents",
         },
         {
           title: "Doctor List",
@@ -56,7 +55,7 @@ const SidebarConfig = {
     {
       title: "Reports",
       icon: ReportIcon,
-      path: "#",
+      path: "/reports",
     },
   ],
   agent: [

@@ -1,7 +1,8 @@
+// src/components/forms/CreateAppointmentModal.jsx - FIXED VERSION
 import { useEffect, useState } from "react";
 import GenericFormModal from "./GenericForm";
 import { useSnackbar } from "notistack";
-import { createAppointment } from "../../DAL/appointments";
+import { createAppointment, updateAppointment } from "../../DAL/appointments";
 import { getDoctors } from "../../DAL/doctors";
 import { getProcedures } from "../../DAL/procedure";
 import { getAllDepartments } from "../../DAL/departments";
@@ -12,7 +13,7 @@ import { getAllRemarks1 } from "../../DAL/remarks1";
 import { getAllRemarks2 } from "../../DAL/remarks2";
 import { getAllStatuses } from "../../DAL/status";
 
-const CreateAppointmentModal = ({ open, onClose }) => {
+const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [doctors, setDoctors] = useState([]);
   const [procedures, setProcedures] = useState([]);
@@ -44,9 +45,9 @@ const CreateAppointmentModal = ({ open, onClose }) => {
     status_id: "",
     amount: "",
     payment_mode: "",
-
   });
 
+  // ✅ Load dropdown data when modal opens
   useEffect(() => {
     if (open) {
       getDoctors().then((res) => setDoctors(res?.data?.data || []));
@@ -61,33 +62,34 @@ const CreateAppointmentModal = ({ open, onClose }) => {
     }
   }, [open]);
 
-  const handleSubmit = async () => {
-    if (!formData.date || !formData.time_slot || !formData.patient_name) {
-      enqueueSnackbar("Please fill all required fields", { variant: "error" });
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const payload = {
-        ...formData,
-        agent_id: Number(formData.agent_id),
-        doctor_id: Number(formData.doctor_id),
-        procedure_id: Number(formData.procedure_id),
-        category_id: Number(formData.category_id),
-        department_id: Number(formData.department_id),
-        source_id: Number(formData.source_id),
-        remarks_1_id: Number(formData.remarks_1_id),
-        remarks_2_id: Number(formData.remarks_2_id),
-        status_id: Number(formData.status_id),
-      };
-
-      const res = await createAppointment(payload);
-
-      if (res?.status === 200 || res?.status === "success") {
-        enqueueSnackbar("Appointment created successfully!", {
-          variant: "success",
+  // ✅ Handle form population - FIXED for proper data mapping
+  useEffect(() => {
+    if (open) {
+      if (isEditing && data) {
+        console.log("Populating form with data:", data);
+        
+        // ✅ Handle nested objects properly - extract IDs from nested objects
+        setFormData({
+          date: data.date || "",
+          time_slot: data.time_slot || "",
+          patient_name: data.patient_name || "",
+          contact_number: data.contact_number || "",
+          agent_id: data.agent_id || data.agent?.id || "", // Handle both direct ID and nested object
+          doctor_id: data.doctor_id || data.doctor?.id || "",
+          procedure_id: data.procedure_id || data.procedure?.id || "",
+          category_id: data.category_id || data.category?.id || "",
+          source_id: data.source_id || data.source?.id || "",
+          department_id: data.department_id || data.department?.id || "",
+          notes: data.notes || "",
+          mr_number: data.mr_number || "",
+          remarks_1_id: data.remarks_1_id || data.remarks_1?.id || "",
+          remarks_2_id: data.remarks_2_id || data.remarks_2?.id || "",
+          status_id: data.status_id || data.status?.id || "",
+          amount: data.amount || "",
+          payment_mode: data.payment_mode || "",
         });
+      } else {
+        // Reset form for creating
         setFormData({
           date: "",
           time_slot: "",
@@ -107,14 +109,53 @@ const CreateAppointmentModal = ({ open, onClose }) => {
           amount: "",
           payment_mode: "",
         });
+      }
+    }
+  }, [open, isEditing, data]);
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    try { 
+      const res = isEditing
+        ? await updateAppointment(data.id, formData)
+        : await createAppointment(formData);
+
+      if (res?.status === 200 || res?.status === "success") {
+        // ✅ Dynamic success message
+        enqueueSnackbar(`Appointment ${isEditing ? 'updated' : 'created'} successfully!`, {
+          variant: "success",
+        });
+        
+        // ✅ Only reset form data on create, not edit
+        if (!isEditing) {
+          setFormData({
+            date: "",
+            time_slot: "",
+            patient_name: "",
+            contact_number: "",
+            agent_id: "",
+            doctor_id: "",
+            procedure_id: "",
+            category_id: "",
+            source_id: "",
+            department_id: "",
+            notes: "",
+            mr_number: "",
+            remarks_1_id: "",
+            remarks_2_id: "",
+            status_id: "",
+            amount: "",
+            payment_mode: "",
+          });
+        }
         onClose();
       } else {
-        enqueueSnackbar(res?.message || "Failed to create appointment", {
+        enqueueSnackbar(res?.message || `Failed to ${isEditing ? 'update' : 'create'} appointment`, {
           variant: "error",
         });
       }
     } catch (error) {
-      console.error("Error creating appointment:", error);
+      console.error("Error with appointment:", error);
       enqueueSnackbar(
         error?.response?.data?.message ||
           "Something went wrong. Please try again.",
@@ -125,6 +166,33 @@ const CreateAppointmentModal = ({ open, onClose }) => {
     }
   };
 
+  // ✅ Reset form when modal closes (only for create mode)
+  const handleClose = () => {
+    if (!isEditing) {
+      setFormData({
+        date: "",
+        time_slot: "",
+        patient_name: "",
+        contact_number: "",
+        agent_id: "",
+        doctor_id: "",
+        procedure_id: "",
+        category_id: "",
+        source_id: "",
+        department_id: "",
+        notes: "",
+        mr_number: "",
+        remarks_1_id: "",
+        remarks_2_id: "",
+        status_id: "",
+        amount: "",
+        payment_mode: "",
+      });
+    }
+    onClose();
+  };
+
+  // ✅ FIXED: Removed console.log from fields array and fixed structure
   const fields = [
     {
       name: "date",
@@ -240,7 +308,7 @@ const CreateAppointmentModal = ({ open, onClose }) => {
       name: "remarks_1_id",
       label: "Remarks 1",
       type: "select",
-      required: true,
+      required: false,
       value: formData.remarks_1_id,
       onChange: (e) =>
         setFormData((p) => ({ ...p, remarks_1_id: e.target.value })),
@@ -250,7 +318,7 @@ const CreateAppointmentModal = ({ open, onClose }) => {
       name: "remarks_2_id",
       label: "Remarks 2",
       type: "select",
-      required: true,
+      required: false,
       value: formData.remarks_2_id,
       onChange: (e) =>
         setFormData((p) => ({ ...p, remarks_2_id: e.target.value })),
@@ -260,16 +328,17 @@ const CreateAppointmentModal = ({ open, onClose }) => {
       name: "status_id",
       label: "Status",
       type: "select",
-      required: true,
+      required: false,
       value: formData.status_id,
-      onChange: (e) => setFormData((p) => ({ ...p, status_id: e.target.value })),
+      onChange: (e) =>
+        setFormData((p) => ({ ...p, status_id: e.target.value })),
       options: statuses.map((s) => ({ value: s.id, label: s.name })),
     },
     {
       name: "amount",
       label: "Amount",
       type: "number",
-      required: true,
+      required: false,
       value: formData.amount,
       onChange: (e) => setFormData((p) => ({ ...p, amount: e.target.value })),
     },
@@ -277,25 +346,30 @@ const CreateAppointmentModal = ({ open, onClose }) => {
       name: "payment_mode",
       label: "Payment Mode",
       type: "select",
-      required: true,
+      required: false,
       value: formData.payment_mode,
-      onChange: (e) => setFormData((p) => ({ ...p, payment_mode: e.target.value })),
+      onChange: (e) =>
+        setFormData((p) => ({ ...p, payment_mode: e.target.value })),
       options: [
-  { value: "cash", label: "Cash" },
-  { value: "card", label: "Card" },
-  { value: "online", label: "Online Transfer" },
-],
-    }
+        { value: "cash", label: "Cash" },
+        { value: "card", label: "Card" },
+        { value: "online", label: "Online Transfer" },
+      ],
+    },
   ];
+
+  // ✅ Debug log moved outside fields array
+  console.log("Current formData for debugging:", formData);
 
   return (
     <GenericFormModal
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       onSubmit={handleSubmit}
-      title="Create Appointment"
-      fields={fields}
+      title={isEditing ? "Edit Appointment" : "Create Appointment"}
+      fields={fields || []}
       isSubmitting={isSubmitting}
+      isEditing={isEditing}
     />
   );
 };

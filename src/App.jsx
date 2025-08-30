@@ -16,6 +16,7 @@ import AgentList from "./pages/usersList/AgentList";
 import ManagerList from "./pages/usersList/ManagerList";
 import ProceduresPage from "./pages/proceduresList/ProceduresList";
 import DoctorsList from "./pages/doctorsList/DoctorsList";
+import ReportsPage from "./pages/reportsList/ReportsList";
 import AppointmentsList from "./pages/appointmentList/AppointmentList";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import AuthLayout from "./layouts/AuthLayout";
@@ -56,6 +57,7 @@ const AppRoutes = () => {
         <Route path="procedures" element={<ProceduresPage/>} />
         <Route path="doctors" element={<DoctorsList/>} />
         <Route path="appointments" element={<AppointmentsList/>} />
+        <Route path="reports" element={<ReportsPage />} />
       </Route>
       <Route
         path="/"

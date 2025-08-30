@@ -65,7 +65,7 @@ const CreateDepartmentModal = ({ open, onClose, isEditing, data }) => {
       onClose={onClose}
       onSubmit={handleSubmit}
       title="Create Department"
-      fields={fields}
+      fields={fields || []}
       isSubmitting={isSubmitting}
     />
   );

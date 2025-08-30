@@ -7,7 +7,6 @@ import {
   Button,
   IconButton,
   Box,
-  Typography,
   TextField,
   MenuItem,
 } from "@mui/material";
@@ -18,13 +17,13 @@ const GenericFormModal = ({
   onClose,
   onSubmit,
   title,
-  fields,
+  fields = [], // ✅ Default to empty array
   isSubmitting = false,
   children,
 }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit();
+    if (onSubmit) onSubmit();
   };
 
   return (
@@ -44,41 +43,21 @@ const GenericFormModal = ({
         <DialogContent dividers>
           <Box display="flex" flexDirection="column" gap={2}>
             {/* Render Fields */}
-            {fields.map((field) => {
+            {(fields || []).map((field, idx) => {
+              if (!field) return null; // ✅ Skip undefined/null entries
+
               if (field.type === "select") {
                 return (
                   <TextField
-                    key={field.name}
+                    key={field.name || idx}
                     select
                     label={field.label}
-                    value={field.value}
+                    value={field.value ?? ""}
                     onChange={field.onChange}
                     fullWidth
                     required={field.required}
                   >
                     {(field.options || []).map((option) => (
-  <MenuItem key={option.value} value={option.value}>
-    {option.label}
-  </MenuItem>
-))}
-
-                  </TextField>
-                );
-              }
-
-              if (field.type === "multiselect") {
-                return (
-                  <TextField
-                    key={field.name}
-                    select
-                    label={field.label}
-                    value={field.value}
-                    onChange={field.onChange}
-                    fullWidth
-                    required={field.required}
-                    SelectProps={{ multiple: true }}
-                  >
-                    {field.options.map((option) => (
                       <MenuItem key={option.value} value={option.value}>
                         {option.label}
                       </MenuItem>
@@ -87,12 +66,34 @@ const GenericFormModal = ({
                 );
               }
 
+              if (field.type === "multiselect") {
+                return (
+                  <TextField
+                    key={field.name || idx}
+                    select
+                    label={field.label}
+                    value={field.value ?? []}
+                    onChange={field.onChange}
+                    fullWidth
+                    required={field.required}
+                    SelectProps={{ multiple: true }}
+                  >
+                    {(field.options || []).map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                );
+              }
+
+              // Default text field
               return (
                 <TextField
-                  key={field.name}
+                  key={field.name || idx}
                   label={field.label}
-                  type={field.type}
-                  value={field.value}
+                  type={field.type || "text"}
+                  value={field.value ?? ""}
                   onChange={field.onChange}
                   fullWidth
                   required={field.required}
@@ -100,7 +101,6 @@ const GenericFormModal = ({
               );
             })}
 
-    
             {children}
           </Box>
         </DialogContent>
@@ -117,5 +117,3 @@ const GenericFormModal = ({
 };
 
 export default GenericFormModal;
-
-

@@ -129,8 +129,8 @@ const CreateDoctorModal = ({ open, onClose, isEditing, data }) => {
       open={open}
       onClose={onClose}
       onSubmit={handleSubmit}
-      title="Create Doctor"
-      fields={fields}
+      title={isEditing ? "Edit Doctor" : "Create Doctor"}
+      fields={fields || []}
       isSubmitting={isSubmitting}
     >
       <WeeklyAvailability setFormData={setFormData} formData={formData} />

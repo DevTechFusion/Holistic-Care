@@ -64,7 +64,7 @@ const CreateProcedureModal = ({ open, onClose, isEditing, data }) => {
       onClose={onClose}
       onSubmit={handleSubmit}
       title="Create Procedure"
-      fields={fields}
+      fields={fields || []}
       isSubmitting={isSubmitting}
     />
   );

@@ -23,7 +23,7 @@ export const deleteAppointment = (id) => {
     return invokeApi({ method: "DELETE", path: `api/appointments/${id}` });
 };
 
-export const updateAppointment = (id) => {
+export const updateAppointment = (id, data) => {
     const reqObj = {
         method: "PUT",
         postData: data,
