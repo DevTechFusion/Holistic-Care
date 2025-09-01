@@ -12,6 +12,7 @@ import { getRoles } from "../../DAL/modelRoles";
 import { getAllRemarks1 } from "../../DAL/remarks1";
 import { getAllRemarks2 } from "../../DAL/remarks2";
 import { getAllStatuses } from "../../DAL/status";
+import { createReport, updateReport } from "../../DAL/reports";
 
 const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,7 +48,6 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
     payment_mode: "",
   });
 
-  // ✅ Load dropdown data when modal opens
   useEffect(() => {
     if (open) {
       getDoctors().then((res) => setDoctors(res?.data?.data || []));
@@ -62,19 +62,15 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
     }
   }, [open]);
 
-  // ✅ Handle form population - FIXED for proper data mapping
   useEffect(() => {
     if (open) {
       if (isEditing && data) {
-        console.log("Populating form with data:", data);
-        
-        // ✅ Handle nested objects properly - extract IDs from nested objects
         setFormData({
           date: data.date || "",
           time_slot: data.time_slot || "",
           patient_name: data.patient_name || "",
           contact_number: data.contact_number || "",
-          agent_id: data.agent_id || data.agent?.id || "", // Handle both direct ID and nested object
+          agent_id: data.agent_id || data.agent?.id || "",
           doctor_id: data.doctor_id || data.doctor?.id || "",
           procedure_id: data.procedure_id || data.procedure?.id || "",
           category_id: data.category_id || data.category?.id || "",
@@ -89,7 +85,6 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
           payment_mode: data.payment_mode || "",
         });
       } else {
-        // Reset form for creating
         setFormData({
           date: "",
           time_slot: "",
@@ -113,60 +108,82 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
     }
   }, [open, isEditing, data]);
 
-  const handleSubmit = async () => {
-    setIsSubmitting(true);
-    try { 
-      const res = isEditing
-        ? await updateAppointment(data.id, formData)
-        : await createAppointment(formData);
+const handleSubmit = async () => {
+  setIsSubmitting(true);
+  try {
+    // First create or update appointment
+    const res = isEditing
+      ? await updateAppointment(data.id, formData)
+      : await createAppointment(formData);
 
-      if (res?.status === 200 || res?.status === "success") {
-        // ✅ Dynamic success message
-        enqueueSnackbar(`Appointment ${isEditing ? 'updated' : 'created'} successfully!`, {
-          variant: "success",
-        });
+    if (res?.status === 200 || res?.status === "success") {
+      const appointmentId = isEditing ? data.id : res.data?.id;
+
+    
+      const reportPayload = {
+        appointment_id: appointmentId,
+        patient_name: formData.patient_name,
+        doctor_id: formData.doctor_id,
+        status_id: formData.status_id,
+        notes: formData.notes,
+        amount: formData.amount,
+        payment_mode: formData.payment_mode,
         
-        // ✅ Only reset form data on create, not edit
-        if (!isEditing) {
-          setFormData({
-            date: "",
-            time_slot: "",
-            patient_name: "",
-            contact_number: "",
-            agent_id: "",
-            doctor_id: "",
-            procedure_id: "",
-            category_id: "",
-            source_id: "",
-            department_id: "",
-            notes: "",
-            mr_number: "",
-            remarks_1_id: "",
-            remarks_2_id: "",
-            status_id: "",
-            amount: "",
-            payment_mode: "",
-          });
-        }
-        onClose();
+      };
+
+      if (isEditing) {
+        await updateReport(appointmentId, reportPayload);
       } else {
-        enqueueSnackbar(res?.message || `Failed to ${isEditing ? 'update' : 'create'} appointment`, {
-          variant: "error",
+        await createReport(reportPayload);
+      }
+
+      enqueueSnackbar(
+        `Appointment ${isEditing ? "updated" : "created"} successfully!`,
+        { variant: "success" }
+      );
+
+      if (!isEditing) {
+        setFormData({
+          date: "",
+          time_slot: "",
+          patient_name: "",
+          contact_number: "",
+          agent_id: "",
+          doctor_id: "",
+          procedure_id: "",
+          category_id: "",
+          source_id: "",
+          department_id: "",
+          notes: "",
+          mr_number: "",
+          remarks_1_id: "",
+          remarks_2_id: "",
+          status_id: "",
+          amount: "",
+          payment_mode: "",
         });
       }
-    } catch (error) {
-      console.error("Error with appointment:", error);
+      onClose();
+    } else {
       enqueueSnackbar(
-        error?.response?.data?.message ||
-          "Something went wrong. Please try again.",
+        res?.message ||
+          `Failed to ${isEditing ? "update" : "create"} appointment`,
         { variant: "error" }
       );
-    } finally {
-      setIsSubmitting(false);
     }
-  };
+  } catch (error) {
+    console.error("Error with appointment or report:", error);
+    enqueueSnackbar(
+      error?.response?.data?.message ||
+        "Something went wrong. Please try again.",
+      { variant: "error" }
+    );
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
-  // ✅ Reset form when modal closes (only for create mode)
+
   const handleClose = () => {
     if (!isEditing) {
       setFormData({
@@ -192,7 +209,6 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
     onClose();
   };
 
-  // ✅ FIXED: Removed console.log from fields array and fixed structure
   const fields = [
     {
       name: "date",
@@ -357,9 +373,6 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
       ],
     },
   ];
-
-  // ✅ Debug log moved outside fields array
-  console.log("Current formData for debugging:", formData);
 
   return (
     <GenericFormModal

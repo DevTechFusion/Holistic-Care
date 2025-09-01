@@ -32,10 +32,5 @@ export const updateAppointment = (id, data) => {
     return invokeApi(reqObj);
 };
  
-export const getAppointmentsByDepartment = (id) => {
-    return invokeApi({ path: `api/appointments/department/${id}` });
-};
 
-export const getAppointmentsByDoctor = (id) => {
-    return invokeApi({ path: `api/appointments/doctor/${id}` });
-};  
+

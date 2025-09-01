@@ -60,6 +60,15 @@ const DoctorsPage = () => {
     setTargetItem(doc);
     setOpenModal(true);
   };
+  const DAYS = {
+    0:"Monday",
+    1:"Tuesday",
+    2:"Wednesday",
+    3:"Thursday",
+    4:"Friday",
+    5:"Saturday",
+    6:"Sunday"
+  }
 
   return (
     <Box p={3}>
@@ -107,9 +116,9 @@ const DoctorsPage = () => {
                 {doctor.procedures?.map((p) => p.name).join(", ")}
               </TableCell>
               <TableCell>
-                {doctor.availability?.map((a) => (
-              <Box key={a.day}>
-                <strong>{a.day}</strong>:{" "}
+                {doctor.availability?.map((a,index) => (
+              <Box key={index}>
+                <strong>{DAYS[index]}</strong>:{" "}
                 <span style={{ color: a.available ? "green" : "red" }}>
                   {a.available ? "Available" : "Unavailable"}
                 </span>

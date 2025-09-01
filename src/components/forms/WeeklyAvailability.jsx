@@ -14,8 +14,9 @@ const days = [
 
 const WeeklyAvailability = ({
   setFormData = () => {},
-  formData = { formData },
+  formData =  {} ,
 }) => {
+  console.log(formData);
   return (
     <Grid container spacing={2} width="100%">
       {days.map((day) => (

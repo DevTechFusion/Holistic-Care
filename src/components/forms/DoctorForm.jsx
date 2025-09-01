@@ -43,6 +43,7 @@ const CreateDoctorModal = ({ open, onClose, isEditing, data }) => {
           department_id: "",
           procedures: [],
           phone_number: "",
+          availability: [],
         });
         onClose();
       } else {
@@ -67,9 +68,9 @@ const CreateDoctorModal = ({ open, onClose, isEditing, data }) => {
       setFormData({
         name: data.name || "",
         department_id: data.department_id || "",
-        procedures: data.procedures.map((item) => item.id) || "",
+        procedures: data.procedures.map((item) => item.id) || [],
         phone_number: data.phone_number || "",
-        availability: data.availability || "",
+        availability: data.availability || [],
       });
       console.log("FormData set for editing:", data);
     }

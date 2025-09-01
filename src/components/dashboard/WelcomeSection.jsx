@@ -1,6 +1,9 @@
 import { Box, Typography } from '@mui/material';
-
+import { useAuth } from "../../contexts/AuthContext";
+  
 const WelcomeSection = () => {
+  const { user } = useAuth();
+
   return (
     <Box sx={{ mb: 3 }}>
       <Typography 
@@ -11,7 +14,7 @@ const WelcomeSection = () => {
           mb: 1
         }}
       >
-        Welcome back, 
+        Welcome back, {user?.name || "User"}!
       </Typography>
       <Typography 
         variant="body1" 

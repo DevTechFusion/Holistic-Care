@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Box, 
   Card, 
@@ -15,72 +15,50 @@ import {
   TableRow,
   Paper as MuiPaper
 } from '@mui/material';
+import { getAdminDashboard } from '../../DAL/dashboard'; 
 
 const BookingsSection = ({ title, type }) => {
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState('daily'); // ✅ default filter
+  const [data, setData] = useState([]);
 
-  const getData = () => {
-    switch (type) {
-      case 'agent':
-        return [
-          { name: 'Rimsha Ali', bookings: '15' },
-          { name: 'Ali Waqar', bookings: '12' },
-          { name: 'Aqsa', bookings: '10' },
-          { name: 'Jamshaid', bookings: '8' },
-          { name: 'Rabia', bookings: '5' }
-        ];
-      case 'source':
-        return [
-          { name: 'Insta', bookings: '20' },
-          { name: 'FB', bookings: '15' },
-          { name: 'Whatsapp', bookings: '12' },
-          { name: 'Direct', bookings: '8' },
-          { name: 'Oladoc', bookings: '5' }
-        ];
-      case 'doctor':
-        return [
-          { name: 'Dr. Rimsha Ali', bookings: '18' },
-          { name: 'Dr. Ali Waqar', bookings: '14' },
-          { name: 'Dr. Aqsa', bookings: '11' },
-          { name: 'Dr. Jamshaid', bookings: '9' },
-          { name: 'Dr. Rabia', bookings: '6' }
-        ];
-      default:
-        return [];
-    }
-  };
+  // Fetch data when component mounts or filter changes
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await getAdminDashboard(filter); 
+        const apiData = res.data?.data;
 
-  const getFilterOptions = () => {
-    switch (type) {
-      case 'agent':
-        return [
-          { value: 'all', label: 'All Agents' },
-          { value: 'top', label: 'Top Agents' },
-          { value: 'new', label: 'New Agents' }
-        ];
-      case 'source':
-        return [
-          { value: 'all', label: 'All Sources' },
-          { value: 'social', label: 'Social Media' },
-          { value: 'direct', label: 'Direct' }
-        ];
-      case 'doctor':
-        return [
-          { value: 'all', label: 'All Doctors' },
-          { value: 'cardiology', label: 'Cardiology' },
-          { value: 'neurology', label: 'Neurology' }
-        ];
-      default:
-        return [];
-    }
-  };
+        let rows = [];
+        if (type === 'agent') {
+          rows = apiData.agent_wise_bookings.map(item => ({
+            name: item.agent?.name,
+            bookings: item.bookings
+          }));
+        } else if (type === 'source') {
+          rows = apiData.source_wise_bookings.map(item => ({
+            name: item.source?.name,
+            bookings: item.bookings
+          }));
+        } else if (type === 'doctor') {
+          rows = apiData.doctor_wise_bookings.map(item => ({
+            name: item.doctor?.name,
+            bookings: item.bookings
+          }));
+        }
 
-  const data = getData();
-  const filterOptions = getFilterOptions();
+        setData(rows);
+      } catch (err) {
+        console.error("Error fetching dashboard:", err);
+      }
+    };
+
+    fetchData();
+  }, [filter, type]);
 
   return (
     <Card sx={{ height: '100%', borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
       <CardContent sx={{ p: 3 }}>
+        {/* Header with title & filter */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
             {title}
@@ -95,21 +73,18 @@ const BookingsSection = ({ title, type }) => {
                   px: 2,
                   borderRadius: 2,
                   backgroundColor: '#f5f5f5',
-                  '&:hover': {
-                    backgroundColor: '#eeeeee',
-                  }
+                  '&:hover': { backgroundColor: '#eeeeee' }
                 }
               }}
             >
-              {filterOptions.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
+              <MenuItem value="daily">Daily</MenuItem>
+              <MenuItem value="weekly">Weekly</MenuItem>
+              <MenuItem value="monthly">Monthly</MenuItem>
             </Select>
           </FormControl>
         </Box>
 
+        {/* Table */}
         <TableContainer component={MuiPaper} sx={{ boxShadow: 'none', border: '1px solid #e0e0e0' }}>
           <Table size="small">
             <TableHead>
@@ -133,6 +108,15 @@ const BookingsSection = ({ title, type }) => {
                   </TableCell>
                 </TableRow>
               ))}
+
+              {/* Empty state */}
+              {data.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={3} align="center" sx={{ py: 3, color: 'text.secondary' }}>
+                    No records found
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </TableContainer>
@@ -141,4 +125,4 @@ const BookingsSection = ({ title, type }) => {
   );
 };
 
-export default BookingsSection; 
+export default BookingsSection;

@@ -63,14 +63,14 @@ const AppointmentsPage = () => {
     }
   };
 
-  // ✅ Fixed: Corrected function to properly pass appointment data
+
   const handleUpdateAppointment = (appointment) => {
     console.log("Opening edit modal with data:", appointment);
-    setTargetItem(appointment); // Pass the full appointment object
+    setTargetItem(appointment); 
     setOpenModal(true);
   };
 
-  // ✅ Fixed: Separate handler for creating new appointment
+ 
   const handleCreateAppointment = () => {
     setTargetItem(null); // Clear any previous data
     setOpenModal(true);
