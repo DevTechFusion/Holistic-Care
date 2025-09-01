@@ -268,7 +268,7 @@ class AppointmentService extends CrudeService
     {
         $query = $this->model
             ->select([
-                'agent_id',
+                'appointments.agent_id',
                 DB::raw('COUNT(*) as bookings'),
                 DB::raw("SUM(CASE WHEN s.name = 'Arrived' THEN 1 ELSE 0 END) as arrived"),
                 DB::raw("SUM(CASE WHEN s.name = 'Not Show' THEN 1 ELSE 0 END) as no_show"),
@@ -277,10 +277,10 @@ class AppointmentService extends CrudeService
                 DB::raw('COALESCE(SUM(i.incentive_amount), 0) as incentive'),
             ])
             ->byDateRange($startDate, $endDate)
-            ->whereNotNull('agent_id')
+            ->whereNotNull('appointments.agent_id')
             ->leftJoin('statuses as s', 's.id', '=', 'appointments.status_id')
             ->leftJoin('incentives as i', 'i.appointment_id', '=', 'appointments.id')
-            ->groupBy('agent_id')
+            ->groupBy('appointments.agent_id')
             ->with(['agent:id,name']);
 
         return $query->get();
