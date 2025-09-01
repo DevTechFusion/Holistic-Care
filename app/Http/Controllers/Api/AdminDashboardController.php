@@ -26,10 +26,22 @@ class AdminDashboardController extends Controller
 
         [$startDate, $endDate] = $this->resolveDateRange($range);
 
-        $totalBookings = $this->appointmentService->countBookingsInRange($startDate, $endDate);
+        // Cards and counters
+        $statusCounters = $this->appointmentService->getStatusCountersInRange($startDate, $endDate);
+        $arrivedToday = $this->appointmentService->countArrivedToday();
+
         $topAgents = $this->appointmentService->getTopAgentsByBookings($startDate, $endDate, 5);
         $topSources = $this->appointmentService->getTopSourcesByBookings($startDate, $endDate, 5);
         $topDoctors = $this->appointmentService->getTopDoctorsByBookings($startDate, $endDate, 5);
+
+        // Revenue (agent wise)
+        $revenueByAgent = $this->appointmentService->getRevenueByAgent($startDate, $endDate);
+        $totals = [
+            'total_bookings' => (int) ($statusCounters['total_bookings'] ?? 0),
+            'total_revenue' => (float) $revenueByAgent->sum('revenue'),
+            'total_incentive' => (float) $revenueByAgent->sum('incentive'),
+            'total_arrived' => (int) $revenueByAgent->sum('arrived'),
+        ];
 
         return response()->json([
             'status' => 'success',
@@ -39,8 +51,12 @@ class AdminDashboardController extends Controller
                     'start_date' => $startDate,
                     'end_date' => $endDate,
                 ],
-                'cards' => [
-                    'total_bookings' => $totalBookings,
+                'cards' => array_merge($statusCounters, [
+                    'arrived_today' => $arrivedToday,
+                ]),
+                'revenue' => [
+                    'rows' => $revenueByAgent,
+                    'totals' => $totals,
                 ],
                 'agent_wise_bookings' => $topAgents,
                 'source_wise_bookings' => $topSources,

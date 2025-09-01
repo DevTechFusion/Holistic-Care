@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Appointment;
 use App\Models\Incentive;
+use Illuminate\Support\Facades\DB;
 
 class AppointmentService extends CrudeService
 {
@@ -216,6 +217,73 @@ class AppointmentService extends CrudeService
         return $this->model
             ->byDateRange($startDate, $endDate)
             ->count();
+    }
+
+    /**
+     * Status counters across all appointments in a date range.
+     */
+    public function getStatusCountersInRange(string $startDate, string $endDate): array
+    {
+        $base = $this->model->byDateRange($startDate, $endDate);
+
+        $total = (clone $base)->count();
+
+        $arrived = (clone $base)->whereHas('status', function ($q) {
+            $q->where('name', 'Arrived');
+        })->count();
+
+        $notArrived = (clone $base)->whereHas('status', function ($q) {
+            $q->where('name', 'Not Show');
+        })->count();
+
+        $rescheduled = (clone $base)->whereHas('status', function ($q) {
+            $q->where('name', 'Rescheduled');
+        })->count();
+
+        return [
+            'total_bookings' => $total,
+            'arrived' => $arrived,
+            'not_arrived' => $notArrived,
+            'rescheduled' => $rescheduled,
+        ];
+    }
+
+    /**
+     * Count arrived today across all agents.
+     */
+    public function countArrivedToday(): int
+    {
+        return $this->model
+            ->whereDate('date', now()->toDateString())
+            ->whereHas('status', function ($q) {
+                $q->where('name', 'Arrived');
+            })->count();
+    }
+
+    /**
+     * Revenue and incentive summary grouped by agent within date range.
+     * Includes bookings count and basic status breakdown.
+     */
+    public function getRevenueByAgent(string $startDate, string $endDate)
+    {
+        $query = $this->model
+            ->select([
+                'agent_id',
+                DB::raw('COUNT(*) as bookings'),
+                DB::raw("SUM(CASE WHEN s.name = 'Arrived' THEN 1 ELSE 0 END) as arrived"),
+                DB::raw("SUM(CASE WHEN s.name = 'Not Show' THEN 1 ELSE 0 END) as no_show"),
+                DB::raw("SUM(CASE WHEN s.name = 'Rescheduled' THEN 1 ELSE 0 END) as rescheduled"),
+                DB::raw('COALESCE(SUM(appointments.amount), 0) as revenue'),
+                DB::raw('COALESCE(SUM(i.incentive_amount), 0) as incentive'),
+            ])
+            ->byDateRange($startDate, $endDate)
+            ->whereNotNull('agent_id')
+            ->leftJoin('statuses as s', 's.id', '=', 'appointments.status_id')
+            ->leftJoin('incentives as i', 'i.appointment_id', '=', 'appointments.id')
+            ->groupBy('agent_id')
+            ->with(['agent:id,name']);
+
+        return $query->get();
     }
 
     /**

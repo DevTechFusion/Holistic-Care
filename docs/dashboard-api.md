@@ -17,7 +17,31 @@
       "end_date": "2025-01-01"
     },
     "cards": {
-      "total_bookings": 42
+      "total_bookings": 42,
+      "arrived": 16,
+      "not_arrived": 32,
+      "rescheduled": 25,
+      "arrived_today": 8
+    },
+    "revenue": {
+      "rows": [
+        {
+          "agent_id": 5,
+          "bookings": 12,
+          "arrived": 9,
+          "no_show": 1,
+          "rescheduled": 2,
+          "revenue": 5400.00,
+          "incentive": 54.00,
+          "agent": { "id": 5, "name": "Rimsha Ali" }
+        }
+      ],
+      "totals": {
+        "total_bookings": 42,
+        "total_revenue": 15400.00,
+        "total_incentive": 154.00,
+        "total_arrived": 28
+      }
     },
     "agent_wise_bookings": [
       { "agent_id": 3, "bookings": 10, "agent": { "id": 3, "name": "Alice" } }
