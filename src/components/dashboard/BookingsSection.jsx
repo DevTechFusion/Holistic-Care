@@ -18,7 +18,7 @@ import {
 import { getAdminDashboard } from '../../DAL/dashboard'; 
 
 const BookingsSection = ({ title, type }) => {
-  const [filter, setFilter] = useState('daily'); // ✅ default filter
+  const [filter, setFilter] = useState('daily');
   const [data, setData] = useState([]);
 
   // Fetch data when component mounts or filter changes
@@ -54,6 +54,8 @@ const BookingsSection = ({ title, type }) => {
 
     fetchData();
   }, [filter, type]);
+
+  console.log("Filtered Data:", data);
 
   return (
     <Card sx={{ height: '100%', borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>

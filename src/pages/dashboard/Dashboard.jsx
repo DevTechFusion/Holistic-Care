@@ -11,7 +11,6 @@ import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 import MedicalServicesIcon from "@mui/icons-material/MedicalServices";
 import BusinessIcon from "@mui/icons-material/Business";
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
-
 import CreateUserModal from "../../components/forms/UserForm";
 import CreateProcedureModal from "../../components/forms/ProcedureForm";
 import CreateDepartmentModal from "../../components/forms/DepartmentForm";
@@ -112,7 +111,6 @@ const Dashboard = () => {
       />
 
       <DashboardContent handleClick={handleClick} />
-      {/* <WeeklyAvailability /> */}
     </div>
   );
 };

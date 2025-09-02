@@ -128,7 +128,7 @@ const AppointmentsPage = () => {
                     <TableCell>{appt.source?.name}</TableCell>
                     <TableCell>
                       <ActionButtons
-                        onEdit={() => handleUpdateAppointment(appt)} // ✅ Fixed: Pass full object
+                        onEdit={() => handleUpdateAppointment(appt)}
                         onDelete={() => handleDeleteAppointment(appt.id)}
                       />
                     </TableCell>

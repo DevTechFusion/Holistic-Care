@@ -12,9 +12,8 @@ import {
   TableBody,
   TablePagination,
 } from "@mui/material";
-import ActionButtons from "../../constants/actionButtons";
+
 import { getAllReports } from "../../DAL/reports";
-import GenericFormModal from "../../components/forms/GenericForm";
 import { useSnackbar } from "notistack";
 
 const ReportsPage = () => {
@@ -30,8 +29,16 @@ const ReportsPage = () => {
   useEffect(() => {
     const fetchReports = async () => {
       try {
-        const data = await getAllReports();
-        setReports(data);
+        const res = await getAllReports();
+
+        // Adjust based on your response structure
+        const reportList = res?.data?.data || [];
+        setReports(reportList);
+
+        // set total from response metadata
+        setTotal(res?.data?.total || 0);
+
+        console.log("Fetched reports:", reportList);
       } catch (err) {
         setError(err);
       } finally {
@@ -41,10 +48,6 @@ const ReportsPage = () => {
 
     fetchReports();
   }, []);
-
-  if (loading) {
-    return <CircularProgress />;
-  }
 
   if (error) {
     return <Typography color="error">Error fetching reports</Typography>;
@@ -87,6 +90,26 @@ const ReportsPage = () => {
                   <TableCell>MOP</TableCell>
                 </TableRow>
               </TableHead>
+              <TableBody>
+                {reports.map((rep, idx) => (
+                  <TableRow key={rep.id}>
+                    <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
+                    <TableCell>{rep.appointment?.date}</TableCell>
+                    <TableCell>{rep.appointment?.time_slot}</TableCell>
+                    <TableCell>{rep.appointment?.patient_name}</TableCell>
+                    <TableCell>{rep.appointment?.contact_number}</TableCell>
+                    <TableCell>{rep.appointment?.doctor?.name}</TableCell>
+                    <TableCell>{rep.appointment?.procedure?.name}</TableCell>
+                    <TableCell>{rep.appointment?.department?.name}</TableCell>
+                    <TableCell>{rep.appointment?.source?.name}</TableCell>
+                    <TableCell>{rep.appointment?.remarks_1_id}</TableCell>
+                    <TableCell>{rep.appointment?.remarks_2_id}</TableCell>
+                    <TableCell>{rep.appointment?.status_id }</TableCell>
+                    <TableCell>{rep.amount}</TableCell>
+                    <TableCell>{rep.appointment?.payment_mode}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
             </Table>
 
             {/* Pagination */}

@@ -16,10 +16,9 @@ import {
   RevenueSection,
   BookingsSection,
 } from "../../components/dashboard";
-import { useAuth } from "../../contexts/AuthContext";
 const DashboardContent = ({ handleClick = () => {} }) => {
   const { enqueueSnackbar } = useSnackbar();
-  const { user } = useAuth();
+
 
   const handleModalOpen = (modalType) => {
     setOpenModals((prev) => ({ ...prev, [modalType]: true }));
@@ -45,7 +44,7 @@ const DashboardContent = ({ handleClick = () => {} }) => {
       autoHideDuration: 3000,
     });
 
-    // You can add API calls here
+    
     handleModalClose(modalType);
   };
 
@@ -58,7 +57,7 @@ const DashboardContent = ({ handleClick = () => {} }) => {
         alignItems="start"
         flexWrap={"wrap"}
         spacing={2}
-        mb={2}
+        mb={4}
       >
         <WelcomeSection />
         {/* Single Action Button */}
@@ -108,8 +107,6 @@ const DashboardContent = ({ handleClick = () => {} }) => {
           <BookingsSection title="Doctor Wise Bookings" type="doctor" />
         </Grid>
       </Grid>
-
-      {/* Modals */}
     </Box>
   );
 };

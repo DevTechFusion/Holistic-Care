@@ -12,7 +12,6 @@ import { getRoles } from "../../DAL/modelRoles";
 import { getAllRemarks1 } from "../../DAL/remarks1";
 import { getAllRemarks2 } from "../../DAL/remarks2";
 import { getAllStatuses } from "../../DAL/status";
-import { createReport, updateReport } from "../../DAL/reports";
 
 const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,6 +45,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
     status_id: "",
     amount: "",
     payment_mode: "",
+    create_report: true,
   });
 
   useEffect(() => {
@@ -108,81 +108,63 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
     }
   }, [open, isEditing, data]);
 
-const handleSubmit = async () => {
-  setIsSubmitting(true);
-  try {
-    // First create or update appointment
-    const res = isEditing
-      ? await updateAppointment(data.id, formData)
-      : await createAppointment(formData);
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      const res = isEditing
+        ? await updateAppointment(data.id, formData)
+        : await createAppointment(formData);
 
-    if (res?.status === 200 || res?.status === "success") {
-      const appointmentId = isEditing ? data.id : res.data?.id;
+      if (res?.status === 200 || res?.status === "success") {
+        enqueueSnackbar(
+          `Appointment ${isEditing ? "updated" : "created"} successfully!`,
+          {
+            variant: "success",
+          }
+        );
 
-    
-      const reportPayload = {
-        appointment_id: appointmentId,
-        patient_name: formData.patient_name,
-        doctor_id: formData.doctor_id,
-        status_id: formData.status_id,
-        notes: formData.notes,
-        amount: formData.amount,
-        payment_mode: formData.payment_mode,
-        
-      };
-
-      if (isEditing) {
-        await updateReport(appointmentId, reportPayload);
+        if (!isEditing) {
+          setFormData({
+            date: "",
+            time_slot: "",
+            patient_name: "",
+            contact_number: "",
+            agent_id: "",
+            doctor_id: "",
+            procedure_id: "",
+            category_id: "",
+            source_id: "",
+            department_id: "",
+            notes: "",
+            mr_number: "",
+            remarks_1_id: "",
+            remarks_2_id: "",
+            status_id: "",
+            amount: "",
+            payment_mode: "",
+          });
+        }
+        onClose();
       } else {
-        await createReport(reportPayload);
+        enqueueSnackbar(
+          res?.message ||
+            `Failed to ${isEditing ? "update" : "create"} appointment`,
+          {
+            variant: "error",
+          }
+        );
       }
-
+    } catch (error) {
+      console.error("Error with appointment:", error);
       enqueueSnackbar(
-        `Appointment ${isEditing ? "updated" : "created"} successfully!`,
-        { variant: "success" }
-      );
-
-      if (!isEditing) {
-        setFormData({
-          date: "",
-          time_slot: "",
-          patient_name: "",
-          contact_number: "",
-          agent_id: "",
-          doctor_id: "",
-          procedure_id: "",
-          category_id: "",
-          source_id: "",
-          department_id: "",
-          notes: "",
-          mr_number: "",
-          remarks_1_id: "",
-          remarks_2_id: "",
-          status_id: "",
-          amount: "",
-          payment_mode: "",
-        });
-      }
-      onClose();
-    } else {
-      enqueueSnackbar(
-        res?.message ||
-          `Failed to ${isEditing ? "update" : "create"} appointment`,
+        error?.response?.data?.message ||
+          "Something went wrong. Please try again.",
         { variant: "error" }
       );
+    } finally {
+      setIsSubmitting(false);
     }
-  } catch (error) {
-    console.error("Error with appointment or report:", error);
-    enqueueSnackbar(
-      error?.response?.data?.message ||
-        "Something went wrong. Please try again.",
-      { variant: "error" }
-    );
-  } finally {
-    setIsSubmitting(false);
-  }
-};
-
+  };
 
   const handleClose = () => {
     if (!isEditing) {
