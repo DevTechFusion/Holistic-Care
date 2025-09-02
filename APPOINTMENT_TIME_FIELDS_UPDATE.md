@@ -63,7 +63,6 @@ POST /api/appointments
   "date": "2025-01-15",
   "start_time": "10:00:00",
   "end_time": "11:00:00",
-  "duration": 60,
   "patient_name": "John Doe",
   "contact_number": "1234567890",
   "agent_id": 1,
@@ -74,21 +73,22 @@ POST /api/appointments
   "source_id": 1
 }
 ```
+**Note**: `duration` is automatically calculated and saved to the database.
 
 ### Validation Rules
 - `start_time`: Required, format `H:i:s` (e.g., "10:00:00")
 - `end_time`: Required, format `H:i:s`, must be after `start_time`
-- `duration`: Optional, integer, minimum 1 minute
+- `duration`: **Automatically calculated** based on start_time and end_time (cannot be manually set)
 
 ### Updating Appointments
 ```json
 PUT /api/appointments/{id}
 {
   "start_time": "14:00:00",
-  "end_time": "15:00:00",
-  "duration": 60
+  "end_time": "15:00:00"
 }
 ```
+**Note**: `duration` is automatically recalculated when times are updated.
 
 ## Agent Dashboard Response
 
@@ -161,9 +161,10 @@ Appointment::where('duration', 60)->get();
 - Better scheduling and conflict detection
 
 ### 2. **Duration Tracking**
-- Automatic duration calculation
-- Better resource planning
-- Billing accuracy
+- **Automatic duration calculation** from start_time and end_time
+- Duration is always accurate and consistent
+- Better resource planning and billing accuracy
+- No manual duration input errors
 
 ### 3. **Flexible Queries**
 - Time range queries (`whereBetween`)
@@ -172,8 +173,9 @@ Appointment::where('duration', 60)->get();
 
 ### 4. **Data Integrity**
 - Validation ensures end_time > start_time
-- Duration consistency
+- **Duration is automatically calculated and always consistent**
 - Better database indexing
+- **Prevents double-booking with time conflict validation**
 
 ## Testing
 
@@ -184,7 +186,8 @@ php artisan test tests/Feature/AgentDashboardTest.php
 
 ### Test Coverage
 - ✅ Time field validation
-- ✅ Duration calculation
+- ✅ **Automatic duration calculation**
+- ✅ **Time conflict prevention**
 - ✅ Ordering by start_time
 - ✅ Response structure
 - ✅ Backward compatibility
@@ -205,13 +208,20 @@ This will:
 
 ### 1. **Automatic Duration Calculation**
 ```php
-// In AppointmentService
+// In AppointmentService - Duration is automatically calculated
 public function createAppointment($data)
 {
-    if (isset($data['start_time']) && isset($data['end_time']) && !isset($data['duration'])) {
-        $start = Carbon::parse($data['start_time']);
-        $end = Carbon::parse($data['end_time']);
-        $data['duration'] = $start->diffInMinutes($end);
+    // Time conflict validation
+    if (isset($data['doctor_id']) && isset($data['date']) && isset($data['start_time']) && isset($data['end_time'])) {
+        $hasConflict = $this->hasTimeConflict($data['doctor_id'], $data['date'], $data['start_time'], $data['end_time']);
+        if ($hasConflict) {
+            throw new \Exception('Appointment time conflicts with existing appointment for this doctor on the same date.');
+        }
+    }
+    
+    // Automatically calculate duration
+    if (isset($data['start_time']) && isset($data['end_time'])) {
+        $data['duration'] = $this->calculateDuration($data['start_time'], $data['end_time']);
     }
     
     return $this->_create($data);

@@ -446,4 +446,76 @@ class AppointmentTimeConflictTest extends TestCase
 
         $response->assertStatus(422);
     }
+
+    /** @test */
+    public function it_automatically_calculates_duration_when_creating_appointment()
+    {
+        $response = $this->postJson('/api/appointments', [
+            'date' => now()->toDateString(),
+            'start_time' => '10:00:00',
+            'end_time' => '11:30:00', // 90 minutes
+            'patient_name' => 'Duration Test Patient',
+            'contact_number' => '1234567890',
+            'agent_id' => $this->user->id,
+            'doctor_id' => $this->testData['doctor']->id,
+            'procedure_id' => $this->testData['procedure']->id,
+            'category_id' => $this->testData['category']->id,
+            'department_id' => $this->testData['department']->id,
+            'source_id' => $this->testData['source']->id,
+            'status_id' => $this->testData['scheduledStatus']->id,
+            'remarks_1_id' => $this->testData['remarks1']->id,
+            'remarks_2_id' => $this->testData['remarks2']->id,
+        ]);
+
+        $response->assertStatus(201);
+        
+        // Verify appointment was created with correct duration
+        $appointment = Appointment::latest()->first();
+        $this->assertEquals(90, $appointment->duration);
+    }
+
+    /** @test */
+    public function it_automatically_calculates_duration_when_updating_appointment()
+    {
+        // Create an appointment
+        $appointment = $this->createAppointment([
+            'start_time' => '10:00:00',
+            'end_time' => '11:00:00',
+        ]);
+
+        // Update the appointment with new times
+        $response = $this->putJson("/api/appointments/{$appointment->id}", [
+            'start_time' => '14:00:00',
+            'end_time' => '15:30:00', // 90 minutes
+        ]);
+
+        $response->assertStatus(200);
+        
+        // Verify duration was recalculated
+        $appointment->refresh();
+        $this->assertEquals(90, $appointment->duration);
+    }
+
+    /** @test */
+    public function it_prevents_invalid_time_range_end_time_before_start_time()
+    {
+        $response = $this->postJson('/api/appointments', [
+            'date' => now()->toDateString(),
+            'start_time' => '11:00:00',
+            'end_time' => '10:00:00', // End time before start time
+            'patient_name' => 'Invalid Time Patient',
+            'contact_number' => '1234567890',
+            'agent_id' => $this->user->id,
+            'doctor_id' => $this->testData['doctor']->id,
+            'procedure_id' => $this->testData['procedure']->id,
+            'category_id' => $this->testData['category']->id,
+            'department_id' => $this->testData['department']->id,
+            'source_id' => $this->testData['source']->id,
+            'status_id' => $this->testData['scheduledStatus']->id,
+            'remarks_1_id' => $this->testData['remarks1']->id,
+            'remarks_2_id' => $this->testData['remarks2']->id,
+        ]);
+
+        $response->assertStatus(422);
+    }
 }
