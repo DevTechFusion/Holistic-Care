@@ -355,15 +355,98 @@ class AppointmentService extends CrudeService
      */
     public function getTopDoctorsByBookings(string $startDate, string $endDate, int $limit = 5)
     {
-        return $this->model
+        // Get top doctors by booking count
+        $topDoctors = $this->model
             ->selectRaw('doctor_id, COUNT(*) as bookings')
             ->byDateRange($startDate, $endDate)
             ->whereNotNull('doctor_id')
             ->groupBy('doctor_id')
             ->orderByDesc('bookings')
-            ->with(['doctor:id,name'])
             ->limit($limit)
             ->get();
+
+        // Get detailed information for each doctor including agent data
+        $result = [];
+        foreach ($topDoctors as $topDoctor) {
+            // Get the most recent appointment for this doctor to get agent info
+            $recentAppointment = $this->model
+                ->where('doctor_id', $topDoctor->doctor_id)
+                ->byDateRange($startDate, $endDate)
+                ->with(['doctor:id,name,department_id', 'doctor.department:id,name', 'agent:id,name'])
+                ->orderBy('created_at', 'desc')
+                ->first();
+
+            if ($recentAppointment && $recentAppointment->doctor) {
+                $result[] = [
+                    'doctor_id' => $topDoctor->doctor_id,
+                    'bookings' => $topDoctor->bookings,
+                    'doctor' => [
+                        'id' => $recentAppointment->doctor->id,
+                        'name' => $recentAppointment->doctor->name,
+                        'profile_picture' => $recentAppointment->doctor->profile_picture_url,
+                        'specialty' => $recentAppointment->doctor->department ? $recentAppointment->doctor->department->name : 'N/A',
+                        'department_id' => $recentAppointment->doctor->department_id,
+                    ],
+                    'agent' => $recentAppointment->agent ? [
+                        'id' => $recentAppointment->agent->id,
+                        'name' => $recentAppointment->agent->name,
+                    ] : null,
+                ];
+            }
+        }
+
+        return collect($result);
+    }
+
+    /**
+     * Get top doctors with bookings count filtered by department in the given date range.
+     */
+    public function getTopDoctorsByBookingsAndDepartment(string $startDate, string $endDate, int $departmentId, int $limit = 5)
+    {
+        // Get top doctors by booking count for this department
+        $topDoctors = $this->model
+            ->selectRaw('doctor_id, COUNT(*) as bookings')
+            ->byDateRange($startDate, $endDate)
+            ->whereNotNull('doctor_id')
+            ->whereHas('doctor', function ($query) use ($departmentId) {
+                $query->where('department_id', $departmentId);
+            })
+            ->groupBy('doctor_id')
+            ->orderByDesc('bookings')
+            ->limit($limit)
+            ->get();
+
+        // Get detailed information for each doctor including agent data
+        $result = [];
+        foreach ($topDoctors as $topDoctor) {
+            // Get the most recent appointment for this doctor to get agent info
+            $recentAppointment = $this->model
+                ->where('doctor_id', $topDoctor->doctor_id)
+                ->byDateRange($startDate, $endDate)
+                ->with(['doctor:id,name,department_id', 'doctor.department:id,name', 'agent:id,name'])
+                ->orderBy('created_at', 'desc')
+                ->first();
+
+            if ($recentAppointment && $recentAppointment->doctor) {
+                $result[] = [
+                    'doctor_id' => $topDoctor->doctor_id,
+                    'bookings' => $topDoctor->bookings,
+                    'doctor' => [
+                        'id' => $recentAppointment->doctor->id,
+                        'name' => $recentAppointment->doctor->name,
+                        'profile_picture' => $recentAppointment->doctor->profile_picture_url,
+                        'specialty' => $recentAppointment->doctor->department ? $recentAppointment->doctor->department->name : 'N/A',
+                        'department_id' => $recentAppointment->doctor->department_id,
+                    ],
+                    'agent' => $recentAppointment->agent ? [
+                        'id' => $recentAppointment->agent->id,
+                        'name' => $recentAppointment->agent->name,
+                    ] : null,
+                ];
+            }
+        }
+
+        return collect($result);
     }
 
     /**

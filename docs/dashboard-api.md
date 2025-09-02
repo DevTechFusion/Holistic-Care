@@ -65,6 +65,26 @@ Notes:
 - Weekly: `GET /api/dashboard?range=weekly`
 - Monthly: `GET /api/dashboard?range=monthly`
 - Yearly: `GET /api/dashboard?range=yearly`
+- With department filter: `GET /api/dashboard?range=daily&department_id=1`
+
+## Get Departments for Filter
+
+### GET /api/dashboard/departments
+
+- **Auth**: Sanctum auth required
+- **Purpose**: Get all departments for the dropdown filter
+
+### Response (200)
+```json
+{
+  "status": "success",
+  "data": [
+    { "id": 1, "name": "Cardiology" },
+    { "id": 2, "name": "Neurology" },
+    { "id": 3, "name": "Orthopedics" }
+  ]
+}
+```
 
 
 ## Manager Dashboard API

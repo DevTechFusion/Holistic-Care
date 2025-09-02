@@ -142,6 +142,7 @@ Route::middleware(['sanctum.token', 'auth:sanctum'])->group(function () {
 
     // Admin Dashboard
     Route::get('dashboard', [App\Http\Controllers\Api\AdminDashboardController::class, 'index']);
+    Route::get('dashboard/departments', [App\Http\Controllers\Api\AdminDashboardController::class, 'getDepartments']);
 
     // Agent Dashboard (current authenticated agent)
     Route::get('agent/dashboard', [App\Http\Controllers\Api\AgentDashboardController::class, 'index']);

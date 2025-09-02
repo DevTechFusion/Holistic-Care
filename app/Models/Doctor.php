@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Doctor extends Model
 {
@@ -31,6 +32,13 @@ class Doctor extends Model
     ];
 
     /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array<int, string>
+     */
+    protected $appends = ['profile_picture_url'];
+
+    /**
      * Get the department that the doctor belongs to.
      */
     public function department()
@@ -52,6 +60,38 @@ class Doctor extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get all files associated with this doctor (polymorphic).
+     */
+    public function files()
+    {
+        return $this->morphMany(File::class, 'fileable');
+    }
+
+    /**
+     * Get the doctor's profile picture.
+     */
+    public function profilePicture()
+    {
+        return $this->morphOne(File::class, 'fileable')
+            ->where('type', 'profile_picture')
+            ->whereNull('expires_at')
+            ->orWhere('expires_at', '>', now());
+    }
+
+    /**
+     * Get profile picture URL accessor.
+     */
+    protected function profilePictureUrl(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                $profilePicture = $this->profilePicture;
+                return $profilePicture ? $profilePicture->url : null;
+            }
+        );
     }
 
     /**

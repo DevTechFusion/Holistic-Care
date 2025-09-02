@@ -4,25 +4,43 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\AppointmentService;
+use App\Services\DepartmentService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class AdminDashboardController extends Controller
 {
     protected $appointmentService;
+    protected $departmentService;
 
-    public function __construct(AppointmentService $appointmentService)
+    public function __construct(AppointmentService $appointmentService, DepartmentService $departmentService)
     {
         $this->appointmentService = $appointmentService;
+        $this->departmentService = $departmentService;
+    }
+
+    /**
+     * Get departments for dropdown filter
+     */
+    public function getDepartments()
+    {
+        $departments = $this->departmentService->getDepartmentsForSelect();
+        
+        return response()->json([
+            'status' => 'success',
+            'data' => $departments,
+        ]);
     }
 
     /**
      * Admin dashboard data with single time range filter.
      * Query param: range = daily|weekly|monthly|yearly (default: daily)
+     * Query param: department_id = filter doctors by department (optional)
      */
     public function index(Request $request)
     {
         $range = $request->query('range', 'daily');
+        $departmentId = $request->query('department_id');
 
         [$startDate, $endDate] = $this->resolveDateRange($range);
 
@@ -32,7 +50,13 @@ class AdminDashboardController extends Controller
 
         $topAgents = $this->appointmentService->getTopAgentsByBookings($startDate, $endDate, 5);
         $topSources = $this->appointmentService->getTopSourcesByBookings($startDate, $endDate, 5);
-        $topDoctors = $this->appointmentService->getTopDoctorsByBookings($startDate, $endDate, 5);
+        
+        // Get top doctors with optional department filtering
+        if ($departmentId) {
+            $topDoctors = $this->appointmentService->getTopDoctorsByBookingsAndDepartment($startDate, $endDate, $departmentId, 5);
+        } else {
+            $topDoctors = $this->appointmentService->getTopDoctorsByBookings($startDate, $endDate, 5);
+        }
 
         // Revenue (agent wise)
         $revenueByAgent = $this->appointmentService->getRevenueByAgent($startDate, $endDate);
@@ -50,6 +74,7 @@ class AdminDashboardController extends Controller
                     'range' => $range,
                     'start_date' => $startDate,
                     'end_date' => $endDate,
+                    'department_id' => $departmentId,
                 ],
                 'cards' => array_merge($statusCounters, [
                     'arrived_today' => $arrivedToday,
