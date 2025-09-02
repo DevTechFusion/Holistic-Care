@@ -26,6 +26,12 @@ class AgentDashboardController extends Controller
     {
         $agent = Auth::user();
         $range = $request->query('range', 'daily');
+        
+        // Validate and default to daily if invalid range
+        if (!in_array($range, ['daily', 'weekly', 'monthly', 'yearly'])) {
+            $range = 'daily';
+        }
+        
         [$startDate, $endDate] = $this->resolveDateRange($range);
 
         $counters = $this->appointmentService->getAgentCounters($agent->id, $startDate, $endDate);

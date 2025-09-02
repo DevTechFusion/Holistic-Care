@@ -406,7 +406,7 @@ class AppointmentService extends CrudeService
             ->whereDate('date', now()->toDateString())
             ->where('agent_id', $agentId)
             ->with([
-                'doctor:id,name,specialty,profile_picture',
+                'doctor:id,name',
                 'procedure:id,name',
                 'category:id,name',
                 'status:id,name'
@@ -420,8 +420,8 @@ class AppointmentService extends CrudeService
                     'doctor' => [
                         'id' => $appointment->doctor->id ?? null,
                         'name' => $appointment->doctor->name ?? 'N/A',
-                        'profile_picture' => $appointment->doctor->profile_picture ?? null,
-                        'specialty' => $appointment->doctor->specialty ?? ($appointment->procedure->name ?? 'N/A'),
+                        'profile_picture' => null, // Field doesn't exist in doctors table
+                        'specialty' => $appointment->procedure->name ?? $appointment->category->name ?? 'N/A',
                     ],
                     'time_slot' => $appointment->time_slot,
                     'date' => $appointment->date,
