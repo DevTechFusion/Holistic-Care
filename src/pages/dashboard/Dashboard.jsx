@@ -15,8 +15,10 @@ import CreateUserModal from "../../components/forms/UserForm";
 import CreateProcedureModal from "../../components/forms/ProcedureForm";
 import CreateDepartmentModal from "../../components/forms/DepartmentForm";
 import CreateDoctorModal from "../../components/forms/DoctorForm";
-import DashboardContent from "./DashboardContent";
 import CreateAppointmentModal from "../../components/forms/AppointmentForm";
+import AgentWiseBookings from "../../components/dashboard/AgentWiseBooking";
+import SourceWiseBookings from "../../components/dashboard/SourceWiseBooking";
+import DoctorWiseBooking  from "../../components/dashboard/DoctorWiseBooking";
 
 const Dashboard = () => {
   const [openModal, setOpenModal] = useState(null);
@@ -110,7 +112,10 @@ const Dashboard = () => {
         onClose={() => setOpenModal(null)}
       />
 
-      <DashboardContent handleClick={handleClick} />
+      
+      <AgentWiseBookings />
+      <SourceWiseBookings />
+      <DoctorWiseBooking />
     </div>
   );
 };

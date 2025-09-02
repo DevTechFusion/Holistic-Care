@@ -12,7 +12,7 @@ import {
   ListItemSecondaryAction,
   CircularProgress,
 } from "@mui/material";
-import { getAdminDashboard } from "../../DAL/dashboard"; // ✅ adjust path if needed
+import { getAdminDashboard } from "../../DAL/dashboard";
 
 const DoctorLeaderboard = () => {
   const [doctors, setDoctors] = useState([]);
@@ -22,7 +22,7 @@ const DoctorLeaderboard = () => {
     const fetchDashboard = async () => {
       try {
         setLoading(true);
-        const response = await getAdminDashboard("weekly"); // default weekly
+        const response = await getAdminDashboard("weekly"); 
         if (response?.status === "success") {
           setDoctors(response.data.doctor_wise_bookings || []);
         }

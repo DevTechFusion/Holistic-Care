@@ -82,9 +82,10 @@ const ReportsPage = () => {
                   <TableCell>Doctor</TableCell>
                   <TableCell>Procedure</TableCell>
                   <TableCell>Department</TableCell>
+                  <TableCell>Agent</TableCell>
                   <TableCell>Source</TableCell>
-                  <TableCell>Remarks 1</TableCell>
-                  <TableCell>Remarks 2</TableCell>
+                  <TableCell>Remarks_1</TableCell>
+                  <TableCell>Remarks_2</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell>Amount</TableCell>
                   <TableCell>MOP</TableCell>
@@ -101,6 +102,7 @@ const ReportsPage = () => {
                     <TableCell>{rep.appointment?.doctor?.name}</TableCell>
                     <TableCell>{rep.appointment?.procedure?.name}</TableCell>
                     <TableCell>{rep.appointment?.department?.name}</TableCell>
+                    <TableCell>{rep.appointment?.agent?.name}</TableCell>
                     <TableCell>{rep.appointment?.source?.name}</TableCell>
                     <TableCell>{rep.appointment?.remarks_1_id}</TableCell>
                     <TableCell>{rep.appointment?.remarks_2_id}</TableCell>

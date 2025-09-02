@@ -2,4 +2,6 @@ export { default as WelcomeSection } from './WelcomeSection';
 export { default as StatsCards } from './StatsCards';
 export { default as DoctorLeaderboard } from './DoctorLeaderboard';
 export { default as RevenueSection } from './RevenueSection';
-export { default as BookingsSection } from './BookingsSection'; 
+export { default as AgentWiseBooking } from './AgentWiseBooking'; 
+export { default as SourceWiseBooking } from './SourceWiseBooking';
+export { default as DoctorWiseBooking } from './DoctorWiseBooking';

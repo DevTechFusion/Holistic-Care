@@ -1,7 +1,7 @@
 import { invokeApi } from "../utils/invokeApi";
 
-export const getAllReports = () => {
-    return invokeApi({ path: "api/reports" });
+export const getAllReports = (page=1, per_page=15) => {
+    return invokeApi({ path: `api/reports?page=${page}&per_page=${per_page}`});
 };
 
 export const createReport = ( data ) => {

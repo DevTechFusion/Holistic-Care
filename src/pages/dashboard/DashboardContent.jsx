@@ -14,7 +14,7 @@ import {
   StatsCards,
   DoctorLeaderboard,
   RevenueSection,
-  BookingsSection,
+ 
 } from "../../components/dashboard";
 const DashboardContent = ({ handleClick = () => {} }) => {
   const { enqueueSnackbar } = useSnackbar();
@@ -95,18 +95,8 @@ const DashboardContent = ({ handleClick = () => {} }) => {
         </Grid>
       </Grid>
 
-      {/* Bottom Section - Bookings, Source Wise, Doctor Wise */}
-      <Grid container spacing={3} sx={{ mt: 3 }}>
-        <Grid item size={{ xs: 12, md: 4 }}>
-          <BookingsSection title="Bookings (Agent wise)" type="agent" />
-        </Grid>
-        <Grid item size={{ xs: 12, md: 4 }}>
-          <BookingsSection title="Source Wise Bookings" type="source" />
-        </Grid>
-        <Grid item size={{ xs: 12, md: 4 }}>
-          <BookingsSection title="Doctor Wise Bookings" type="doctor" />
-        </Grid>
-      </Grid>
+      
+   
     </Box>
   );
 };
