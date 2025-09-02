@@ -62,13 +62,20 @@ class AppointmentController extends Controller
                 'status_id' => 'nullable|exists:statuses,id',
                 'notes' => 'nullable|string',
                 'mr_number' => 'nullable|string|max:255',
+                // Report creation flag
+                'create_report' => 'nullable|boolean',
             ]);
 
             $appointment = $this->appointmentService->createAppointment($request->all());
 
+            $message = 'Appointment created successfully';
+            if ($request->has('create_report') && $request->create_report) {
+                $message .= ' and report generated';
+            }
+
             return response()->json([
                 'status' => 'success',
-                'message' => 'Appointment created successfully',
+                'message' => $message,
                 'data' => $appointment
             ], 201);
         } catch (\Exception $e) {

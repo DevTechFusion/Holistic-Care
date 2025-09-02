@@ -4,13 +4,17 @@ namespace App\Services;
 
 use App\Models\Appointment;
 use App\Models\Incentive;
+use App\Services\ReportService;
 use Illuminate\Support\Facades\DB;
 
 class AppointmentService extends CrudeService
 {
-    public function __construct()
+    protected $reportService;
+
+    public function __construct(ReportService $reportService)
     {
         $this->model(Appointment::class);
+        $this->reportService = $reportService;
     }
 
     /**
@@ -38,8 +42,17 @@ class AppointmentService extends CrudeService
      */
     public function createAppointment($data)
     {
+        // Check if report should be created
+        $createReport = isset($data['create_report']) && $data['create_report'];
+        
         $appointment = $this->_create($data);
         $this->upsertIncentiveForAppointment($appointment);
+        
+        // Create report if requested
+        if ($createReport) {
+            $this->createReportForAppointment($appointment);
+        }
+        
         return $appointment;
     }
 
@@ -367,6 +380,29 @@ class AppointmentService extends CrudeService
             ->orderByDesc('date')
             ->orderByDesc('time_slot')
             ->paginate($perPage, ['*'], 'page', $page);
+    }
+
+    /**
+     * Create a report for the given appointment using appointment data
+     */
+    protected function createReportForAppointment($appointment)
+    {
+        try {
+            $this->reportService->generateReportFromAppointment(
+                $appointment->id,
+                'appointment_summary',
+                $appointment->agent_id,
+                $appointment->notes,
+                $appointment->amount,
+                $appointment->payment_mode,
+                $appointment->remarks_1_id,
+                $appointment->remarks_2_id,
+                $appointment->status_id
+            );
+        } catch (\Exception $e) {
+            // Log the error but don't fail the appointment creation
+            \Log::error('Failed to create report for appointment: ' . $e->getMessage());
+        }
     }
 
                 /**
