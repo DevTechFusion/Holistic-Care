@@ -397,6 +397,43 @@ class AppointmentService extends CrudeService
     }
 
     /**
+     * Get today's appointments for a specific agent with detailed information.
+     * Includes doctor details, time slots, and specialty information.
+     */
+    public function getAgentTodayAppointments(int $agentId, int $limit = 10)
+    {
+        return $this->model
+            ->whereDate('date', now()->toDateString())
+            ->where('agent_id', $agentId)
+            ->with([
+                'doctor:id,name,specialty,profile_picture',
+                'procedure:id,name',
+                'category:id,name',
+                'status:id,name'
+            ])
+            ->orderBy('time_slot')
+            ->limit($limit)
+            ->get()
+            ->map(function ($appointment) {
+                return [
+                    'id' => $appointment->id,
+                    'doctor' => [
+                        'id' => $appointment->doctor->id ?? null,
+                        'name' => $appointment->doctor->name ?? 'N/A',
+                        'profile_picture' => $appointment->doctor->profile_picture ?? null,
+                        'specialty' => $appointment->doctor->specialty ?? ($appointment->procedure->name ?? 'N/A'),
+                    ],
+                    'time_slot' => $appointment->time_slot,
+                    'date' => $appointment->date,
+                    'specialty' => $appointment->procedure->name ?? $appointment->category->name ?? 'N/A',
+                    'status' => $appointment->status->name ?? 'N/A',
+                    'patient_name' => $appointment->patient_name,
+                    'contact_number' => $appointment->contact_number,
+                ];
+            });
+    }
+
+    /**
      * Agent appointments table for date range, paginated.
      */
     public function getAgentAppointmentsTable(int $agentId, string $startDate, string $endDate, int $perPage = 20, int $page = 1)

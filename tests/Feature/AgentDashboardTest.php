@@ -1,4 +1,4 @@
-<?php
+d<?php
 
 namespace Tests\Feature;
 
@@ -37,6 +37,7 @@ class AgentDashboardTest extends TestCase
                     'filters' => ['range', 'start_date', 'end_date'],
                     'cards' => ['total_bookings', 'arrived', 'not_arrived', 'rescheduled'],
                     'today_leaderboard',
+                    'today_appointments',
                     'appointments_table' => [
                         'current_page',
                         'data',

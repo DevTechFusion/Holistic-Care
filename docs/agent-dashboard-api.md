@@ -40,6 +40,23 @@
         "procedure": { "id": 4, "name": "Consultation" }
       }
     ],
+    "today_appointments": [
+      {
+        "id": 201,
+        "doctor": {
+          "id": 5,
+          "name": "Dr. Nimra",
+          "profile_picture": "path/to/image.jpg",
+          "specialty": "Cardiology"
+        },
+        "time_slot": "10:00",
+        "date": "2025-01-01",
+        "specialty": "Cardiology",
+        "status": "Scheduled",
+        "patient_name": "John Doe",
+        "contact_number": "+1234567890"
+      }
+    ],
     "appointments_table": {
       "current_page": 1,
       "data": [

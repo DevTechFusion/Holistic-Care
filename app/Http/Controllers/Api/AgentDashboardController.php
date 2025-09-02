@@ -30,6 +30,7 @@ class AgentDashboardController extends Controller
 
         $counters = $this->appointmentService->getAgentCounters($agent->id, $startDate, $endDate);
         $leaderboardToday = $this->appointmentService->getAgentTodayLeaderboard($agent->id, 5);
+        $todayAppointments = $this->appointmentService->getAgentTodayAppointments($agent->id, 10);
 
         $perPage = (int) $request->query('per_page', 20);
         $page = (int) $request->query('page', 1);
@@ -50,6 +51,7 @@ class AgentDashboardController extends Controller
                     'rescheduled' => $counters['rescheduled'],
                 ],
                 'today_leaderboard' => $leaderboardToday,
+                'today_appointments' => $todayAppointments,
                 'appointments_table' => $table,
             ],
         ]);

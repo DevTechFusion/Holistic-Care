@@ -117,19 +117,34 @@ class ComplaintService extends CrudeService
     }
 
     /**
+     * Build the date range query for complaints.
+     * Prioritizes occurred_at when within range, falls back to created_at when occurred_at is outside range or null.
+     */
+    private function buildDateRangeQuery($query, string $startDateTime, string $endDateTime)
+    {
+        return $query->where(function ($q) use ($startDateTime, $endDateTime) {
+            $q->where(function ($q1) use ($startDateTime, $endDateTime) {
+                $q1->whereNotNull('occurred_at')
+                   ->whereBetween('occurred_at', [$startDateTime, $endDateTime]);
+            })->orWhere(function ($q2) use ($startDateTime, $endDateTime) {
+                $q2->where(function ($q3) use ($startDateTime, $endDateTime) {
+                    $q3->whereNull('occurred_at')
+                       ->whereBetween('created_at', [$startDateTime, $endDateTime]);
+                })->orWhere(function ($q4) use ($startDateTime, $endDateTime) {
+                    $q4->whereNotNull('occurred_at')
+                       ->whereNotBetween('occurred_at', [$startDateTime, $endDateTime])
+                       ->whereBetween('created_at', [$startDateTime, $endDateTime]);
+                });
+            });
+        });
+    }
+
+    /**
      * Count mistakes in a datetime range using occurred_at if present, else created_at.
      */
     public function countInRange(string $startDateTime, string $endDateTime): int
     {
-        return $this->model
-            ->where(function ($q) use ($startDateTime, $endDateTime) {
-                $q->whereBetween('occurred_at', [$startDateTime, $endDateTime])
-                  ->orWhere(function ($q2) use ($startDateTime, $endDateTime) {
-                      $q2->whereNull('occurred_at')
-                         ->whereBetween('created_at', [$startDateTime, $endDateTime]);
-                  });
-            })
-            ->count();
+        return $this->buildDateRangeQuery($this->model, $startDateTime, $endDateTime)->count();
     }
 
     /**
@@ -137,19 +152,15 @@ class ComplaintService extends CrudeService
      */
     public function mostFrequentType(string $startDateTime, string $endDateTime)
     {
-        return $this->model
-            ->selectRaw('complaint_type_id, COUNT(*) as count')
-            ->where(function ($q) use ($startDateTime, $endDateTime) {
-                $q->whereBetween('occurred_at', [$startDateTime, $endDateTime])
-                  ->orWhere(function ($q2) use ($startDateTime, $endDateTime) {
-                      $q2->whereNull('occurred_at')
-                         ->whereBetween('created_at', [$startDateTime, $endDateTime]);
-                  });
-            })
-            ->groupBy('complaint_type_id')
-            ->orderByDesc('count')
-            ->with('complaintType')
-            ->first();
+        return $this->buildDateRangeQuery(
+            $this->model->selectRaw('complaint_type_id, COUNT(*) as count'),
+            $startDateTime,
+            $endDateTime
+        )
+        ->groupBy('complaint_type_id')
+        ->orderByDesc('count')
+        ->with('complaintType')
+        ->first();
     }
 
     /**
@@ -157,20 +168,15 @@ class ComplaintService extends CrudeService
      */
     public function topAgentByMistakes(string $startDateTime, string $endDateTime)
     {
-        return $this->model
-            ->selectRaw('agent_id, COUNT(*) as mistakes')
-            ->whereNotNull('agent_id')
-            ->where(function ($q) use ($startDateTime, $endDateTime) {
-                $q->whereBetween('occurred_at', [$startDateTime, $endDateTime])
-                  ->orWhere(function ($q2) use ($startDateTime, $endDateTime) {
-                      $q2->whereNull('occurred_at')
-                         ->whereBetween('created_at', [$startDateTime, $endDateTime]);
-                  });
-            })
-            ->groupBy('agent_id')
-            ->orderByDesc('mistakes')
-            ->with(['agent:id,name'])
-            ->first();
+        return $this->buildDateRangeQuery(
+            $this->model->selectRaw('agent_id, COUNT(*) as mistakes')->whereNotNull('agent_id'),
+            $startDateTime,
+            $endDateTime
+        )
+        ->groupBy('agent_id')
+        ->orderByDesc('mistakes')
+        ->with(['agent:id,name'])
+        ->first();
     }
 
     /**
@@ -178,18 +184,14 @@ class ComplaintService extends CrudeService
      */
     public function getDetailedLog(string $startDateTime, string $endDateTime, int $perPage = 10, int $page = 1)
     {
-        return $this->model
-            ->with(['agent:id,name', 'complaintType:id,name'])
-            ->where(function ($q) use ($startDateTime, $endDateTime) {
-                $q->whereBetween('occurred_at', [$startDateTime, $endDateTime])
-                  ->orWhere(function ($q2) use ($startDateTime, $endDateTime) {
-                      $q2->whereNull('occurred_at')
-                         ->whereBetween('created_at', [$startDateTime, $endDateTime]);
-                  });
-            })
-            ->orderByDesc('occurred_at')
-            ->orderByDesc('created_at')
-            ->paginate($perPage, ['*'], 'page', $page);
+        return $this->buildDateRangeQuery(
+            $this->model->with(['agent:id,name', 'complaintType:id,name']),
+            $startDateTime,
+            $endDateTime
+        )
+        ->orderByDesc('occurred_at')
+        ->orderByDesc('created_at')
+        ->paginate($perPage, ['*'], 'page', $page);
     }
 
     /**
