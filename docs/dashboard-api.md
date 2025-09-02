@@ -79,9 +79,10 @@ Notes:
 
 ### Behavior
 - A single filter (range) applies across the entire dashboard.
-- Cards displayed: `total_mistakes`, `most_frequent_type`, `top_agent`, `total_appointments`.
+- Cards displayed: `total_mistakes`, `most_frequent_type`, `top_agent`, `new_clients`.
 - Detailed Mistake Log (paginated) with columns: Date, Day, Agent, Mistake Type, Platform, Description.
-- Mistake Count by Agent: Each row lists an agent with a `total` column and separate columns per mistake type.
+- Mistake Count by Agent: Each row lists an agent with a `total` column and separate columns per mistake type (using actual type names).
+- Mistake Type Percentages: Data for donut chart showing distribution of mistake types.
 
 ### Response (200)
 ```json
@@ -97,7 +98,7 @@ Notes:
       "total_mistakes": 94,
       "most_frequent_type": { "complaint_type_id": 1, "count": 45, "complaint_type": {"id": 1, "name": "Missed reply"} },
       "top_agent": { "agent_id": 5, "mistakes": 31, "agent": {"id": 5, "name": "Wajeeha"} },
-      "total_appointments": 25
+      "new_clients": 25
     },
     "detailed_log": {
       "current_page": 1,
@@ -116,8 +117,14 @@ Notes:
       "total": 94
     },
     "mistake_count_by_agent": [
-      { "agent_id": 5, "agent_name": "Wajeeha", "type_1": 19, "type_2": 5, "type_3": 3, "total": 31 },
-      { "agent_id": 7, "agent_name": "Nimrah", "type_1": 6, "type_2": 2, "type_3": 3, "total": 12 }
+      { "agent_id": 5, "agent_name": "Wajeeha", "Missed reply": 19, "Disinformation": 5, "Retargeting": 3, "total": 31 },
+      { "agent_id": 7, "agent_name": "Nimrah", "Missed reply": 6, "Disinformation": 2, "Retargeting": 3, "total": 12 }
+    ],
+    "mistake_type_percentages": [
+      { "type_id": 1, "type_name": "Missed reply", "count": 45, "percentage": 45.0 },
+      { "type_id": 2, "type_name": "Disinformation", "count": 25, "percentage": 25.0 },
+      { "type_id": 3, "type_name": "Incomplete Chat", "count": 15, "percentage": 15.0 },
+      { "type_id": 4, "type_name": "Retargeting", "count": 15, "percentage": 15.0 }
     ]
   }
 }

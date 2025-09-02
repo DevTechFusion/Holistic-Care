@@ -233,6 +233,34 @@ class AppointmentService extends CrudeService
     }
 
     /**
+     * Count new clients in the given date range.
+     * A new client is defined as a patient_name that appears for the first time in the system.
+     */
+    public function countNewClientsInRange(string $startDate, string $endDate): int
+    {
+        // Get all patient names that appeared in the given range
+        $patientsInRange = $this->model
+            ->byDateRange($startDate, $endDate)
+            ->whereNotNull('patient_name')
+            ->distinct()
+            ->pluck('patient_name');
+
+        if ($patientsInRange->isEmpty()) {
+            return 0;
+        }
+
+        // Count how many of these patients appeared for the first time in the system
+        $newClients = $this->model
+            ->whereIn('patient_name', $patientsInRange)
+            ->where('date', '<', $startDate)
+            ->distinct()
+            ->pluck('patient_name');
+
+        // New clients are those who didn't appear before the start date
+        return $patientsInRange->diff($newClients)->count();
+    }
+
+    /**
      * Status counters across all appointments in a date range.
      */
     public function getStatusCountersInRange(string $startDate, string $endDate): array

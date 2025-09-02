@@ -35,9 +35,10 @@ class ManagerDashboardTest extends TestCase
                 'status',
                 'data' => [
                     'filters' => ['range', 'start_date', 'end_date'],
-                    'cards' => ['total_mistakes', 'most_frequent_type', 'top_agent', 'total_appointments'],
+                    'cards' => ['total_mistakes', 'most_frequent_type', 'top_agent', 'new_clients'],
                     'detailed_log' => ['current_page', 'data', 'per_page', 'total'],
                     'mistake_count_by_agent',
+                    'mistake_type_percentages',
                 ],
             ]);
     }

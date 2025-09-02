@@ -32,10 +32,11 @@ class ManagerDashboardController extends Controller
         $totalMistakes = $this->complaintService->countInRange($startDate, $endDate);
         $mostFrequentType = $this->complaintService->mostFrequentType($startDate, $endDate);
         $topAgent = $this->complaintService->topAgentByMistakes($startDate, $endDate);
-        $totalAppointments = $this->appointmentService->countBookingsInRange($startDate, $endDate);
+        $newClients = $this->appointmentService->countNewClientsInRange($startDate, $endDate);
 
         $log = $this->complaintService->getDetailedLog($startDate, $endDate, (int) $request->get('per_page', 10), (int) $request->get('page', 1));
-        $agentCounts = $this->complaintService->mistakeCountByAgentWithTypes($startDate, $endDate);
+        $agentCounts = $this->complaintService->mistakeCountByAgentWithTypeNames($startDate, $endDate);
+        $mistakeTypePercentages = $this->complaintService->getMistakeTypePercentages($startDate, $endDate);
 
         return response()->json([
             'status' => 'success',
@@ -49,10 +50,11 @@ class ManagerDashboardController extends Controller
                     'total_mistakes' => $totalMistakes,
                     'most_frequent_type' => $mostFrequentType,
                     'top_agent' => $topAgent,
-                    'total_appointments' => $totalAppointments,
+                    'new_clients' => $newClients,
                 ],
                 'detailed_log' => $log,
                 'mistake_count_by_agent' => $agentCounts,
+                'mistake_type_percentages' => $mistakeTypePercentages,
             ],
         ]);
     }
@@ -77,6 +79,12 @@ class ManagerDashboardController extends Controller
             default:
                 $start = $today->copy()->startOfDay();
                 $end = $today->copy()->endOfDay();
+        }
+
+        // For monthly and yearly ranges, ensure we cover the full day
+        if (in_array($range, ['monthly', 'yearly'])) {
+            $start = $start->startOfDay();
+            $end = $end->endOfDay();
         }
 
         return [$start->toDateTimeString(), $end->toDateTimeString()];

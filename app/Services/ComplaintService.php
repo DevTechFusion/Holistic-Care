@@ -264,4 +264,126 @@ class ComplaintService extends CrudeService
         // Return indexed by agent_id
         return array_values($row = $result);
     }
+
+    /**
+     * Get mistake count by agent with proper type names instead of generic type_1, type_2 etc.
+     */
+    public function mistakeCountByAgentWithTypeNames(string $startDateTime, string $endDateTime)
+    {
+        // Get all complaint types with their names
+        $types = $this->model->select('complaint_type_id')
+            ->distinct()
+            ->with('complaintType:id,name')
+            ->get()
+            ->pluck('complaintType.name', 'complaint_type_id')
+            ->filter();
+
+        $base = $this->model
+            ->where(function ($q) use ($startDateTime, $endDateTime) {
+                $q->whereBetween('occurred_at', [$startDateTime, $endDateTime])
+                  ->orWhere(function ($q2) use ($startDateTime, $endDateTime) {
+                      $q2->whereNull('occurred_at')
+                         ->whereBetween('created_at', [$startDateTime, $endDateTime]);
+                  });
+            })
+            ->whereNotNull('agent_id');
+
+        $totals = $base->clone()
+            ->selectRaw('agent_id, COUNT(*) as total')
+            ->groupBy('agent_id')
+            ->pluck('total', 'agent_id');
+
+        $result = [];
+
+        // Prepare per-agent rows
+        foreach ($totals as $agentId => $total) {
+            $result[$agentId] = [
+                'agent_id' => $agentId,
+                'total' => (int) $total,
+            ];
+        }
+
+        // For each type, compute counts per agent
+        foreach ($types as $typeId => $typeName) {
+            $counts = $this->model
+                ->selectRaw('agent_id, COUNT(*) as count')
+                ->where('complaint_type_id', $typeId)
+                ->where(function ($q) use ($startDateTime, $endDateTime) {
+                    $q->whereBetween('occurred_at', [$startDateTime, $endDateTime])
+                      ->orWhere(function ($q2) use ($startDateTime, $endDateTime) {
+                          $q2->whereNull('occurred_at')
+                             ->whereBetween('created_at', [$startDateTime, $endDateTime]);
+                      });
+                })
+                ->groupBy('agent_id')
+                ->pluck('count', 'agent_id');
+
+            foreach ($counts as $agentId => $count) {
+                if (!isset($result[$agentId])) {
+                    $result[$agentId] = [
+                        'agent_id' => $agentId,
+                        'total' => 0,
+                    ];
+                }
+                // Use the type name as the key (e.g., "Missed Reply", "Disinformation")
+                $result[$agentId][$typeName] = (int) $count;
+            }
+        }
+
+        // Attach agent names
+        $agentNames = $this->model->with('agent:id,name')
+            ->whereIn('agent_id', array_keys($result))
+            ->get()
+            ->pluck('agent.name', 'agent_id');
+
+        foreach ($result as $agentId => &$row) {
+            $row['agent_name'] = $agentNames[$agentId] ?? null;
+        }
+
+        // Return indexed by agent_id
+        return array_values($result);
+    }
+
+    /**
+     * Get mistake type percentages for donut chart.
+     */
+    public function getMistakeTypePercentages(string $startDateTime, string $endDateTime)
+    {
+        $totalMistakes = $this->countInRange($startDateTime, $endDateTime);
+        
+        if ($totalMistakes === 0) {
+            return [];
+        }
+
+        $typeCounts = $this->model
+            ->selectRaw('complaint_type_id, COUNT(*) as count')
+            ->where(function ($q) use ($startDateTime, $endDateTime) {
+                $q->whereBetween('occurred_at', [$startDateTime, $endDateTime])
+                  ->orWhere(function ($q2) use ($startDateTime, $endDateTime) {
+                      $q2->whereNull('occurred_at')
+                         ->whereBetween('created_at', [$startDateTime, $endDateTime]);
+                  });
+            })
+            ->groupBy('complaint_type_id')
+            ->with('complaintType:id,name')
+            ->get();
+
+        $result = [];
+        foreach ($typeCounts as $typeCount) {
+            $percentage = round(($typeCount->count / $totalMistakes) * 100, 1);
+            $result[] = [
+                'type_id' => $typeCount->complaint_type_id,
+                'type_name' => $typeCount->complaintType->name,
+                'count' => $typeCount->count,
+                'percentage' => $percentage,
+            ];
+        }
+
+        // Sort by count descending
+        usort($result, function ($a, $b) {
+            return $b['count'] - $a['count'];
+        });
+
+        return $result;
+    }
 }
