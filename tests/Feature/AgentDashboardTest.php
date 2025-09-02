@@ -73,7 +73,9 @@ class AgentDashboardTest extends TestCase
     {
         return Appointment::create([
             'date' => $data['date'] ?? now()->toDateString(),
-            'time_slot' => $data['time_slot'] ?? '10:00',
+            'start_time' => $data['start_time'] ?? '10:00:00',
+            'end_time' => $data['end_time'] ?? '11:00:00',
+            'duration' => $data['duration'] ?? 60,
             'patient_name' => $data['patient_name'] ?? 'Test Patient',
             'contact_number' => $data['contact_number'] ?? '1234567890',
             'agent_id' => $agent->id,
@@ -150,19 +152,25 @@ class AgentDashboardTest extends TestCase
         // Create appointments with different statuses for today
         $this->createAppointment($user, [
             'date' => now()->toDateString(),
-            'time_slot' => '09:00',
+            'start_time' => '09:00:00',
+            'end_time' => '10:00:00',
+            'duration' => 60,
             'status_id' => $testData['arrivedStatus']->id,
         ], $testData);
 
         $this->createAppointment($user, [
             'date' => now()->toDateString(),
-            'time_slot' => '10:00',
+            'start_time' => '10:00:00',
+            'end_time' => '11:00:00',
+            'duration' => 60,
             'status_id' => $testData['notShowStatus']->id,
         ], $testData);
 
         $this->createAppointment($user, [
             'date' => now()->toDateString(),
-            'time_slot' => '11:00',
+            'start_time' => '11:00:00',
+            'end_time' => '12:00:00',
+            'duration' => 60,
             'status_id' => $testData['rescheduledStatus']->id,
         ], $testData);
 
@@ -192,19 +200,25 @@ class AgentDashboardTest extends TestCase
         // Create appointments for today with different time slots
         $this->createAppointment($user, [
             'date' => now()->toDateString(),
-            'time_slot' => '14:00',
+            'start_time' => '14:00:00',
+            'end_time' => '15:00:00',
+            'duration' => 60,
             'patient_name' => 'Patient 1',
         ], $testData);
 
         $this->createAppointment($user, [
             'date' => now()->toDateString(),
-            'time_slot' => '16:00',
+            'start_time' => '16:00:00',
+            'end_time' => '17:00:00',
+            'duration' => 60,
             'patient_name' => 'Patient 2',
         ], $testData);
 
         $this->createAppointment($user, [
             'date' => now()->toDateString(),
-            'time_slot' => '09:00',
+            'start_time' => '09:00:00',
+            'end_time' => '10:00:00',
+            'duration' => 60,
             'patient_name' => 'Patient 3',
         ], $testData);
 
@@ -219,7 +233,9 @@ class AgentDashboardTest extends TestCase
                         '*' => [
                             'id',
                             'date',
-                            'time_slot',
+                            'start_time',
+                            'end_time',
+                            'duration',
                             'doctor',
                             'status',
                             'procedure',
@@ -231,9 +247,9 @@ class AgentDashboardTest extends TestCase
         // Check that leaderboard is ordered by time descending (latest first)
         $leaderboard = $response->json('data.today_leaderboard');
         $this->assertCount(3, $leaderboard);
-        $this->assertEquals('16:00', $leaderboard[0]['time_slot']);
-        $this->assertEquals('14:00', $leaderboard[1]['time_slot']);
-        $this->assertEquals('09:00', $leaderboard[2]['time_slot']);
+        $this->assertEquals('16:00:00', $leaderboard[0]['start_time']);
+        $this->assertEquals('14:00:00', $leaderboard[1]['start_time']);
+        $this->assertEquals('09:00:00', $leaderboard[2]['start_time']);
     }
 
     public function test_agent_dashboard_today_appointments(): void
@@ -244,14 +260,18 @@ class AgentDashboardTest extends TestCase
         // Create appointments for today
         $this->createAppointment($user, [
             'date' => now()->toDateString(),
-            'time_slot' => '09:00',
+            'start_time' => '09:00:00',
+            'end_time' => '10:00:00',
+            'duration' => 60,
             'patient_name' => 'Patient 1',
             'contact_number' => '1111111111',
         ], $testData);
 
         $this->createAppointment($user, [
             'date' => now()->toDateString(),
-            'time_slot' => '10:00',
+            'start_time' => '10:00:00',
+            'end_time' => '11:00:00',
+            'duration' => 60,
             'patient_name' => 'Patient 2',
             'contact_number' => '2222222222',
         ], $testData);
@@ -267,12 +287,16 @@ class AgentDashboardTest extends TestCase
                         '*' => [
                             'id',
                             'doctor' => ['id', 'name', 'profile_picture', 'specialty'],
-                            'time_slot',
+                            'start_time',
+                            'end_time',
+                            'duration',
                             'date',
                             'specialty',
                             'status',
                             'patient_name',
                             'contact_number',
+                            'remarks1',
+                            'remarks2',
                         ],
                     ],
                 ],
@@ -282,8 +306,14 @@ class AgentDashboardTest extends TestCase
         $this->assertCount(2, $todayAppointments);
         
         // Check that appointments are ordered by time ascending
-        $this->assertEquals('09:00', $todayAppointments[0]['time_slot']);
-        $this->assertEquals('10:00', $todayAppointments[1]['time_slot']);
+        $this->assertEquals('09:00:00', $todayAppointments[0]['start_time']);
+        $this->assertEquals('10:00:00', $todayAppointments[1]['start_time']);
+        
+        // Check that remarks data is included
+        $this->assertNotNull($todayAppointments[0]['remarks1']);
+        $this->assertNotNull($todayAppointments[0]['remarks2']);
+        $this->assertEquals('Test Remarks 1', $todayAppointments[0]['remarks1']);
+        $this->assertEquals('Test Remarks 2', $todayAppointments[0]['remarks2']);
     }
 
     public function test_agent_dashboard_appointments_table_pagination(): void
@@ -295,7 +325,9 @@ class AgentDashboardTest extends TestCase
         for ($i = 1; $i <= 25; $i++) {
             $this->createAppointment($user, [
                 'date' => now()->toDateString(),
-                'time_slot' => sprintf('%02d:00', $i),
+                'start_time' => sprintf('%02d:00:00', $i),
+                'end_time' => sprintf('%02d:59:00', $i),
+                'duration' => 59,
                 'patient_name' => "Patient {$i}",
             ], $testData);
         }
@@ -327,19 +359,25 @@ class AgentDashboardTest extends TestCase
         // Create appointments for different dates
         $this->createAppointment($user, [
             'date' => now()->toDateString(),
-            'time_slot' => '09:00',
+            'start_time' => '09:00:00',
+            'end_time' => '10:00:00',
+            'duration' => 60,
             'patient_name' => 'Today Patient',
         ], $testData);
 
         $this->createAppointment($user, [
             'date' => now()->addDays(3)->toDateString(), // Within same week
-            'time_slot' => '10:00',
+            'start_time' => '10:00:00',
+            'end_time' => '11:00:00',
+            'duration' => 60,
             'patient_name' => 'Same Week Patient',
         ], $testData);
 
         $this->createAppointment($user, [
             'date' => now()->addDays(15)->toDateString(), // Within same month
-            'time_slot' => '11:00',
+            'start_time' => '11:00:00',
+            'end_time' => '12:00:00',
+            'duration' => 60,
             'patient_name' => 'Same Month Patient',
         ], $testData);
 
@@ -407,7 +445,9 @@ class AgentDashboardTest extends TestCase
         for ($i = 1; $i <= 30; $i++) {
             $this->createAppointment($user, [
                 'date' => now()->toDateString(),
-                'time_slot' => sprintf('%02d:00', $i),
+                'start_time' => sprintf('%02d:00:00', $i),
+                'end_time' => sprintf('%02d:59:00', $i),
+                'duration' => 59,
                 'patient_name' => "Patient {$i}",
             ], $testData);
         }

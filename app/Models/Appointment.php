@@ -16,7 +16,9 @@ class Appointment extends Model
      */
     protected $fillable = [
         'date',
-        'time_slot',
+        'start_time',
+        'end_time',
+        'duration',
         'patient_name',
         'contact_number',
         'agent_id',
@@ -97,7 +99,7 @@ class Appointment extends Model
      */
     public function remarks1()
     {
-        return $this->belongsTo(Remarks1::class);
+        return $this->belongsTo(Remarks1::class, 'remarks_1_id');
     }
 
     /**
@@ -105,7 +107,7 @@ class Appointment extends Model
      */
     public function remarks2()
     {
-        return $this->belongsTo(Remarks2::class);
+        return $this->belongsTo(Remarks2::class, 'remarks_2_id');
     }
 
     /**
@@ -169,5 +171,71 @@ class Appointment extends Model
     public function scopeByStatus($query, $statusId)
     {
         return $query->where('status_id', $statusId);
+    }
+
+    /**
+     * Get the formatted time slot (for backward compatibility).
+     */
+    public function getTimeSlotAttribute()
+    {
+        return $this->start_time . ' - ' . $this->end_time;
+    }
+
+    /**
+     * Set the duration based on start and end time.
+     */
+    public function setDurationFromTimes()
+    {
+        if ($this->start_time && $this->end_time) {
+            $start = \Carbon\Carbon::parse($this->start_time);
+            $end = \Carbon\Carbon::parse($this->end_time);
+            $this->duration = $start->diffInMinutes($end);
+        }
+    }
+
+    /**
+     * Automatically calculate duration when start_time or end_time changes
+     */
+    public function setStartTimeAttribute($value)
+    {
+        $this->attributes['start_time'] = $value;
+        $this->calculateAndSetDuration();
+    }
+
+    public function setEndTimeAttribute($value)
+    {
+        $this->attributes['end_time'] = $value;
+        $this->calculateAndSetDuration();
+    }
+
+    /**
+     * Calculate and set duration based on start and end times
+     */
+    protected function calculateAndSetDuration()
+    {
+        if (isset($this->attributes['start_time']) && isset($this->attributes['end_time'])) {
+            $start = \Carbon\Carbon::parse($this->attributes['start_time']);
+            $end = \Carbon\Carbon::parse($this->attributes['end_time']);
+            
+            if ($end > $start) {
+                $this->attributes['duration'] = $start->diffInMinutes($end);
+            }
+        }
+    }
+
+    /**
+     * Scope to get appointments by time range.
+     */
+    public function scopeByTimeRange($query, $startTime, $endTime)
+    {
+        return $query->whereBetween('start_time', [$startTime, $endTime]);
+    }
+
+    /**
+     * Scope to get appointments by duration.
+     */
+    public function scopeByDuration($query, $duration)
+    {
+        return $query->where('duration', $duration);
     }
 }

@@ -71,6 +71,7 @@ Route::middleware(['sanctum.token', 'auth:sanctum'])->group(function () {
     Route::get('appointments/doctor/{doctorId}', [App\Http\Controllers\Api\AppointmentController::class, 'byDoctor']);
     Route::get('appointments/department/{departmentId}', [App\Http\Controllers\Api\AppointmentController::class, 'byDepartment']);
     Route::get('appointments/stats', [App\Http\Controllers\Api\AppointmentController::class, 'stats']);
+    Route::get('appointments/available-slots', [App\Http\Controllers\Api\AppointmentController::class, 'getAvailableTimeSlots']);
     Route::apiResource('appointments', App\Http\Controllers\Api\AppointmentController::class);
 
     // Report management routes

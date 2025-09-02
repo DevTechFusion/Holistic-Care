@@ -37,7 +37,9 @@ echo json_encode([
             [
                 'id' => 1,
                 'date' => date('Y-m-d'),
-                'time_slot' => '14:00',
+                'start_time' => '14:00:00',
+                'end_time' => '15:00:00',
+                'duration' => 60,
                 'doctor' => ['id' => 1, 'name' => 'Dr. Smith'],
                 'status' => ['id' => 1, 'name' => 'Scheduled'],
                 'procedure' => ['id' => 1, 'name' => 'Consultation'],
@@ -52,7 +54,9 @@ echo json_encode([
                     'profile_picture' => null,
                     'specialty' => 'Consultation',
                 ],
-                'time_slot' => '09:00',
+                'start_time' => '09:00:00',
+                'end_time' => '10:00:00',
+                'duration' => 60,
                 'date' => date('Y-m-d'),
                 'specialty' => 'Consultation',
                 'status' => 'Scheduled',
@@ -66,7 +70,9 @@ echo json_encode([
                 [
                     'id' => 1,
                     'date' => date('Y-m-d'),
-                    'time_slot' => '09:00',
+                    'start_time' => '09:00:00',
+                    'end_time' => '10:00:00',
+                    'duration' => 60,
                     'doctor' => ['id' => 1, 'name' => 'Dr. Smith'],
                     'status' => ['id' => 1, 'name' => 'Scheduled'],
                 ]

@@ -46,7 +46,8 @@ class AppointmentController extends Controller
         try {
             $request->validate([
                 'date' => 'required|date',
-                'time_slot' => 'required|string|max:255',
+                'start_time' => 'required|date_format:H:i:s',
+                'end_time' => 'required|date_format:H:i:s|after:start_time',
                 'patient_name' => 'required|string|max:255',
                 'contact_number' => 'required|string|max:255',
                 'agent_id' => 'required|exists:users,id',
@@ -79,11 +80,20 @@ class AppointmentController extends Controller
                 'data' => $appointment
             ], 201);
         } catch (\Exception $e) {
+            $statusCode = 500;
+            $message = 'Failed to create appointment';
+            
+            // Handle specific validation errors
+            if (str_contains($e->getMessage(), 'time conflicts')) {
+                $statusCode = 422;
+                $message = $e->getMessage();
+            }
+            
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to create appointment',
+                'message' => $message,
                 'error' => $e->getMessage()
-            ], 500);
+            ], $statusCode);
         }
     }
 
@@ -123,7 +133,9 @@ class AppointmentController extends Controller
         try {
             $request->validate([
                 'date' => 'sometimes|required|date',
-                'time_slot' => 'sometimes|required|string|max:255',
+                'start_time' => 'sometimes|required|date_format:H:i:s',
+                'end_time' => 'sometimes|required|date_format:H:i:s|after:start_time',
+                'duration' => 'sometimes|nullable|integer|min:1',
                 'patient_name' => 'sometimes|required|string|max:255',
                 'contact_number' => 'sometimes|required|string|max:255',
                 'agent_id' => 'sometimes|required|exists:users,id',
@@ -149,11 +161,20 @@ class AppointmentController extends Controller
                 'data' => $appointment
             ], 200);
         } catch (\Exception $e) {
+            $statusCode = 500;
+            $message = 'Failed to update appointment';
+            
+            // Handle specific validation errors
+            if (str_contains($e->getMessage(), 'time conflicts')) {
+                $statusCode = 422;
+                $message = $e->getMessage();
+            }
+            
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to update appointment',
+                'message' => $message,
                 'error' => $e->getMessage()
-            ], 500);
+            ], $statusCode);
         }
     }
 
@@ -315,6 +336,57 @@ class AppointmentController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to fetch appointment statistics',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get available time slots for a doctor on a specific date
+     */
+    public function getAvailableTimeSlots(Request $request)
+    {
+        try {
+            $request->validate([
+                'doctor_id' => 'required|exists:doctors,id',
+                'date' => 'required|date',
+                'duration' => 'nullable|integer|min:1',
+                'start_time' => 'nullable|date_format:H:i:s',
+                'end_time' => 'nullable|date_format:H:i:s',
+            ]);
+
+            $doctorId = $request->doctor_id;
+            $date = $request->date;
+            $duration = $request->duration ?? 60;
+            $startTime = $request->start_time ?? '09:00:00';
+            $endTime = $request->end_time ?? '17:00:00';
+
+            $availableSlots = $this->appointmentService->getAvailableTimeSlots(
+                $doctorId,
+                $date,
+                $duration,
+                $startTime,
+                $endTime
+            );
+
+            return response()->json([
+                'status' => 'success',
+                'data' => [
+                    'doctor_id' => $doctorId,
+                    'date' => $date,
+                    'duration' => $duration,
+                    'working_hours' => [
+                        'start' => $startTime,
+                        'end' => $endTime
+                    ],
+                    'available_slots' => $availableSlots,
+                    'total_available_slots' => count($availableSlots)
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to get available time slots',
                 'error' => $e->getMessage()
             ], 500);
         }

@@ -42,6 +42,25 @@ class AppointmentService extends CrudeService
      */
     public function createAppointment($data)
     {
+        // Check for time conflicts before creating appointment
+        if (isset($data['doctor_id']) && isset($data['date']) && isset($data['start_time']) && isset($data['end_time'])) {
+            $hasConflict = $this->hasTimeConflict(
+                $data['doctor_id'],
+                $data['date'],
+                $data['start_time'],
+                $data['end_time']
+            );
+            
+            if ($hasConflict) {
+                throw new \Exception('Appointment time conflicts with existing appointment for this doctor on the same date.');
+            }
+        }
+        
+        // Automatically calculate duration if start_time and end_time are provided
+        if (isset($data['start_time']) && isset($data['end_time'])) {
+            $data['duration'] = $this->calculateDuration($data['start_time'], $data['end_time']);
+        }
+        
         // Check if report should be created
         $createReport = isset($data['create_report']) && $data['create_report'];
         
@@ -61,6 +80,26 @@ class AppointmentService extends CrudeService
      */
     public function updateAppointment($id, $data)
     {
+        // Check for time conflicts before updating appointment
+        if (isset($data['doctor_id']) && isset($data['date']) && isset($data['start_time']) && isset($data['end_time'])) {
+            $hasConflict = $this->hasTimeConflict(
+                $data['doctor_id'],
+                $data['date'],
+                $data['start_time'],
+                $data['end_time'],
+                $id // Exclude current appointment from conflict check
+            );
+            
+            if ($hasConflict) {
+                throw new \Exception('Appointment time conflicts with existing appointment for this doctor on the same date.');
+            }
+        }
+        
+        // Automatically calculate duration if start_time and end_time are provided
+        if (isset($data['start_time']) && isset($data['end_time'])) {
+            $data['duration'] = $this->calculateDuration($data['start_time'], $data['end_time']);
+        }
+        
         $this->_update($id, $data);
         $appointment = $this->_find($id, [
             'doctor', 'procedure', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
@@ -99,6 +138,111 @@ class AppointmentService extends CrudeService
             ->with(['doctor', 'procedure', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status']);
 
         return $query->paginate($perPage, ['*'], 'page', $page);
+    }
+
+    /**
+     * Check if there's a time conflict for a doctor on a specific date
+     * 
+     * @param int $doctorId
+     * @param string $date
+     * @param string $startTime
+     * @param string $endTime
+     * @param int|null $excludeId Exclude this appointment ID from conflict check (for updates)
+     * @return bool
+     */
+    public function hasTimeConflict($doctorId, $date, $startTime, $endTime, $excludeId = null)
+    {
+        $query = $this->model
+            ->where('doctor_id', $doctorId)
+            ->where('date', $date)
+            ->where(function($q) use ($startTime, $endTime) {
+                // Check for any overlap:
+                // 1. New appointment starts during existing appointment
+                // 2. New appointment ends during existing appointment  
+                // 3. New appointment completely contains existing appointment
+                $q->where(function($q2) use ($startTime, $endTime) {
+                    $q2->where('start_time', '<', $endTime)
+                       ->where('end_time', '>', $startTime);
+                });
+            });
+        
+        // Exclude current appointment when updating
+        if ($excludeId) {
+            $query->where('id', '!=', $excludeId);
+        }
+        
+        return $query->exists();
+    }
+
+    /**
+     * Calculate duration in minutes between two time strings
+     * 
+     * @param string $startTime
+     * @param string $endTime
+     * @return int Duration in minutes
+     */
+    public function calculateDuration($startTime, $endTime)
+    {
+        $start = \Carbon\Carbon::parse($startTime);
+        $end = \Carbon\Carbon::parse($endTime);
+        
+        // Ensure end time is after start time
+        if ($end <= $start) {
+            throw new \Exception('End time must be after start time.');
+        }
+        
+        return $start->diffInMinutes($end);
+    }
+
+    /**
+     * Get available time slots for a doctor on a specific date
+     * 
+     * @param int $doctorId
+     * @param string $date
+     * @param int $duration Duration in minutes
+     * @param string $startTime Start of working hours (e.g., '09:00:00')
+     * @param string $endTime End of working hours (e.g., '17:00:00')
+     * @return array
+     */
+    public function getAvailableTimeSlots($doctorId, $date, $duration = 60, $startTime = '09:00:00', $endTime = '17:00:00')
+    {
+        // Get all existing appointments for the doctor on the date
+        $existingAppointments = $this->model
+            ->where('doctor_id', $doctorId)
+            ->where('date', $date)
+            ->orderBy('start_time')
+            ->get(['start_time', 'end_time']);
+        
+        $availableSlots = [];
+        $currentTime = \Carbon\Carbon::parse($startTime);
+        $endWorkingTime = \Carbon\Carbon::parse($endTime);
+        
+        while ($currentTime->copy()->addMinutes($duration) <= $endWorkingTime) {
+            $slotStart = $currentTime->format('H:i:s');
+            $slotEnd = $currentTime->copy()->addMinutes($duration)->format('H:i:s');
+            
+            // Check if this slot conflicts with any existing appointment
+            $hasConflict = false;
+            foreach ($existingAppointments as $appointment) {
+                if ($this->hasTimeConflict($doctorId, $date, $slotStart, $slotEnd)) {
+                    $hasConflict = true;
+                    break;
+                }
+            }
+            
+            if (!$hasConflict) {
+                $availableSlots[] = [
+                    'start_time' => $slotStart,
+                    'end_time' => $slotEnd,
+                    'duration' => $duration
+                ];
+            }
+            
+            // Move to next slot (30-minute intervals)
+            $currentTime->addMinutes(30);
+        }
+        
+        return $availableSlots;
     }
 
                 /**
@@ -390,8 +534,8 @@ class AppointmentService extends CrudeService
         return $this->model
             ->whereDate('date', now()->toDateString())
             ->where('agent_id', $agentId)
-            ->with(['doctor', 'status', 'procedure'])
-            ->orderByDesc('time_slot')
+            ->with(['doctor', 'status', 'procedure', 'remarks1', 'remarks2'])
+            ->orderByDesc('start_time')
             ->limit($limit)
             ->get();
     }
@@ -409,9 +553,11 @@ class AppointmentService extends CrudeService
                 'doctor:id,name',
                 'procedure:id,name',
                 'category:id,name',
-                'status:id,name'
+                'status:id,name',
+                'remarks1:id,name',
+                'remarks2:id,name'
             ])
-            ->orderBy('time_slot')
+            ->orderBy('start_time')
             ->limit($limit)
             ->get()
             ->map(function ($appointment) {
@@ -423,12 +569,16 @@ class AppointmentService extends CrudeService
                         'profile_picture' => null, // Field doesn't exist in doctors table
                         'specialty' => $appointment->procedure->name ?? $appointment->category->name ?? 'N/A',
                     ],
-                    'time_slot' => $appointment->time_slot,
+                    'start_time' => $appointment->start_time,
+                    'end_time' => $appointment->end_time,
+                    'duration' => $appointment->duration,
                     'date' => $appointment->date,
                     'specialty' => $appointment->procedure->name ?? $appointment->category->name ?? 'N/A',
                     'status' => $appointment->status->name ?? 'N/A',
                     'patient_name' => $appointment->patient_name,
                     'contact_number' => $appointment->contact_number,
+                    'remarks1' => $appointment->remarks1->name ?? null,
+                    'remarks2' => $appointment->remarks2->name ?? null,
                 ];
             });
     }
@@ -441,9 +591,9 @@ class AppointmentService extends CrudeService
         return $this->model
             ->byDateRange($startDate, $endDate)
             ->where('agent_id', $agentId)
-            ->with(['doctor', 'procedure', 'category', 'department', 'source', 'status'])
+            ->with(['doctor', 'procedure', 'category', 'department', 'source', 'status', 'remarks1', 'remarks2'])
             ->orderByDesc('date')
-            ->orderByDesc('time_slot')
+            ->orderByDesc('start_time')
             ->paginate($perPage, ['*'], 'page', $page);
     }
 
