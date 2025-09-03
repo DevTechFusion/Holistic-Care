@@ -386,6 +386,7 @@ class AppointmentService extends CrudeService
                         'profile_picture' => $recentAppointment->doctor->profile_picture_url,
                         'specialty' => $recentAppointment->doctor->department ? $recentAppointment->doctor->department->name : 'N/A',
                         'department_id' => $recentAppointment->doctor->department_id,
+                        'department_name' => $recentAppointment->doctor->department ? $recentAppointment->doctor->department->name : 'N/A',
                     ],
                     'agent' => $recentAppointment->agent ? [
                         'id' => $recentAppointment->agent->id,
@@ -437,6 +438,7 @@ class AppointmentService extends CrudeService
                         'profile_picture' => $recentAppointment->doctor->profile_picture_url,
                         'specialty' => $recentAppointment->doctor->department ? $recentAppointment->doctor->department->name : 'N/A',
                         'department_id' => $recentAppointment->doctor->department_id,
+                        'department_name' => $recentAppointment->doctor->department ? $recentAppointment->doctor->department->name : 'N/A',
                     ],
                     'agent' => $recentAppointment->agent ? [
                         'id' => $recentAppointment->agent->id,
