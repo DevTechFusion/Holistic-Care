@@ -86,6 +86,7 @@ class AdminDashboardController extends Controller
                 'agent_wise_bookings' => $topAgents,
                 'source_wise_bookings' => $topSources,
                 'doctor_wise_bookings' => $topDoctors,
+                'doctor_leaderboard' => $topDoctors, // Add dedicated doctor leaderboard section
             ],
         ]);
     }
