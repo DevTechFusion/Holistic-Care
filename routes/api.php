@@ -95,6 +95,13 @@ Route::middleware(['sanctum.token', 'auth:sanctum'])->group(function () {
     Route::get('doctors/available', [App\Http\Controllers\Api\DoctorController::class, 'getAvailable']);
     Route::get('doctors/{doctor}/slots', [App\Http\Controllers\Api\DoctorController::class, 'getAvailableSlots']);
 
+    // Doctor Availability routes
+    Route::prefix('doctor-availability')->name('doctor-availability.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Api\DoctorAvailabilityController::class, 'getAvailability'])->name('index');
+        Route::get('/weekly/{doctor}', [App\Http\Controllers\Api\DoctorAvailabilityController::class, 'getWeeklyAvailability'])->name('weekly');
+        Route::get('/slots/{doctor}', [App\Http\Controllers\Api\DoctorAvailabilityController::class, 'getAvailableSlots'])->name('slots');
+    });
+
     // Role management routes
     Route::apiResource('roles', App\Http\Controllers\Api\RoleController::class);
     Route::post('roles/{id}/assign-permissions', [App\Http\Controllers\Api\RoleController::class, 'assignPermissions']);

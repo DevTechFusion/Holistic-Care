@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Availability API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .endpoint {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+        .method {
+            background: #007bff;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .url {
+            background: #e9ecef;
+            padding: 8px;
+            border-radius: 3px;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+        .params {
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+        }
+        .response {
+            background: #d1ecf1;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .filter-section {
+            background: #e2e3e5;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .filter-group {
+            margin: 10px 0;
+        }
+        label {
+            display: inline-block;
+            width: 120px;
+            font-weight: bold;
+        }
+        input, select {
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            width: 200px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border: 1px solid #dee2e6;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+        }
+        .note {
+            background: #fff3cd;
+            color: #856404;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+            border: 1px solid #ffeaa7;
+        }
+    </style>
+</head>
+<body>
+    <h1>Doctor Availability API Test</h1>
+    
+    <div class="note">
+        <strong>Note:</strong> This API now only uses <code>doctor_id</code> filter for simplicity. All endpoints require a specific doctor ID.
+    </div>
+    
+    <div class="container">
+        <h2>API Endpoints</h2>
+        
+        <div class="endpoint">
+            <span class="method">GET</span>
+            <div class="url">/api/doctor-availability?doctor_id={id}&format={format}</div>
+            <p>Get doctor availability filtered by doctor ID with multiple response formats</p>
+        </div>
+        
+        <div class="endpoint">
+            <span class="method">GET</span>
+            <div class="url">/api/doctor-availability/weekly/{doctor_id}</div>
+            <p>Get weekly availability for a specific doctor</p>
+        </div>
+        
+        <div class="endpoint">
+            <span class="method">GET</span>
+            <div class="url">/api/doctor-availability/slots/{doctor_id}</div>
+            <p>Get available time slots for a doctor</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Test API Calls</h2>
+        
+        <div class="filter-section">
+            <h3>1. Get Doctor Availability (Filtered by Doctor ID)</h3>
+            <div class="filter-group">
+                <label>Doctor ID:</label>
+                <input type="number" id="mainDoctorId" value="1" min="1" required>
+            </div>
+            <div class="filter-group">
+                <label>Format:</label>
+                <select id="mainFormat">
+                    <option value="weekly">Weekly</option>
+                    <option value="detailed">Detailed</option>
+                    <option value="slots">Slots</option>
+                </select>
+            </div>
+            <button onclick="getDoctorAvailability()">Get Availability</button>
+            <div id="result1" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="filter-section">
+            <h3>2. Get Weekly Schedule for Specific Doctor</h3>
+            <div class="filter-group">
+                <label>Doctor ID:</label>
+                <input type="number" id="weeklyDoctorId" value="1" min="1" required>
+            </div>
+            <button onclick="getWeeklySchedule()">Get Weekly Schedule</button>
+            <div id="result2" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="filter-section">
+            <h3>3. Get Available Time Slots</h3>
+            <div class="filter-group">
+                <label>Doctor ID:</label>
+                <input type="number" id="slotDoctorId" value="1" min="1" required>
+            </div>
+            <div class="filter-group">
+                <label>Start Date:</label>
+                <input type="date" id="startDate" value="">
+            </div>
+            <div class="filter-group">
+                <label>End Date:</label>
+                <input type="date" id="endDate" value="">
+            </div>
+            <div class="filter-group">
+                <label>Duration (minutes):</label>
+                <input type="number" id="duration" value="60" min="15" max="480">
+            </div>
+            <button onclick="getAvailableSlots()">Get Time Slots</button>
+            <div id="result3" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>API Documentation</h2>
+        <p>For detailed API documentation, see: <code>docs/doctor-availability-api.md</code></p>
+        
+        <h3>Required Parameters:</h3>
+        <ul>
+            <li><strong>doctor_id</strong>: <span style="color: red;">Required</span> - Must provide a valid doctor ID</li>
+        </ul>
+        
+        <h3>Optional Parameters:</h3>
+        <ul>
+            <li><strong>format</strong>: Response format (weekly, detailed, slots) - defaults to weekly</li>
+        </ul>
+        
+        <h3>Response Formats:</h3>
+        <ul>
+            <li><strong>weekly</strong>: Weekly schedule format (default) - perfect for UI components</li>
+            <li><strong>detailed</strong>: Comprehensive availability information</li>
+            <li><strong>slots</strong>: Basic doctor information with note about using slots endpoint</li>
+        </ul>
+        
+        <h3>Key Changes:</h3>
+        <ul>
+            <li>✅ Simplified to only use <code>doctor_id</code> filter</li>
+            <li>✅ Removed complex filtering (department, procedure, date/time)</li>
+            <li>✅ <code>doctor_id</code> is now <strong>required</strong></li>
+            <li>✅ Cleaner, more focused API</li>
+        </ul>
+    </div>
+
+    <script>
+        // Set default dates to today and tomorrow
+        document.getElementById('startDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('endDate').value = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+
+        // Mock API base URL (replace with your actual API URL)
+        const API_BASE = '/api/doctor-availability';
+        
+        // Mock authentication token (replace with actual token)
+        const AUTH_TOKEN = 'your_auth_token_here';
+
+        function showResult(elementId, data, isError = false) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = isError ? 'error' : 'success';
+            element.innerHTML = isError ? data : JSON.stringify(data, null, 2);
+        }
+
+        function hideResult(elementId) {
+            document.getElementById(elementId).style.display = 'none';
+        }
+
+        async function makeApiCall(url, params = {}) {
+            try {
+                const queryString = new URLSearchParams(params).toString();
+                const fullUrl = queryString ? `${url}?${queryString}` : url;
+                
+                console.log('Making API call to:', fullUrl);
+                
+                // For demo purposes, return mock data
+                // In production, replace this with actual fetch call
+                return await mockApiCall(fullUrl, params);
+                
+            } catch (error) {
+                console.error('API call failed:', error);
+                throw error;
+            }
+        }
+
+        async function mockApiCall(url, params) {
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Return mock data based on the endpoint
+            if (url.includes('/weekly/')) {
+                return getMockWeeklySchedule();
+            } else if (url.includes('/slots/')) {
+                return getMockTimeSlots();
+            } else {
+                return getMockAvailability(params);
+            }
+        }
+
+        function getMockAvailability(params) {
+            const format = params.format || 'weekly';
+            
+            if (format === 'weekly') {
+                return {
+                    status: 'success',
+                    data: {
+                        id: parseInt(params.doctor_id),
+                        name: 'Dr. Tariq Aslam',
+                        department: 'Cardiology',
+                        procedures: ['Echocardiogram', 'ECG'],
+                        weekly_schedule: getMockWeeklySchedule()
+                    },
+                    filters_applied: {
+                        doctor_id: parseInt(params.doctor_id),
+                        format: format
+                    }
+                };
+            } else if (format === 'detailed') {
+                return {
+                    status: 'success',
+                    data: {
+                        id: parseInt(params.doctor_id),
+                        name: 'Dr. Tariq Aslam',
+                        department: 'Cardiology',
+                        procedures: ['Echocardiogram', 'ECG'],
+                        total_available_days: 5,
+                        available_days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+                        detailed_schedule: {
+                            monday: {
+                                available: true,
+                                start_time: '17:00',
+                                end_time: '22:00'
+                            }
+                        },
+                        profile_picture: 'https://example.com/profile.jpg'
+                    },
+                    filters_applied: {
+                        doctor_id: parseInt(params.doctor_id),
+                        format: format
+                    }
+                };
+            } else if (format === 'slots') {
+                return {
+                    status: 'success',
+                    data: {
+                        id: parseInt(params.doctor_id),
+                        name: 'Dr. Tariq Aslam',
+                        department: 'Cardiology',
+                        procedures: ['Echocardiogram', 'ECG'],
+                        note: 'Use /slots endpoint with date range to get actual time slots'
+                    },
+                    filters_applied: {
+                        doctor_id: parseInt(params.doctor_id),
+                        format: format
+                    }
+                };
+            }
+        }
+
+        function getMockWeeklySchedule() {
+            return {
+                status: 'success',
+                data: {
+                    doctor: {
+                        id: 1,
+                        name: 'Dr. Tariq Aslam',
+                        department: 'Cardiology',
+                        procedures: ['Echocardiogram', 'ECG']
+                    },
+                    weekly_schedule: {
+                        monday: {
+                            available: true,
+                            start_time: '17:00',
+                            end_time: '22:00',
+                            formatted_time: '5pm - 10pm'
+                        },
+                        tuesday: {
+                            available: true,
+                            start_time: '17:00',
+                            end_time: '22:00',
+                            formatted_time: '5pm - 10pm'
+                        },
+                        wednesday: {
+                            available: true,
+                            start_time: '17:00',
+                            end_time: '22:00',
+                            formatted_time: '5pm - 10pm'
+                        },
+                        thursday: {
+                            available: true,
+                            start_time: '17:00',
+                            end_time: '22:00',
+                            formatted_time: '5pm - 10pm'
+                        },
+                        friday: {
+                            available: true,
+                            start_time: '17:00',
+                            end_time: '22:00',
+                            formatted_time: '5pm - 10pm'
+                        },
+                        saturday: {
+                            available: false,
+                            formatted_time: 'Off'
+                        },
+                        sunday: {
+                            available: false,
+                            formatted_time: 'Off'
+                        }
+                    }
+                }
+            };
+        }
+
+        function getMockTimeSlots() {
+            return {
+                status: 'success',
+                data: {
+                    doctor_id: 1,
+                    date_range: {
+                        start_date: new Date().toISOString().split('T')[0],
+                        end_date: new Date(Date.now() + 86400000).toISOString().split('T')[0]
+                    },
+                    slot_duration: 60,
+                    available_slots: {
+                        [new Date().toISOString().split('T')[0]]: {
+                            day: new Date().toLocaleDateString('en-US', { weekday: 'long' }),
+                            date: new Date().toISOString().split('T')[0],
+                            slots: [
+                                { time: '17:00', available: true, duration: 60 },
+                                { time: '18:00', available: true, duration: 60 },
+                                { time: '19:00', available: true, duration: 60 }
+                            ]
+                        }
+                    }
+                }
+            };
+        }
+
+        async function getDoctorAvailability() {
+            hideResult('result1');
+            const doctorId = document.getElementById('mainDoctorId').value;
+            const format = document.getElementById('mainFormat').value;
+            
+            if (!doctorId) {
+                showResult('result1', 'Error: Doctor ID is required', true);
+                return;
+            }
+            
+            try {
+                const result = await makeApiCall(API_BASE, { 
+                    doctor_id: doctorId, 
+                    format: format 
+                });
+                showResult('result1', result);
+            } catch (error) {
+                showResult('result1', 'Error: ' + error.message, true);
+            }
+        }
+
+        async function getWeeklySchedule() {
+            hideResult('result2');
+            const doctorId = document.getElementById('weeklyDoctorId').value;
+            
+            if (!doctorId) {
+                showResult('result2', 'Error: Doctor ID is required', true);
+                return;
+            }
+            
+            try {
+                const result = await makeApiCall(`${API_BASE}/weekly/${doctorId}`);
+                showResult('result2', result);
+            } catch (error) {
+                showResult('result2', 'Error: ' + error.message, true);
+            }
+        }
+
+        async function getAvailableSlots() {
+            hideResult('result3');
+            const doctorId = document.getElementById('slotDoctorId').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const duration = document.getElementById('duration').value;
+            
+            if (!doctorId) {
+                showResult('result3', 'Error: Doctor ID is required', true);
+                return;
+            }
+            
+            try {
+                const result = await makeApiCall(`${API_BASE}/slots/${doctorId}`, { 
+                    start_date: startDate, 
+                    end_date: endDate,
+                    duration: duration
+                });
+                showResult('result3', result);
+            } catch (error) {
+                showResult('result3', 'Error: ' + error.message, true);
+            }
+        }
+    </script>
+</body>
+</html>
