@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test CSV Download</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .button-group {
+            margin: 20px 0;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .info {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #721c24;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #155724;
+        }
+        input[type="text"] {
+            width: 200px;
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test CSV Download for Reports</h1>
+    
+    <div class="info">
+        <h3>Instructions:</h3>
+        <ol>
+            <li>Enter your API token below</li>
+            <li>Click one of the export buttons to test CSV download</li>
+            <li>The CSV file should automatically download to your Downloads folder</li>
+        </ol>
+    </div>
+
+    <div>
+        <label for="token">API Token:</label>
+        <input type="text" id="token" placeholder="Enter your Bearer token here" value="5|Fs0TT5g31v8oAC5L2W0atpnbDdfX5iDOMuWHTI5Obc0887f0">
+        <small style="color: #666;">Token pre-filled for testing. You can replace it with your own.</small>
+    </div>
+
+    <div class="button-group">
+        <button onclick="testBasicConnection()" style="background-color: #17a2b8;">Test Basic Connection</button>
+        <button onclick="testApiConnection()" style="background-color: #28a745;">Test API Connection</button>
+        <button onclick="exportCsv('daily')">Export Today's Reports</button>
+        <button onclick="exportCsv('weekly')">Export This Week's Reports</button>
+        <button onclick="exportCsv('monthly')">Export This Month's Reports</button>
+        <button onclick="exportCsv('all')">Export All Reports</button>
+    </div>
+
+    <div id="status"></div>
+
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:8000/api'; // Using 127.0.0.1 instead of localhost
+        
+        // Debug function to show connection details
+        function showDebugInfo() {
+            console.log('API Base URL:', API_BASE_URL);
+            console.log('Current location:', window.location.href);
+            console.log('Protocol:', window.location.protocol);
+            console.log('Host:', window.location.host);
+        }
+        
+        // Show debug info on page load
+        showDebugInfo();
+        
+        async function exportCsv(range = 'daily') {
+            const token = document.getElementById('token').value.trim();
+            const statusDiv = document.getElementById('status');
+            
+            if (!token) {
+                statusDiv.innerHTML = '<div class="error">Please enter your API token first.</div>';
+                return;
+            }
+
+            try {
+                statusDiv.innerHTML = '<div class="info">Exporting CSV... Please wait.</div>';
+                
+                console.log('Attempting to export CSV with range:', range);
+                console.log('API URL:', `${API_BASE_URL}/reports/export-csv?range=${range}`);
+                console.log('Token (first 20 chars):', token.substring(0, 20) + '...');
+                
+                const response = await fetch(`${API_BASE_URL}/reports/export-csv?range=${range}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'text/csv',
+                        'Content-Type': 'text/csv'
+                    },
+                    mode: 'cors',
+                    credentials: 'omit'
+                });
+
+                console.log('Response received:', response);
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+
+                if (response.ok) {
+                    // Get the filename from the Content-Disposition header
+                    const contentDisposition = response.headers.get('Content-Disposition');
+                    let filename = 'reports.csv';
+                    
+                    if (contentDisposition) {
+                        const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+                        if (filenameMatch) {
+                            filename = filenameMatch[1];
+                        }
+                    }
+                    
+                    console.log('Downloading file:', filename);
+                    
+                    // Create blob and download
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    statusDiv.innerHTML = `<div class="success">CSV exported successfully! File: ${filename}</div>`;
+                } else {
+                    console.log('Response not OK, status:', response.status);
+                    let errorMessage = 'Unknown error';
+                    
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.message || `HTTP ${response.status}`;
+                    } catch (parseError) {
+                        errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                    }
+                    
+                    statusDiv.innerHTML = `<div class="error">Export failed: ${errorMessage}</div>`;
+                }
+            } catch (error) {
+                console.error('Error exporting CSV:', error);
+                console.error('Error details:', {
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack
+                });
+                
+                let errorMessage = error.message;
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    errorMessage = 'Network error - check if Laravel is running on port 8000';
+                }
+                
+                statusDiv.innerHTML = `<div class="error">Export failed: ${errorMessage}</div>`;
+            }
+        }
+
+        // Test if the API is accessible
+        async function testApiConnection() {
+            const token = document.getElementById('token').value.trim();
+            if (!token) return;
+            
+            try {
+                console.log('Testing API connection to:', `${API_BASE_URL}/reports`);
+                console.log('Using token:', token.substring(0, 20) + '...');
+                
+                const response = await fetch(`${API_BASE_URL}/reports`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    },
+                    mode: 'cors',
+                    credentials: 'omit'
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                if (response.ok) {
+                    document.getElementById('status').innerHTML = '<div class="success">API connection successful!</div>';
+                } else if (response.status === 401) {
+                    document.getElementById('status').innerHTML = '<div class="error">API connection successful but token is invalid or expired.</div>';
+                } else {
+                    document.getElementById('status').innerHTML = `<div class="error">API connection failed. Status: ${response.status}</div>`;
+                }
+            } catch (error) {
+                console.error('Connection error:', error);
+                console.error('Error details:', {
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack
+                });
+                
+                let errorMessage = error.message;
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    errorMessage = 'Network error - check if Laravel is running on port 8000';
+                }
+                
+                document.getElementById('status').innerHTML = `<div class="error">Cannot connect to API: ${errorMessage}</div>`;
+            }
+        }
+
+        // Test basic connection without authentication
+        async function testBasicConnection() {
+            try {
+                console.log('Testing basic connection to:', API_BASE_URL);
+                
+                const response = await fetch(`${API_BASE_URL}/reports`, {
+                    method: 'GET',
+                    mode: 'cors',
+                    credentials: 'omit'
+                });
+                
+                console.log('Basic connection response status:', response.status);
+                
+                if (response.status === 401) {
+                    document.getElementById('status').innerHTML = '<div class="success">Basic connection successful! API is reachable (401 Unauthorized is expected without token).</div>';
+                } else if (response.ok) {
+                    document.getElementById('status').innerHTML = '<div class="success">Basic connection successful! API is reachable.</div>';
+                } else {
+                    document.getElementById('status').innerHTML = `<div class="error">Basic connection failed. Status: ${response.status}</div>`;
+                }
+            } catch (error) {
+                console.error('Basic connection error:', error);
+                document.getElementById('status').innerHTML = `<div class="error">Basic connection failed: ${error.message}</div>`;
+            }
+        }
+        
+        // Test connection when token is entered
+        document.getElementById('token').addEventListener('input', testApiConnection);
+    </script>
+</body>
+</html>

@@ -22,6 +22,9 @@ return [
     'allowed_origins' => [
         env('FRONTEND_URL', 'http://localhost:5173'),
         env('FRONTEND_URL_SECURE', 'https://your-frontend-domain.com'),
+        'null', // Allow requests from file:// protocol (opening HTML directly)
+        'http://127.0.0.1:8000',
+        'http://localhost:8000',
     ],
 
     'allowed_origins_patterns' => [],

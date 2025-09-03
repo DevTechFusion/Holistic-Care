@@ -237,6 +237,7 @@ All API responses follow this standard format:
 | GET | `/api/reports/generated-by/{user}` | Get reports by generated user |
 | GET | `/api/reports/appointment/{appointmentId}` | Get reports for specific appointment |
 | GET | `/api/reports/stats` | Get report statistics |
+| GET | `/api/reports/export-csv` | Export reports to CSV with filters |
 | POST | `/api/reports/generate-from-appointment` | Generate report from appointment |
 
 ## Procedure Management

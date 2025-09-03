@@ -367,4 +367,51 @@ class ReportController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Export reports to CSV
+     */
+    public function exportCsv(Request $request)
+    {
+        try {
+            $request->validate([
+                'range' => 'nullable|string|in:daily,weekly,monthly,all'
+            ]);
+
+            $range = $request->get('range', 'daily');
+            
+            // Get CSV data
+            $csvData = $this->reportService->exportToCsv($range);
+            
+            // Generate filename
+            $filename = 'reports_' . $range . '_' . now()->format('Y-m-d_H-i-s') . '.csv';
+            
+            // Convert to CSV string
+            $csvContent = '';
+            foreach ($csvData as $row) {
+                $csvContent .= implode(',', array_map(function($field) {
+                    // Escape commas and quotes in CSV fields
+                    if (strpos($field, ',') !== false || strpos($field, '"') !== false) {
+                        $field = '"' . str_replace('"', '""', $field) . '"';
+                    }
+                    return $field;
+                }, $row)) . "\n";
+            }
+            
+            // Return CSV response with additional headers for better download compatibility
+            return response($csvContent)
+                ->header('Content-Type', 'text/csv; charset=utf-8')
+                ->header('Content-Disposition', 'attachment; filename="' . $filename . '"')
+                ->header('Cache-Control', 'no-cache, must-revalidate')
+                ->header('Pragma', 'no-cache')
+                ->header('Expires', '0');
+                
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to export reports to CSV',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

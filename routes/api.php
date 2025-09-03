@@ -81,6 +81,7 @@ Route::middleware(['sanctum.token', 'auth:sanctum'])->group(function () {
     Route::get('reports/generated-by/{user}', [App\Http\Controllers\Api\ReportController::class, 'byGeneratedBy']);
     Route::get('reports/appointment/{appointmentId}', [App\Http\Controllers\Api\ReportController::class, 'forAppointment']);
     Route::get('reports/stats', [App\Http\Controllers\Api\ReportController::class, 'stats']);
+    Route::get('reports/export-csv', [App\Http\Controllers\Api\ReportController::class, 'exportCsv']);
     Route::post('reports/generate-from-appointment', [App\Http\Controllers\Api\ReportController::class, 'generateFromAppointment']);
     Route::apiResource('reports', App\Http\Controllers\Api\ReportController::class);
 
