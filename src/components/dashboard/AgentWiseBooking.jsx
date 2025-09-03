@@ -26,7 +26,7 @@ const AgentWiseBookings = () => {
       setLoading(true);
       setError(null);
 
-      const res = await getAdminDashboard();
+      const res = await getAdminDashboard("weekly");
       // normalize payload shape
       const payload = res?.data?.data ?? res?.data ?? {};
 

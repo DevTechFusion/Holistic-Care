@@ -17,15 +17,13 @@ const CreateDoctorModal = ({ open, onClose, isEditing, data }) => {
     department_id: "",
     procedures: [],
     phone_number: "",
-    availability: [],
+    availability: {},
   });
 
   useEffect(() => {
     if (open) {
       getAllDepartments().then((res) => setDepartments(res?.data?.data || []));
-      console.log("Departments fetched:", departments);
       getProcedures().then((res) => setProcedures(res?.data?.data || []));
-      console.log("Procedures fetched:", procedures);
     }
   }, [open]);
 
@@ -35,24 +33,27 @@ const CreateDoctorModal = ({ open, onClose, isEditing, data }) => {
       const res = isEditing
         ? await updateDoctor(data.id, formData)
         : await createDoctor(formData);
+
       if (res?.status === 200 || res?.status === "success") {
-        enqueueSnackbar("Doctor created successfully!", { variant: "success" });
-        console.log("Doctor created:", res);
+        enqueueSnackbar(
+          isEditing ? "Doctor updated successfully!" : "Doctor created successfully!",
+          { variant: "success" }
+        );
         setFormData({
           name: "",
           department_id: "",
           procedures: [],
           phone_number: "",
-          availability: [],
+          availability: {},
         });
         onClose();
       } else {
-        enqueueSnackbar(res?.message || "Failed to create doctor", {
+        enqueueSnackbar(res?.message || "Failed to save doctor", {
           variant: "error",
         });
       }
     } catch (error) {
-      console.error("Error creating doctor:", error);
+      console.error("Error saving doctor:", error);
       enqueueSnackbar(
         error?.response?.data?.message ||
           "Something went wrong. Please try again.",
@@ -68,11 +69,10 @@ const CreateDoctorModal = ({ open, onClose, isEditing, data }) => {
       setFormData({
         name: data.name || "",
         department_id: data.department_id || "",
-        procedures: data.procedures.map((item) => item.id) || [],
+        procedures: data.procedures?.map((item) => item.id) || [],
         phone_number: data.phone_number || "",
-        availability: data.availability || [],
+        availability: data.availability || {},
       });
-      console.log("FormData set for editing:", data);
     }
   }, [isEditing, data]);
 
@@ -124,7 +124,7 @@ const CreateDoctorModal = ({ open, onClose, isEditing, data }) => {
       options: procedures.map((p) => ({ value: p.id, label: p.name })),
     },
   ];
-  console.log(formData);
+
   return (
     <GenericFormModal
       open={open}

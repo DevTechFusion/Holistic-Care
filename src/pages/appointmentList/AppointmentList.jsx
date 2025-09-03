@@ -102,7 +102,9 @@ const AppointmentsPage = () => {
                 <TableRow>
                   <TableCell>Sr#</TableCell>
                   <TableCell>Date</TableCell>
-                  <TableCell>Time Slot</TableCell>
+                  <TableCell>Start Time</TableCell>
+                  <TableCell>End Time</TableCell>
+                  <TableCell>Duration</TableCell>
                   <TableCell>Patient</TableCell>
                   <TableCell>Contact</TableCell>
                   <TableCell>Doctor</TableCell>
@@ -118,7 +120,9 @@ const AppointmentsPage = () => {
                   <TableRow key={appt.id}>
                     <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
                     <TableCell>{appt.date}</TableCell>
-                    <TableCell>{appt.time_slot}</TableCell>
+                    <TableCell>{appt.start_time}</TableCell>
+                    <TableCell>{appt.end_time}</TableCell>
+                    <TableCell>{appt.duration}</TableCell>
                     <TableCell>{appt.patient_name}</TableCell>
                     <TableCell>{appt.contact_number}</TableCell>
                     <TableCell>{appt.doctor?.name}</TableCell>

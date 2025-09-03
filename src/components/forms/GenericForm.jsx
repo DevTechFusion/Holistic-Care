@@ -11,6 +11,7 @@ import {
   MenuItem,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import TimePicker from "react-time-picker";
 
 const GenericFormModal = ({
   open,
@@ -44,7 +45,21 @@ const GenericFormModal = ({
           <Box display="flex" flexDirection="column" gap={2}>
             {/* Render Fields */}
             {(fields || []).map((field, idx) => {
-              if (!field) return null; // ✅ Skip undefined/null entries
+              if (!field) return null;
+
+              if (field.type === "timepicker") {
+                return (
+                  <div>
+                    <label>{field.label}</label>
+                    <TimePicker
+                      onChange={field.onChange}
+                      value={field.value}
+                      disableClock
+                      format="HH:mm:ss"
+                    />
+                  </div>
+                );
+              }
 
               if (field.type === "select") {
                 return (

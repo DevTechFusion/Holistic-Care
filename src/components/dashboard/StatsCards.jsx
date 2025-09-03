@@ -1,44 +1,50 @@
+import { useEffect, useState } from "react";
 import { Box, Grid, Card, CardContent, Typography } from "@mui/material";
 import {
-  TrendingUp,
-  TrendingDown,
   CalendarToday,
   Person,
   Update,
 } from "@mui/icons-material";
+import { getAdminDashboard } from "../../DAL/dashboard"; 
 
 const StatsCards = () => {
+  const [cards, setCards] = useState(null);
+  const [color, setColor] = useState(null);
+
+  useEffect(() => {
+    getAdminDashboard("weekly").then((res) => {
+      if (res?.data?.cards) {
+        setCards(res.data.cards);
+        console.log("Dashboard Cards Data:", res.data.cards);
+      }
+    });
+  }, []);
+
+  if (!cards) return <p>Loading...</p>;
+
   const stats = [
     {
       title: "Total Bookings",
       icon: CalendarToday,
-      value: "50",
-      change: "+13.3%",
-      isPositive: true,
+      value: cards.total_bookings,
       color: "#23C7B7",
     },
     {
       title: "Arrived Today",
       icon: Person,
-      value: "16",
-      change: "-13.3%",
-      isPositive: false,
-      color: "#F56565",
+      value: cards.arrived_today,
+      color: "#23C7B7",
     },
     {
       title: "Not Arrived",
       icon: Person,
-      value: "32",
-      change: "+13.3%",
-      isPositive: true,
-      color: "#23C7B7",
+      value: cards.not_arrived,
+      color: "#F56565",
     },
     {
       title: "Rescheduled",
       icon: Update,
-      value: "25",
-      change: "+13.3%",
-      isPositive: true,
+      value: cards.rescheduled,
       color: "#23C7B7",
     },
   ];
@@ -46,13 +52,12 @@ const StatsCards = () => {
   return (
     <Grid container spacing={3}>
       {stats.map((stat, index) => {
-        const IconComponent = stat.icon; // store the icon to render
+        const IconComponent = stat.icon;
         return (
-          <Grid item size={{ xs: 6 }} key={index}>
+          <Grid item xs={12} sm={6} md={3} key={index}>
             <Card
               sx={{
                 height: "150px",
-                // minWidth: "250px",
                 borderRadius: 3,
                 boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                 "&:hover": {
@@ -90,33 +95,6 @@ const StatsCards = () => {
                 >
                   {stat.title}
                 </Typography>
-
-                {/* Change */}
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "flex-end",
-                    gap: 0.5,
-                    position: "absolute",
-                    top: 16,
-                    right: 16,
-                  }}
-                >
-                  {stat.isPositive ? (
-                    <TrendingUp sx={{ color: "#23C7B7", fontSize: 20 }} />
-                  ) : (
-                    <TrendingDown sx={{ color: "#F56565", fontSize: 20 }} />
-                  )}
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: stat.isPositive ? "#23C7B7" : "#F56565",
-                      fontWeight: 600,
-                    }}
-                  >
-                    {stat.change}
-                  </Typography>
-                </Box>
               </CardContent>
             </Card>
           </Grid>

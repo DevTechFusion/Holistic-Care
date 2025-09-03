@@ -19,6 +19,7 @@ import CreateAppointmentModal from "../../components/forms/AppointmentForm";
 import AgentWiseBookings from "../../components/dashboard/AgentWiseBooking";
 import SourceWiseBookings from "../../components/dashboard/SourceWiseBooking";
 import DoctorWiseBooking  from "../../components/dashboard/DoctorWiseBooking";
+import { DoctorLeaderboard, RevenueSection, StatsCards } from "../../components/dashboard";
 
 const Dashboard = () => {
   const [openModal, setOpenModal] = useState(null);
@@ -112,7 +113,9 @@ const Dashboard = () => {
         onClose={() => setOpenModal(null)}
       />
 
-      
+      <StatsCards />
+      <RevenueSection />
+      <DoctorLeaderboard />
       <AgentWiseBookings />
       <SourceWiseBookings />
       <DoctorWiseBooking />

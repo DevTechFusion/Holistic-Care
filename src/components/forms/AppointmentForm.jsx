@@ -29,7 +29,8 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
 
   const [formData, setFormData] = useState({
     date: "",
-    time_slot: "",
+    start_time: "",
+    end_time: "",
     patient_name: "",
     contact_number: "",
     agent_id: "",
@@ -67,7 +68,8 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
       if (isEditing && data) {
         setFormData({
           date: data.date || "",
-          time_slot: data.time_slot || "",
+          start_time: data.start_time || "",
+          end_time: data.end_time || "",
           patient_name: data.patient_name || "",
           contact_number: data.contact_number || "",
           agent_id: data.agent_id || data.agent?.id || "",
@@ -83,11 +85,13 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
           status_id: data.status_id || data.status?.id || "",
           amount: data.amount || "",
           payment_mode: data.payment_mode || "",
+          create_report: data.create_report || true,
         });
       } else {
         setFormData({
           date: "",
-          time_slot: "",
+          start_time: "",
+          end_time: "",
           patient_name: "",
           contact_number: "",
           agent_id: "",
@@ -103,6 +107,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
           status_id: "",
           amount: "",
           payment_mode: "",
+          create_report: true,
         });
       }
     }
@@ -126,7 +131,8 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
         if (!isEditing) {
           setFormData({
             date: "",
-            time_slot: "",
+            start_time: "",
+            end_time: "",
             patient_name: "",
             contact_number: "",
             agent_id: "",
@@ -142,6 +148,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
             status_id: "",
             amount: "",
             payment_mode: "",
+            create_report: true,
           });
         }
         onClose();
@@ -170,7 +177,8 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
     if (!isEditing) {
       setFormData({
         date: "",
-        time_slot: "",
+        start_time: "",
+        end_time: "",
         patient_name: "",
         contact_number: "",
         agent_id: "",
@@ -186,6 +194,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
         status_id: "",
         amount: "",
         payment_mode: "",
+        create_report: true,
       });
     }
     onClose();
@@ -196,19 +205,28 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
       name: "date",
       label: "Date",
       type: "date",
+      format: "yyyy-MM-dd",
+  
       required: true,
       value: formData.date,
       onChange: (e) => setFormData((p) => ({ ...p, date: e.target.value })),
     },
     {
-      name: "time_slot",
-      label: "Time Slot",
+      name: "start_time",
+      label: "Start Time",
       type: "time",
-      placeholder: "10:00 - 11:00",
+      
       required: true,
-      value: formData.time_slot,
-      onChange: (e) =>
-        setFormData((p) => ({ ...p, time_slot: e.target.value })),
+      value: formData.start_time,
+      onChange: (e) => setFormData((p) => ({ ...p, start_time: e.target.value })),
+    },
+    {
+      name: "end_time",
+      label: "End Time",
+      type: "time",
+      required: true,
+      value: formData.end_time,
+      onChange: (e) => setFormData((p) => ({ ...p, end_time: e.target.value })),
     },
     {
       name: "patient_name",

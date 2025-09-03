@@ -1,3 +1,4 @@
+// src/pages/DoctorsPage.jsx
 import { useEffect, useState } from "react";
 import {
   Box,
@@ -21,7 +22,7 @@ const DoctorsPage = () => {
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
-  const enqueueSnackbar = useSnackbar();
+  const { enqueueSnackbar } = useSnackbar();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [total, setTotal] = useState(0);
@@ -60,15 +61,6 @@ const DoctorsPage = () => {
     setTargetItem(doc);
     setOpenModal(true);
   };
-  const DAYS = {
-    0:"Monday",
-    1:"Tuesday",
-    2:"Wednesday",
-    3:"Thursday",
-    4:"Friday",
-    5:"Saturday",
-    6:"Sunday"
-  }
 
   return (
     <Box p={3}>
@@ -86,57 +78,66 @@ const DoctorsPage = () => {
       </Box>
 
       {/* Table */}
-        <Paper>
-          {loading ? (
-            <Box display="flex" justifyContent="center" alignItems="center" p={3}>
-          <CircularProgress />
-            </Box>
-          ) : (
-            <>
-          <Table>
-            <TableHead>
-              <TableRow>
-            <TableCell>#</TableCell>
-            <TableCell>Name</TableCell>
-            <TableCell>Phone</TableCell>
-            <TableCell>Department</TableCell>
-            <TableCell>Procedures</TableCell>
-            <TableCell>Availability</TableCell>
-            <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {doctors.map((doctor, idx) => (
-            <TableRow key={doctor.id}>
-              <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
-              <TableCell>{doctor.name}</TableCell>
-              <TableCell>{doctor.phone_number}</TableCell>
-              <TableCell>{doctor.department?.name}</TableCell>
-              <TableCell>
-                {doctor.procedures?.map((p) => p.name).join(", ")}
-              </TableCell>
-              <TableCell>
-                {doctor.availability?.map((a,index) => (
-              <Box key={index}>
-                <strong>{DAYS[index]}</strong>:{" "}
-                <span style={{ color: a.available ? "green" : "red" }}>
-                  {a.available ? "Available" : "Unavailable"}
-                </span>
-              </Box>
+      <Paper>
+        {loading ? (
+          <Box display="flex" justifyContent="center" alignItems="center" p={3}>
+            <CircularProgress />
+          </Box>
+        ) : (
+          <>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>#</TableCell>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Phone</TableCell>
+                  <TableCell>Department</TableCell>
+                  <TableCell>Procedures</TableCell>
+                  <TableCell>Availability</TableCell>
+                  <TableCell>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {doctors.map((doctor, idx) => (
+                  <TableRow key={doctor.id}>
+                    <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
+                    <TableCell>{doctor.name}</TableCell>
+                    <TableCell>{doctor.phone_number}</TableCell>
+                    <TableCell>{doctor.department?.name}</TableCell>
+                    <TableCell>
+                      {doctor.procedures?.map((p) => p.name).join(", ")}
+                    </TableCell>
+                    <TableCell>
+                      {doctor.availability &&
+                        Object.entries(doctor.availability).map(([day, a]) => (
+                          <Box key={day}>
+                            {" "}
+                            <strong>
+                              {day.charAt(0).toUpperCase() + day.slice(1)}
+                            </strong>
+                            :{" "}
+                            <span
+                              style={{ color: a.available ? "green" : "red" }}
+                            >
+                              {a.available
+                                ? `${a.start_time} - ${a.end_time}`
+                                : "Unavailable"}
+                            </span>
+                          </Box>
+                        ))}
+                    </TableCell>
+                    <TableCell>
+                      <ActionButtons
+                        onEdit={() => handleEdit(doctor)}
+                        onDelete={() => handleDelete(doctor.id)}
+                      />
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </TableCell>
-              <TableCell>
-                <ActionButtons
-              onEdit={() => handleEdit(doctor)}
-              onDelete={() => handleDelete(doctor.id)}
-                />
-              </TableCell>
-            </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableBody>
+            </Table>
 
-          {/* Pagination */}
+            {/* Pagination */}
             <TablePagination
               component="div"
               count={total}

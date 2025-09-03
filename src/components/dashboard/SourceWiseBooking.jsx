@@ -26,15 +26,16 @@ const SourceWiseBookings = () => {
         setLoading(true);
         setError(null);
 
-        const res = await getAdminDashboard();
-        const payload = res?.data?.data ?? res?.data ?? {};
-
+        const res = await getAdminDashboard("weekly");
+        setData(res?.data?.source_wise_bookings || []);
         const rows =
-          payload?.source_wise_bookings?.map((item) => ({
+          res?.data?.source_wise_bookings?.map((item) => ({
             id: item.source_id ?? item.source?.id,
             name: item.source?.name ?? "Unknown Source",
             bookings: item.bookings ?? 0,
           })) ?? [];
+
+          console.log("Source Wise Bookings:", rows);
 
         setData(rows);
       } catch (err) {

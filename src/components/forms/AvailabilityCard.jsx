@@ -25,10 +25,9 @@ const AvailabilityCard = ({
 
   useEffect(() => {
     setFormData((prevFormData) => {
-      const updatedAvailability = [...(prevFormData.availability || [])];
+      const updatedAvailability = { ...(prevFormData.availability || {}) };
 
-      // Update this day's availability
-      updatedAvailability[day.id - 1] = available
+      updatedAvailability[day.key] = available
         ? { available: true, start_time: startTime, end_time: endTime }
         : { available: false };
 
@@ -40,7 +39,7 @@ const AvailabilityCard = ({
   }, [startTime, endTime, available]);
 
   return (
-    <Card variant="outlined" sx={{ borderRadius: 2, mb: 2 }} key={day.id}>
+    <Card variant="outlined" sx={{ borderRadius: 2, mb: 2 }} key={day.key}>
       <CardContent>
         {/* Day Name */}
         <Typography variant="h6">{day.name}</Typography>
@@ -61,7 +60,7 @@ const AvailabilityCard = ({
           }
         />
 
-        {/* Time fields (always visible, only enabled when available) */}
+        {/* Time fields (enabled only when available) */}
         <Grid container spacing={2} sx={{ mt: 1 }}>
           {/* Start Time */}
           <Grid item xs={6}>

@@ -26,7 +26,7 @@ const DoctorWiseBookings = () => {
         setLoading(true);
         setError(null);
 
-        const res = await getAdminDashboard();
+        const res = await getAdminDashboard("weekly");
         const payload = res?.data?.data ?? res?.data ?? {};
 
         const rows =
