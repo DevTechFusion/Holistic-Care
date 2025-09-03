@@ -52,7 +52,7 @@ class Report extends Model
      */
     public function remarks1()
     {
-        return $this->belongsTo(Remarks1::class);
+        return $this->belongsTo(Remarks1::class, 'remarks_1_id');
     }
 
     /**
@@ -60,7 +60,7 @@ class Report extends Model
      */
     public function remarks2()
     {
-        return $this->belongsTo(Remarks2::class);
+        return $this->belongsTo(Remarks2::class, 'remarks_2_id');
     }
 
     /**
@@ -68,7 +68,7 @@ class Report extends Model
      */
     public function status()
     {
-        return $this->belongsTo(Status::class);
+        return $this->belongsTo(Status::class, 'status_id');
     }
 
     /**

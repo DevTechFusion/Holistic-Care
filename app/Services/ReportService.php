@@ -68,7 +68,7 @@ class ReportService extends CrudeService
     public function generateReportFromAppointment($appointmentId, $reportType = 'appointment_summary', $generatedById = null, $notes = null, $amount = null, $paymentMethod = null, $remarks1Id = null, $remarks2Id = null, $statusId = null)
     {
         $appointment = Appointment::with([
-            'doctor', 'procedure', 'category', 'department', 'source', 'agent'
+            'doctor', 'procedure', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
         ])->find($appointmentId);
 
         if (!$appointment) {
@@ -84,6 +84,9 @@ class ReportService extends CrudeService
             'category_name' => $appointment->category->name ?? 'N/A',
             'source_name' => $appointment->source->name ?? 'N/A',
             'agent_name' => $appointment->agent->name ?? 'N/A',
+            'remarks1_name' => $appointment->remarks1->name ?? 'N/A',
+            'remarks2_name' => $appointment->remarks2->name ?? 'N/A',
+            'status_name' => $appointment->status->name ?? 'N/A',
         ];
 
         $reportData = [
@@ -93,11 +96,11 @@ class ReportService extends CrudeService
             'notes' => $notes,
             'generated_by_id' => $generatedById,
             'generated_at' => now(),
-            'amount' => $amount,
-            'payment_method' => $paymentMethod,
-            'remarks_1_id' => $remarks1Id,
-            'remarks_2_id' => $remarks2Id,
-            'status_id' => $statusId,
+            'amount' => $amount ?? $appointment->amount,
+            'payment_method' => $paymentMethod ?? $appointment->payment_mode,
+            'remarks_1_id' => $remarks1Id ?? $appointment->remarks_1_id,
+            'remarks_2_id' => $remarks2Id ?? $appointment->remarks_2_id,
+            'status_id' => $statusId ?? $appointment->status_id,
         ];
 
         return $this->createReport($reportData);
