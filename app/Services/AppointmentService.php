@@ -636,7 +636,7 @@ class AppointmentService extends CrudeService
         }
         
         return $query
-            ->with(['doctor', 'status', 'procedure', 'remarks1', 'remarks2'])
+            ->with(['doctor', 'status', 'procedure', 'remarks1', 'remarks2', 'department'])
             ->orderByDesc('start_time')
             ->limit($limit)
             ->get();
@@ -664,7 +664,8 @@ class AppointmentService extends CrudeService
                 'category:id,name',
                 'status:id,name',
                 'remarks1:id,name',
-                'remarks2:id,name'
+                'remarks2:id,name',
+                'department:id,name'
             ])
             ->orderBy('start_time')
             ->limit($limit)
@@ -688,6 +689,7 @@ class AppointmentService extends CrudeService
                     'contact_number' => $appointment->contact_number,
                     'remarks1' => $appointment->remarks1->name ?? null,
                     'remarks2' => $appointment->remarks2->name ?? null,
+                    'department_name' => $appointment->department->name ?? 'N/A',
                 ];
             });
     }
