@@ -35,6 +35,7 @@ class AgentDashboardController extends Controller
         [$startDate, $endDate] = $this->resolveDateRange($range);
 
         $counters = $this->appointmentService->getAgentCounters($agent->id, $startDate, $endDate);
+        $totalIncentive = $this->appointmentService->getAgentTotalIncentive($agent->id, $startDate, $endDate);
         $leaderboardToday = $this->appointmentService->getAgentTodayLeaderboard($agent->id, 5);
         $todayAppointments = $this->appointmentService->getAgentTodayAppointments($agent->id, 10);
 
@@ -55,6 +56,7 @@ class AgentDashboardController extends Controller
                     'arrived' => $counters['arrived'],
                     'not_arrived' => $counters['not_arrived'],
                     'rescheduled' => $counters['rescheduled'],
+                    'total_incentive' => $totalIncentive,
                 ],
                 'today_leaderboard' => $leaderboardToday,
                 'today_appointments' => $todayAppointments,

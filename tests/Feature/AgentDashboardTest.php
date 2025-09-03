@@ -107,7 +107,7 @@ class AgentDashboardTest extends TestCase
                 'status',
                 'data' => [
                     'filters' => ['range', 'start_date', 'end_date'],
-                    'cards' => ['total_bookings', 'arrived', 'not_arrived', 'rescheduled'],
+                    'cards' => ['total_bookings', 'arrived', 'not_arrived', 'rescheduled', 'total_incentive'],
                     'today_leaderboard',
                     'today_appointments',
                     'appointments_table' => [
@@ -490,6 +490,7 @@ class AgentDashboardTest extends TestCase
                         'arrived' => 0,
                         'not_arrived' => 0,
                         'rescheduled' => 0,
+                        'total_incentive' => 0,
                     ],
                     'today_leaderboard' => [],
                     'today_appointments' => [],
@@ -501,6 +502,58 @@ class AgentDashboardTest extends TestCase
                     ],
                 ],
             ]);
+    }
+
+    public function test_agent_dashboard_total_incentive_with_time_filters(): void
+    {
+        $user = $this->authenticate();
+        $testData = $this->createTestData($user);
+
+        // Create appointments with amounts for different dates
+        $this->createAppointment($user, [
+            'date' => now()->toDateString(),
+            'start_time' => '09:00:00',
+            'end_time' => '10:00:00',
+            'duration' => 60,
+            'amount' => 1000.00, // 1% incentive = 10.00
+        ], $testData);
+
+        $this->createAppointment($user, [
+            'date' => now()->addDays(3)->toDateString(), // Within same week
+            'start_time' => '10:00:00',
+            'end_time' => '11:00:00',
+            'duration' => 60,
+            'amount' => 2000.00, // 1% incentive = 20.00
+        ], $testData);
+
+        $this->createAppointment($user, [
+            'date' => now()->addDays(15)->toDateString(), // Within same month
+            'start_time' => '11:00:00',
+            'end_time' => '12:00:00',
+            'duration' => 60,
+            'amount' => 3000.00, // 1% incentive = 30.00
+        ], $testData);
+
+        // Test daily range (should only show today's incentive)
+        $response = $this->withHeader('Authorization', 'Bearer ' . $user->createToken('test-token')->plainTextToken)
+            ->getJson('/api/agent/dashboard?range=daily');
+
+        $response->assertStatus(200);
+        $this->assertEquals(10.0, $response->json('data.cards.total_incentive'));
+
+        // Test weekly range (should show today's and next week's incentives)
+        $response = $this->withHeader('Authorization', 'Bearer ' . $user->createToken('test-token')->plainTextToken)
+            ->getJson('/api/agent/dashboard?range=weekly');
+
+        $response->assertStatus(200);
+        $this->assertEquals(30.0, $response->json('data.cards.total_incentive'));
+
+        // Test monthly range (should show all 3 incentives)
+        $response = $this->withHeader('Authorization', 'Bearer ' . $user->createToken('test-token')->plainTextToken)
+            ->getJson('/api/agent/dashboard?range=monthly');
+
+        $response->assertStatus(200);
+        $this->assertEquals(60.0, $response->json('data.cards.total_incentive'));
     }
 }
 

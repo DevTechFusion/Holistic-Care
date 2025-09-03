@@ -238,4 +238,50 @@ class Appointment extends Model
     {
         return $query->where('duration', $duration);
     }
+
+    /**
+     * Boot the model and register model events.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Create incentive when appointment is created
+        static::created(function ($appointment) {
+            if (!empty($appointment->amount) && !empty($appointment->agent_id)) {
+                $amount = (float) $appointment->amount;
+                $percentage = 1.00; // 1%
+                $incentiveAmount = round(($amount * $percentage) / 100, 2);
+
+                \App\Models\Incentive::create([
+                    'appointment_id' => $appointment->id,
+                    'agent_id' => $appointment->agent_id,
+                    'amount' => $amount,
+                    'percentage' => $percentage,
+                    'incentive_amount' => $incentiveAmount,
+                ]);
+            }
+        });
+
+        // Update incentive when appointment is updated
+        static::updated(function ($appointment) {
+            if ($appointment->wasChanged('amount') || $appointment->wasChanged('agent_id')) {
+                if (!empty($appointment->amount) && !empty($appointment->agent_id)) {
+                    $amount = (float) $appointment->amount;
+                    $percentage = 1.00; // 1%
+                    $incentiveAmount = round(($amount * $percentage) / 100, 2);
+
+                    \App\Models\Incentive::updateOrCreate(
+                        ['appointment_id' => $appointment->id],
+                        [
+                            'agent_id' => $appointment->agent_id,
+                            'amount' => $amount,
+                            'percentage' => $percentage,
+                            'incentive_amount' => $incentiveAmount,
+                        ]
+                    );
+                }
+            }
+        });
+    }
 }

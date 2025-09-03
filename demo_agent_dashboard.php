@@ -32,6 +32,7 @@ echo json_encode([
             'arrived' => 2,
             'not_arrived' => 2,
             'rescheduled' => 1,
+            'total_incentive' => 25.50,
         ],
         'today_leaderboard' => [
             [

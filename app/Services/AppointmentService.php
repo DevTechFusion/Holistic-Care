@@ -583,7 +583,7 @@ class AppointmentService extends CrudeService
      */
     public function getAgentCounters(int $agentId, string $startDate, string $endDate): array
     {
-        $base = $this->model->byDateRange($startDate, $endDate)->where('agent_id', $agentId);
+        $base = $this->model->byDateRange($startDate, $endDate)->where('appointments.agent_id', $agentId);
 
         $total = (clone $base)->count();
 
@@ -609,6 +609,18 @@ class AppointmentService extends CrudeService
     }
 
     /**
+     * Get total incentive for an agent within date range.
+     */
+    public function getAgentTotalIncentive(int $agentId, string $startDate, string $endDate): float
+    {
+        return $this->model
+            ->byDateRange($startDate, $endDate)
+            ->where('appointments.agent_id', $agentId)
+            ->leftJoin('incentives as i', 'i.appointment_id', '=', 'appointments.id')
+            ->sum('i.incentive_amount') ?? 0.0;
+    }
+
+    /**
      * Today's appointment leaderboard for a specific agent (top 5 by time descending).
      * Unaffected by selected filter.
      */
@@ -616,7 +628,7 @@ class AppointmentService extends CrudeService
     {
         return $this->model
             ->whereDate('date', now()->toDateString())
-            ->where('agent_id', $agentId)
+            ->where('appointments.agent_id', $agentId)
             ->with(['doctor', 'status', 'procedure', 'remarks1', 'remarks2'])
             ->orderByDesc('start_time')
             ->limit($limit)
@@ -631,7 +643,7 @@ class AppointmentService extends CrudeService
     {
         return $this->model
             ->whereDate('date', now()->toDateString())
-            ->where('agent_id', $agentId)
+            ->where('appointments.agent_id', $agentId)
             ->with([
                 'doctor:id,name',
                 'procedure:id,name',
@@ -673,7 +685,7 @@ class AppointmentService extends CrudeService
     {
         return $this->model
             ->byDateRange($startDate, $endDate)
-            ->where('agent_id', $agentId)
+            ->where('appointments.agent_id', $agentId)
             ->with(['doctor', 'procedure', 'category', 'department', 'source', 'status', 'remarks1', 'remarks2'])
             ->orderByDesc('date')
             ->orderByDesc('start_time')

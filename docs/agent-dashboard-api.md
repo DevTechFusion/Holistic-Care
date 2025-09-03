@@ -28,7 +28,8 @@
       "total_bookings": 12,
       "arrived": 5,
       "not_arrived": 4,
-      "rescheduled": 3
+      "rescheduled": 3,
+      "total_incentive": 45.50
     },
     "today_leaderboard": [
       {
