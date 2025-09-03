@@ -5,11 +5,15 @@
 - **Auth**: Sanctum auth required (uses the current authenticated agent)
 - **Query Params**:
   - **range**: `daily` | `weekly` | `monthly` | `yearly` (default: `daily`)
+  - **department_id**: integer (optional, filters today's appointments and leaderboard by department)
   - **per_page**: integer (default: 20)
   - **page**: integer (default: 1)
 
 ### Behavior
-- A single filter (range) applies across the entire dashboard.
+- **Range filter**: Applies across the entire dashboard (cards and appointments table).
+- **Department filter**: Affects both today's appointments list and today's leaderboard.
+- When department_id is provided, both sections show data only from that department.
+- When department_id is not provided (or null), both sections show data from all departments.
 - Cards displayed: `total_bookings`, `arrived`, `not_arrived`, `rescheduled`.
 - Today’s Appointment Leaderboard always shows top 5 for today (unaffected by the filter).
 - A paginated table of all appointments for the agent in the selected range appears at the bottom.
@@ -22,7 +26,8 @@
     "filters": {
       "range": "daily",
       "start_date": "2025-01-01",
-      "end_date": "2025-01-01"
+      "end_date": "2025-01-01",
+      "department_id": null
     },
     "cards": {
       "total_bookings": 12,
@@ -81,7 +86,18 @@
 BASE="http://127.0.0.1:8000"
 TOKEN="<your-sanctum-token>"
 
-curl -s "$BASE/api/agent/dashboard?range=weekly&per_page=20" \
+# Get weekly dashboard with department filter (department_id=5)
+curl -s "$BASE/api/agent/dashboard?range=weekly&department_id=5&per_page=20" \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer $TOKEN" | jq .
+
+# Get daily dashboard without department filter (shows data from all departments)
+curl -s "$BASE/api/agent/dashboard?range=daily&per_page=20" \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer $TOKEN" | jq .
+
+# Get monthly dashboard with department filter (department_id=5)
+curl -s "$BASE/api/agent/dashboard?range=monthly&department_id=5" \
   -H "Accept: application/json" \
   -H "Authorization: Bearer $TOKEN" | jq .
 ```

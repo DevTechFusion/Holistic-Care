@@ -18,9 +18,11 @@ class AgentDashboardController extends Controller
     }
 
     /**
-     * Agent dashboard with a single date range filter.
-     * Query: range = daily|weekly|monthly|yearly (default: daily)
-     * Leaderboard is always today's top 5, unaffected by filter.
+     * Agent dashboard with date range and department filters.
+     * Query: 
+     * - range = daily|weekly|monthly|yearly (default: daily)
+     * - department_id = integer (optional, filters today's appointments and leaderboard by department)
+     * When department_id is not provided, shows data from all departments.
      */
     public function index(Request $request)
     {
@@ -32,12 +34,18 @@ class AgentDashboardController extends Controller
             $range = 'daily';
         }
         
+        // Get department filter
+        $departmentId = $request->query('department_id');
+        if ($departmentId) {
+            $departmentId = (int) $departmentId;
+        }
+        
         [$startDate, $endDate] = $this->resolveDateRange($range);
 
         $counters = $this->appointmentService->getAgentCounters($agent->id, $startDate, $endDate);
         $totalIncentive = $this->appointmentService->getAgentTotalIncentive($agent->id, $startDate, $endDate);
-        $leaderboardToday = $this->appointmentService->getAgentTodayLeaderboard($agent->id, 5);
-        $todayAppointments = $this->appointmentService->getAgentTodayAppointments($agent->id, 10);
+        $leaderboardToday = $this->appointmentService->getAgentTodayLeaderboard($agent->id, 5, $departmentId);
+        $todayAppointments = $this->appointmentService->getAgentTodayAppointments($agent->id, 10, $departmentId);
 
         $perPage = (int) $request->query('per_page', 20);
         $page = (int) $request->query('page', 1);
@@ -50,6 +58,7 @@ class AgentDashboardController extends Controller
                     'range' => $range,
                     'start_date' => $startDate,
                     'end_date' => $endDate,
+                    'department_id' => $departmentId,
                 ],
                 'cards' => [
                     'total_bookings' => $counters['total_bookings'],

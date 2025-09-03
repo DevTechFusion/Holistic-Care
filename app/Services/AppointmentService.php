@@ -622,13 +622,20 @@ class AppointmentService extends CrudeService
 
     /**
      * Today's appointment leaderboard for a specific agent (top 5 by time descending).
-     * Unaffected by selected filter.
+     * Can be filtered by department if provided.
      */
-    public function getAgentTodayLeaderboard(int $agentId, int $limit = 5)
+    public function getAgentTodayLeaderboard(int $agentId, int $limit = 5, ?int $departmentId = null)
     {
-        return $this->model
+        $query = $this->model
             ->whereDate('date', now()->toDateString())
-            ->where('appointments.agent_id', $agentId)
+            ->where('appointments.agent_id', $agentId);
+        
+        // Apply department filter if provided
+        if ($departmentId) {
+            $query->where('appointments.department_id', $departmentId);
+        }
+        
+        return $query
             ->with(['doctor', 'status', 'procedure', 'remarks1', 'remarks2'])
             ->orderByDesc('start_time')
             ->limit($limit)
@@ -639,11 +646,18 @@ class AppointmentService extends CrudeService
      * Get today's appointments for a specific agent with detailed information.
      * Includes doctor details, time slots, and specialty information.
      */
-    public function getAgentTodayAppointments(int $agentId, int $limit = 10)
+    public function getAgentTodayAppointments(int $agentId, int $limit = 10, ?int $departmentId = null)
     {
-        return $this->model
+        $query = $this->model
             ->whereDate('date', now()->toDateString())
-            ->where('appointments.agent_id', $agentId)
+            ->where('appointments.agent_id', $agentId);
+        
+        // Apply department filter if provided
+        if ($departmentId) {
+            $query->where('appointments.department_id', $departmentId);
+        }
+        
+        return $query
             ->with([
                 'doctor:id,name',
                 'procedure:id,name',

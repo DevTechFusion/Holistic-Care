@@ -316,6 +316,91 @@ class AgentDashboardTest extends TestCase
         $this->assertEquals('Test Remarks 2', $todayAppointments[0]['remarks2']);
     }
 
+    public function test_agent_dashboard_today_appointments_with_department_filter(): void
+    {
+        $user = $this->authenticate();
+        $testData = $this->createTestData($user);
+
+        // Create a second department
+        $department2 = Department::create(['name' => 'Test Department 2']);
+
+        // Create appointments for today in different departments
+        $this->createAppointment($user, [
+            'date' => now()->toDateString(),
+            'start_time' => '09:00:00',
+            'end_time' => '10:00:00',
+            'duration' => 60,
+            'patient_name' => 'Patient 1',
+            'contact_number' => '1111111111',
+        ], $testData);
+
+        $this->createAppointment($user, [
+            'date' => now()->toDateString(),
+            'start_time' => '10:00:00',
+            'end_time' => '11:00:00',
+            'duration' => 60,
+            'patient_name' => 'Patient 2',
+            'contact_number' => '2222222222',
+        ], $testData);
+
+        // Create appointment in second department
+        $appointmentData2 = [
+            'date' => now()->toDateString(),
+            'start_time' => '11:00:00',
+            'end_time' => '12:00:00',
+            'duration' => 60,
+            'patient_name' => 'Patient 3',
+            'contact_number' => '3333333333',
+        ];
+        $testData2 = $testData;
+        $testData2['department'] = $department2;
+        $this->createAppointment($user, $appointmentData2, $testData2);
+
+        // Test without department filter - should return all 3 appointments
+        $response = $this->withHeader('Authorization', 'Bearer ' . $user->createToken('test-token')->plainTextToken)
+            ->getJson('/api/agent/dashboard?range=daily');
+
+        $response->assertStatus(200);
+        $todayAppointments = $response->json('data.today_appointments');
+        $this->assertCount(3, $todayAppointments);
+        
+        // Also check that leaderboard shows all appointments when no department filter
+        $leaderboard = $response->json('data.today_leaderboard');
+        $this->assertCount(3, $leaderboard);
+
+        // Test with department filter - should return only 2 appointments from first department
+        $response = $this->withHeader('Authorization', 'Bearer ' . $user->createToken('test-token')->plainTextToken)
+            ->getJson('/api/agent/dashboard?range=daily&department_id=' . $testData['department']->id);
+
+        $response->assertStatus(200);
+        $todayAppointments = $response->json('data.today_appointments');
+        $this->assertCount(2, $todayAppointments);
+        
+        // Also check that leaderboard shows only 2 appointments from the filtered department
+        $leaderboard = $response->json('data.today_leaderboard');
+        $this->assertCount(2, $leaderboard);
+        
+        // Verify that we got the expected appointments from the first department
+        $patientNames = array_column($todayAppointments, 'patient_name');
+        $this->assertContains('Patient 1', $patientNames);
+        $this->assertContains('Patient 2', $patientNames);
+        $this->assertNotContains('Patient 3', $patientNames);
+
+        // Test with second department filter - should return only 1 appointment
+        $response = $this->withHeader('Authorization', 'Bearer ' . $user->createToken('test-token')->plainTextToken)
+            ->getJson('/api/agent/dashboard?range=daily&department_id=' . $department2->id);
+
+        $response->assertStatus(200);
+        $todayAppointments = $response->json('data.today_appointments');
+        $this->assertCount(1, $todayAppointments);
+        
+        // Also check that leaderboard shows only 1 appointment from the second department
+        $leaderboard = $response->json('data.today_leaderboard');
+        $this->assertCount(1, $leaderboard);
+        
+        $this->assertEquals('Patient 3', $todayAppointments[0]['patient_name']);
+    }
+
     public function test_agent_dashboard_appointments_table_pagination(): void
     {
         $user = $this->authenticate();
