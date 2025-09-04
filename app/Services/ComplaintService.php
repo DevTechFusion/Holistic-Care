@@ -388,4 +388,227 @@ class ComplaintService extends CrudeService
 
         return $result;
     }
+
+    /**
+     * Get all agents (users with agent role) for filtering
+     */
+    public function getAgentsForFilter()
+    {
+        return \App\Models\User::role('agent')
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get();
+    }
+
+    /**
+     * Get all complaint types for filtering
+     */
+    public function getComplaintTypesForFilter()
+    {
+        return \App\Models\ComplaintType::select('id', 'name')
+            ->orderBy('name')
+            ->get();
+    }
+
+    /**
+     * Get all platforms for filtering
+     */
+    public function getPlatformsForFilter()
+    {
+        return $this->model
+            ->whereNotNull('platform')
+            ->distinct()
+            ->pluck('platform')
+            ->filter()
+            ->sort()
+            ->values();
+    }
+
+    /**
+     * Build filtered query with agent, complaint type, and platform filters
+     */
+    private function buildFilteredQuery($query, ?int $agentId = null, ?int $complaintTypeId = null, ?string $platform = null)
+    {
+        if ($agentId) {
+            $query->where('agent_id', $agentId);
+        }
+
+        if ($complaintTypeId) {
+            $query->where('complaint_type_id', $complaintTypeId);
+        }
+
+        if ($platform) {
+            $query->where('platform', $platform);
+        }
+
+        return $query;
+    }
+
+    /**
+     * Count mistakes in a datetime range with filters
+     */
+    public function countInRangeWithFilters(string $startDateTime, string $endDateTime, ?int $agentId = null, ?int $complaintTypeId = null, ?string $platform = null): int
+    {
+        $query = $this->buildDateRangeQuery($this->model, $startDateTime, $endDateTime);
+        return $this->buildFilteredQuery($query, $agentId, $complaintTypeId, $platform)->count();
+    }
+
+    /**
+     * Most frequent mistake type in range with filters
+     */
+    public function mostFrequentTypeWithFilters(string $startDateTime, string $endDateTime, ?int $agentId = null, ?int $complaintTypeId = null, ?string $platform = null)
+    {
+        $query = $this->buildDateRangeQuery(
+            $this->model->selectRaw('complaint_type_id, COUNT(*) as count'),
+            $startDateTime,
+            $endDateTime
+        );
+        
+        return $this->buildFilteredQuery($query, $agentId, $complaintTypeId, $platform)
+            ->groupBy('complaint_type_id')
+            ->orderByDesc('count')
+            ->with('complaintType')
+            ->first();
+    }
+
+    /**
+     * Top agent by mistakes in range with filters
+     */
+    public function topAgentByMistakesWithFilters(string $startDateTime, string $endDateTime, ?int $agentId = null, ?int $complaintTypeId = null, ?string $platform = null)
+    {
+        $query = $this->buildDateRangeQuery(
+            $this->model->selectRaw('agent_id, COUNT(*) as mistakes')->whereNotNull('agent_id'),
+            $startDateTime,
+            $endDateTime
+        );
+        
+        return $this->buildFilteredQuery($query, $agentId, $complaintTypeId, $platform)
+            ->groupBy('agent_id')
+            ->orderByDesc('mistakes')
+            ->with(['agent:id,name'])
+            ->first();
+    }
+
+    /**
+     * Detailed log for table with filters
+     */
+    public function getDetailedLogWithFilters(string $startDateTime, string $endDateTime, int $perPage = 10, int $page = 1, ?int $agentId = null, ?int $complaintTypeId = null, ?string $platform = null)
+    {
+        $query = $this->buildDateRangeQuery(
+            $this->model->with(['agent:id,name', 'complaintType:id,name']),
+            $startDateTime,
+            $endDateTime
+        );
+        
+        return $this->buildFilteredQuery($query, $agentId, $complaintTypeId, $platform)
+            ->orderByDesc('occurred_at')
+            ->orderByDesc('created_at')
+            ->paginate($perPage, ['*'], 'page', $page);
+    }
+
+    /**
+     * Counts by agent with types with filters
+     */
+    public function mistakeCountByAgentWithTypeNamesWithFilters(string $startDateTime, string $endDateTime, ?int $agentId = null, ?int $complaintTypeId = null, ?string $platform = null)
+    {
+        // Get all complaint types with their names
+        $types = $this->model->select('complaint_type_id')
+            ->distinct()
+            ->with('complaintType:id,name')
+            ->get()
+            ->pluck('complaintType.name', 'complaint_type_id')
+            ->filter();
+
+        $base = $this->buildDateRangeQuery($this->model, $startDateTime, $endDateTime);
+        $base = $this->buildFilteredQuery($base, $agentId, $complaintTypeId, $platform);
+        $base = $base->whereNotNull('agent_id');
+
+        $totals = $base->clone()
+            ->selectRaw('agent_id, COUNT(*) as total')
+            ->groupBy('agent_id')
+            ->pluck('total', 'agent_id');
+
+        $result = [];
+
+        // Prepare per-agent rows
+        foreach ($totals as $agentId => $total) {
+            $result[$agentId] = [
+                'agent_id' => $agentId,
+                'total' => (int) $total,
+            ];
+        }
+
+        // For each type, compute counts per agent
+        foreach ($types as $typeId => $typeName) {
+            $counts = $this->buildDateRangeQuery($this->model, $startDateTime, $endDateTime);
+            $counts = $this->buildFilteredQuery($counts, $agentId, $complaintTypeId, $platform);
+            $counts = $counts->selectRaw('agent_id, COUNT(*) as count')
+                ->where('complaint_type_id', $typeId)
+                ->whereNotNull('agent_id')
+                ->groupBy('agent_id')
+                ->pluck('count', 'agent_id');
+
+            foreach ($counts as $agentId => $count) {
+                if (!isset($result[$agentId])) {
+                    $result[$agentId] = [
+                        'agent_id' => $agentId,
+                        'total' => 0,
+                    ];
+                }
+                // Use the type name as the key (e.g., "Missed Reply", "Disinformation")
+                $result[$agentId][$typeName] = (int) $count;
+            }
+        }
+
+        // Attach agent names
+        $agentNames = $this->model->with('agent:id,name')
+            ->whereIn('agent_id', array_keys($result))
+            ->get()
+            ->pluck('agent.name', 'agent_id');
+
+        foreach ($result as $agentId => &$row) {
+            $row['agent_name'] = $agentNames[$agentId] ?? null;
+        }
+
+        // Return indexed by agent_id
+        return array_values($result);
+    }
+
+    /**
+     * Get mistake type percentages with filters
+     */
+    public function getMistakeTypePercentagesWithFilters(string $startDateTime, string $endDateTime, ?int $agentId = null, ?int $complaintTypeId = null, ?string $platform = null)
+    {
+        $totalMistakes = $this->countInRangeWithFilters($startDateTime, $endDateTime, $agentId, $complaintTypeId, $platform);
+        
+        if ($totalMistakes === 0) {
+            return [];
+        }
+
+        $query = $this->buildDateRangeQuery($this->model, $startDateTime, $endDateTime);
+        $query = $this->buildFilteredQuery($query, $agentId, $complaintTypeId, $platform);
+
+        $typeCounts = $query->selectRaw('complaint_type_id, COUNT(*) as count')
+            ->groupBy('complaint_type_id')
+            ->with('complaintType:id,name')
+            ->get();
+
+        $result = [];
+        foreach ($typeCounts as $typeCount) {
+            $percentage = round(($typeCount->count / $totalMistakes) * 100, 1);
+            $result[] = [
+                'type_id' => $typeCount->complaint_type_id,
+                'type_name' => $typeCount->complaintType->name,
+                'count' => $typeCount->count,
+                'percentage' => $percentage,
+            ];
+        }
+
+        // Sort by count descending
+        usort($result, function ($a, $b) {
+            return $b['count'] - $a['count'];
+        });
+
+        return $result;
+    }
 }

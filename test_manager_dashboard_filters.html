@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Dashboard Filters Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .filter-group label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        .filter-group select, .filter-group input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn:hover {
+            opacity: 0.8;
+        }
+        .results {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+        .results pre {
+            background: #272822;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            color: #155724;
+            background: #d4edda;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .info {
+            color: #0c5460;
+            background: #d1ecf1;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Manager Dashboard Filters Test</h1>
+    
+    <div class="container">
+        <h2>API Configuration</h2>
+        <div class="filter-group">
+            <label for="baseUrl">Base URL:</label>
+            <input type="text" id="baseUrl" value="http://localhost:8000/api" placeholder="Enter your API base URL">
+        </div>
+        <div class="filter-group">
+            <label for="token">Auth Token:</label>
+            <input type="text" id="token" placeholder="Enter your authentication token">
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Filters</h2>
+        <div class="filters">
+            <div class="filter-group">
+                <label for="range">Time Range:</label>
+                <select id="range">
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="yearly">Yearly</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="agentId">Agent:</label>
+                <select id="agentId">
+                    <option value="">All Agents</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="complaintTypeId">Complaint Type:</label>
+                <select id="complaintTypeId">
+                    <option value="">All Types</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="platform">Platform:</label>
+                <select id="platform">
+                    <option value="">All Platforms</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="buttons">
+            <button class="btn btn-primary" onclick="loadFilterOptions()">Load Filter Options</button>
+            <button class="btn btn-primary" onclick="loadDashboard()">Load Dashboard Data</button>
+            <button class="btn btn-secondary" onclick="clearResults()">Clear Results</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Results</h2>
+        <div id="results" class="results">
+            <p>Click "Load Filter Options" to populate the filter dropdowns, then "Load Dashboard Data" to see the filtered results.</p>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let baseUrl = '';
+        let token = '';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            baseUrl = document.getElementById('baseUrl').value;
+            document.getElementById('baseUrl').addEventListener('input', function() {
+                baseUrl = this.value;
+            });
+            document.getElementById('token').addEventListener('input', function() {
+                token = this.value;
+            });
+        });
+
+        // Load filter options
+        async function loadFilterOptions() {
+            if (!baseUrl || !token) {
+                showError('Please enter both Base URL and Auth Token');
+                return;
+            }
+
+            try {
+                showInfo('Loading filter options...');
+                
+                const response = await fetch(`${baseUrl}/manager/dashboard/filter-options`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    populateFilters(data.data);
+                    showSuccess('Filter options loaded successfully!');
+                } else {
+                    throw new Error(data.message || 'Failed to load filter options');
+                }
+            } catch (error) {
+                showError(`Error loading filter options: ${error.message}`);
+            }
+        }
+
+        // Populate filter dropdowns
+        function populateFilters(data) {
+            // Populate agents
+            const agentSelect = document.getElementById('agentId');
+            agentSelect.innerHTML = '<option value="">All Agents</option>';
+            data.agents.forEach(agent => {
+                const option = document.createElement('option');
+                option.value = agent.id;
+                option.textContent = agent.name;
+                agentSelect.appendChild(option);
+            });
+
+            // Populate complaint types
+            const typeSelect = document.getElementById('complaintTypeId');
+            typeSelect.innerHTML = '<option value="">All Types</option>';
+            data.complaint_types.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type.id;
+                option.textContent = type.name;
+                typeSelect.appendChild(option);
+            });
+
+            // Populate platforms
+            const platformSelect = document.getElementById('platform');
+            platformSelect.innerHTML = '<option value="">All Platforms</option>';
+            data.platforms.forEach(platform => {
+                const option = document.createElement('option');
+                option.value = platform;
+                option.textContent = platform;
+                platformSelect.appendChild(option);
+            });
+        }
+
+        // Load dashboard data with filters
+        async function loadDashboard() {
+            if (!baseUrl || !token) {
+                showError('Please enter both Base URL and Auth Token');
+                return;
+            }
+
+            try {
+                showInfo('Loading dashboard data...');
+                
+                // Build query parameters
+                const params = new URLSearchParams();
+                params.append('range', document.getElementById('range').value);
+                
+                const agentId = document.getElementById('agentId').value;
+                if (agentId) params.append('agent_id', agentId);
+                
+                const complaintTypeId = document.getElementById('complaintTypeId').value;
+                if (complaintTypeId) params.append('complaint_type_id', complaintTypeId);
+                
+                const platform = document.getElementById('platform').value;
+                if (platform) params.append('platform', platform);
+
+                const response = await fetch(`${baseUrl}/manager/dashboard?${params.toString()}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    displayResults(data);
+                    showSuccess('Dashboard data loaded successfully!');
+                } else {
+                    throw new Error(data.message || 'Failed to load dashboard data');
+                }
+            } catch (error) {
+                showError(`Error loading dashboard data: ${error.message}`);
+            }
+        }
+
+        // Display results
+        function displayResults(data) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <h3>Dashboard Data</h3>
+                <h4>Applied Filters:</h4>
+                <ul>
+                    <li><strong>Time Range:</strong> ${data.data.filters.range}</li>
+                    <li><strong>Start Date:</strong> ${data.data.filters.start_date}</li>
+                    <li><strong>End Date:</strong> ${data.data.filters.end_date}</li>
+                    <li><strong>Agent ID:</strong> ${data.data.filters.agent_id || 'All'}</li>
+                    <li><strong>Complaint Type ID:</strong> ${data.data.filters.complaint_type_id || 'All'}</li>
+                    <li><strong>Platform:</strong> ${data.data.filters.platform || 'All'}</li>
+                </ul>
+                
+                <h4>Summary Cards:</h4>
+                <ul>
+                    <li><strong>Total Mistakes:</strong> ${data.data.cards.total_mistakes}</li>
+                    <li><strong>Most Frequent Type:</strong> ${data.data.cards.most_frequent_type ? data.data.cards.most_frequent_type.complaintType?.name || 'N/A' : 'N/A'}</li>
+                    <li><strong>Top Agent:</strong> ${data.data.cards.top_agent ? data.data.cards.top_agent.agent?.name || 'N/A' : 'N/A'}</li>
+                    <li><strong>New Clients:</strong> ${data.data.cards.new_clients}</li>
+                </ul>
+                
+                <h4>Raw Response Data:</h4>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+        }
+
+        // Clear results
+        function clearResults() {
+            document.getElementById('results').innerHTML = '<p>Click "Load Filter Options" to populate the filter dropdowns, then "Load Dashboard Data" to see the filtered results.</p>';
+        }
+
+        // Utility functions for displaying messages
+        function showError(message) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `<div class="error">${message}</div>`;
+        }
+
+        function showSuccess(message) {
+            const resultsDiv = document.getElementById('results');
+            const currentContent = resultsDiv.innerHTML;
+            resultsDiv.innerHTML = `<div class="success">${message}</div>` + currentContent;
+        }
+
+        function showInfo(message) {
+            const resultsDiv = document.getElementById('results');
+            const currentContent = resultsDiv.innerHTML;
+            resultsDiv.innerHTML = `<div class="info">${message}</div>` + currentContent;
+        }
+    </script>
+</body>
+</html>

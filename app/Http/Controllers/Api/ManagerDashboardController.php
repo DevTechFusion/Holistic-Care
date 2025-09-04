@@ -27,16 +27,33 @@ class ManagerDashboardController extends Controller
     {
         $range = $request->query('range', 'daily');
 
+        // Get filter parameters
+        $agentId = $request->query('agent_id') ? (int) $request->query('agent_id') : null;
+        $complaintTypeId = $request->query('complaint_type_id') ? (int) $request->query('complaint_type_id') : null;
+        $platform = $request->query('platform');
+
         [$startDate, $endDate] = $this->resolveDateRange($range);
 
-        $totalMistakes = $this->complaintService->countInRange($startDate, $endDate);
-        $mostFrequentType = $this->complaintService->mostFrequentType($startDate, $endDate);
-        $topAgent = $this->complaintService->topAgentByMistakes($startDate, $endDate);
-        $newClients = $this->appointmentService->countNewClientsInRange($startDate, $endDate);
+        // Use filtered methods if any filters are applied
+        if ($agentId || $complaintTypeId || $platform) {
+            $totalMistakes = $this->complaintService->countInRangeWithFilters($startDate, $endDate, $agentId, $complaintTypeId, $platform);
+            $mostFrequentType = $this->complaintService->mostFrequentTypeWithFilters($startDate, $endDate, $agentId, $complaintTypeId, $platform);
+            $topAgent = $this->complaintService->topAgentByMistakesWithFilters($startDate, $endDate, $agentId, $complaintTypeId, $platform);
+            $newClients = $this->appointmentService->countNewClientsInRange($startDate, $endDate);
 
-        $log = $this->complaintService->getDetailedLog($startDate, $endDate, (int) $request->get('per_page', 10), (int) $request->get('page', 1));
-        $agentCounts = $this->complaintService->mistakeCountByAgentWithTypeNames($startDate, $endDate);
-        $mistakeTypePercentages = $this->complaintService->getMistakeTypePercentages($startDate, $endDate);
+            $log = $this->complaintService->getDetailedLogWithFilters($startDate, $endDate, (int) $request->get('per_page', 10), (int) $request->get('page', 1), $agentId, $complaintTypeId, $platform);
+            $agentCounts = $this->complaintService->mistakeCountByAgentWithTypeNamesWithFilters($startDate, $endDate, $agentId, $complaintTypeId, $platform);
+            $mistakeTypePercentages = $this->complaintService->getMistakeTypePercentagesWithFilters($startDate, $endDate, $agentId, $complaintTypeId, $platform);
+        } else {
+            $totalMistakes = $this->complaintService->countInRange($startDate, $endDate);
+            $mostFrequentType = $this->complaintService->mostFrequentType($startDate, $endDate);
+            $topAgent = $this->complaintService->topAgentByMistakes($startDate, $endDate);
+            $newClients = $this->appointmentService->countNewClientsInRange($startDate, $endDate);
+
+            $log = $this->complaintService->getDetailedLog($startDate, $endDate, (int) $request->get('per_page', 10), (int) $request->get('page', 1));
+            $agentCounts = $this->complaintService->mistakeCountByAgentWithTypeNames($startDate, $endDate);
+            $mistakeTypePercentages = $this->complaintService->getMistakeTypePercentages($startDate, $endDate);
+        }
 
         return response()->json([
             'status' => 'success',
@@ -45,6 +62,9 @@ class ManagerDashboardController extends Controller
                     'range' => $range,
                     'start_date' => $startDate,
                     'end_date' => $endDate,
+                    'agent_id' => $agentId,
+                    'complaint_type_id' => $complaintTypeId,
+                    'platform' => $platform,
                 ],
                 'cards' => [
                     'total_mistakes' => $totalMistakes,
@@ -57,6 +77,33 @@ class ManagerDashboardController extends Controller
                 'mistake_type_percentages' => $mistakeTypePercentages,
             ],
         ]);
+    }
+
+    /**
+     * Get filter options for manager dashboard
+     */
+    public function getFilterOptions()
+    {
+        try {
+            $agents = $this->complaintService->getAgentsForFilter();
+            $complaintTypes = $this->complaintService->getComplaintTypesForFilter();
+            $platforms = $this->complaintService->getPlatformsForFilter();
+
+            return response()->json([
+                'status' => 'success',
+                'data' => [
+                    'agents' => $agents,
+                    'complaint_types' => $complaintTypes,
+                    'platforms' => $platforms,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch filter options',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     private function resolveDateRange(string $range): array

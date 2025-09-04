@@ -157,4 +157,5 @@ Route::middleware(['sanctum.token', 'auth:sanctum'])->group(function () {
 
     // Manager Dashboard
     Route::get('manager/dashboard', [App\Http\Controllers\Api\ManagerDashboardController::class, 'index']);
+    Route::get('manager/dashboard/filter-options', [App\Http\Controllers\Api\ManagerDashboardController::class, 'getFilterOptions']);
 });
