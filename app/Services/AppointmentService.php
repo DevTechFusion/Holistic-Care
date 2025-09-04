@@ -105,6 +105,15 @@ class AppointmentService extends CrudeService
             'doctor', 'procedure', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
         ]);
         $this->upsertIncentiveForAppointment($appointment);
+        
+        // Check if reports should be updated (default to true for automatic updates)
+        $updateReports = !isset($data['update_reports']) || $data['update_reports'] !== false;
+        
+        if ($updateReports) {
+            // Automatically update associated reports when appointment is updated
+            $this->updateReportsForAppointment($appointment);
+        }
+        
         return $appointment;
     }
 
@@ -730,6 +739,21 @@ class AppointmentService extends CrudeService
         } catch (\Exception $e) {
             // Log the error but don't fail the appointment creation
             \Log::error('Failed to create report for appointment: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update reports for the given appointment when appointment data changes
+     */
+    protected function updateReportsForAppointment($appointment)
+    {
+        try {
+            \Log::info('Updating reports for appointment ID: ' . $appointment->id);
+            $updatedReports = $this->reportService->updateReportFromAppointment($appointment->id);
+            \Log::info('Successfully updated ' . count($updatedReports) . ' reports for appointment ID: ' . $appointment->id);
+        } catch (\Exception $e) {
+            // Log the error but don't fail the appointment update
+            \Log::error('Failed to update reports for appointment ID ' . $appointment->id . ': ' . $e->getMessage());
         }
     }
 

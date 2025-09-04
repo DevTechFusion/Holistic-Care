@@ -151,13 +151,22 @@ class AppointmentController extends Controller
                 'status_id' => 'nullable|exists:statuses,id',
                 'notes' => 'nullable|string',
                 'mr_number' => 'nullable|string|max:255',
+                // Report update flag
+                'update_reports' => 'nullable|boolean',
             ]);
 
             $appointment = $this->appointmentService->updateAppointment($id, $request->all());
 
+            $message = 'Appointment updated successfully';
+            if ($request->has('update_reports') && $request->update_reports === false) {
+                $message .= ' (reports not updated)';
+            } else {
+                $message .= ' and reports updated';
+            }
+
             return response()->json([
                 'status' => 'success',
-                'message' => 'Appointment updated successfully',
+                'message' => $message,
                 'data' => $appointment
             ], 200);
         } catch (\Exception $e) {

@@ -197,6 +197,69 @@ class ReportService extends CrudeService
     }
 
     /**
+     * Update report from appointment data
+     */
+    public function updateReportFromAppointment($appointmentId, $reportType = 'appointment_summary')
+    {
+        $appointment = Appointment::with([
+            'doctor', 'procedure', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
+        ])->find($appointmentId);
+
+        if (!$appointment) {
+            throw new \Exception('Appointment not found');
+        }
+
+        // Find existing reports for this appointment
+        $existingReports = $this->model->where('appointment_id', $appointmentId)->get();
+
+        if ($existingReports->isEmpty()) {
+            // No reports exist, create a new one
+            return $this->generateReportFromAppointment(
+                $appointmentId,
+                $reportType,
+                $appointment->agent_id,
+                $appointment->notes,
+                $appointment->amount,
+                $appointment->payment_mode,
+                $appointment->remarks_1_id,
+                $appointment->remarks_2_id,
+                $appointment->status_id
+            );
+        }
+
+        // Update all existing reports for this appointment
+        foreach ($existingReports as $report) {
+            // Prepare updated summary data
+            $summaryData = [
+                'patient_name' => $appointment->patient_name,
+                'doctor_name' => $appointment->doctor->name ?? 'N/A',
+                'procedure_name' => $appointment->procedure->name ?? 'N/A',
+                'department_name' => $appointment->department->name ?? 'N/A',
+                'category_name' => $appointment->category->name ?? 'N/A',
+                'source_name' => $appointment->source->name ?? 'N/A',
+                'agent_name' => $appointment->agent->name ?? 'N/A',
+                'remarks1_name' => $appointment->remarks1->name ?? 'N/A',
+                'remarks2_name' => $appointment->remarks2->name ?? 'N/A',
+                'status_name' => $appointment->status->name ?? 'N/A',
+            ];
+
+            $updateData = [
+                'summary_data' => $summaryData,
+                'notes' => $appointment->notes,
+                'amount' => $appointment->amount,
+                'payment_method' => $appointment->payment_mode,
+                'remarks_1_id' => $appointment->remarks_1_id,
+                'remarks_2_id' => $appointment->remarks_2_id,
+                'status_id' => $appointment->status_id,
+            ];
+
+            $this->_update($report->id, $updateData);
+        }
+
+        return $existingReports;
+    }
+
+    /**
      * Get report statistics
      */
     public function getReportStats($startDate = null, $endDate = null)
