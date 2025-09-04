@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Agents Totals API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="date"], input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .response {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .sr { width: 60px; }
+        .agent { width: 200px; }
+        .bookings { width: 120px; }
+        .arrived { width: 120px; }
+        .revenue { width: 120px; }
+        .incentive { width: 120px; }
+        .pagination {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .pagination button {
+            margin: 0 5px;
+            padding: 8px 12px;
+        }
+        .pagination button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .pagination-info {
+            margin: 10px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Agents Totals API</h1>
+    
+    <div class="container">
+        <h2>API Endpoint</h2>
+        <p><strong>GET /api/dashboard/agents-totals</strong></p>
+        <p>This API returns total data for each agent including:</p>
+        <ul>
+            <li><strong>sr#</strong> - Serial number</li>
+            <li><strong>agent</strong> - Agent name</li>
+            <li><strong>total_bookings</strong> - Total number of bookings</li>
+            <li><strong>total_arrived</strong> - Total number of arrived appointments</li>
+            <li><strong>total_revenue</strong> - Total revenue generated</li>
+            <li><strong>total_incentive</strong> - Total incentives earned</li>
+        </ul>
+        <p><strong>New Feature:</strong> Pagination support with <code>per_page</code> and <code>page</code> parameters</p>
+    </div>
+
+    <div class="container">
+        <h2>Test Parameters</h2>
+        <div class="form-group">
+            <label for="startDate">Start Date (optional):</label>
+            <input type="date" id="startDate" name="startDate">
+        </div>
+        <div class="form-group">
+            <label for="endDate">End Date (optional):</label>
+            <input type="date" id="endDate" name="endDate">
+        </div>
+        <div class="form-group">
+            <label for="perPage">Per Page:</label>
+            <input type="number" id="perPage" name="perPage" value="15" min="1" max="100">
+        </div>
+        <div class="form-group">
+            <label for="page">Page:</label>
+            <input type="number" id="page" name="page" value="1" min="1">
+        </div>
+        <div class="form-group">
+            <label for="token">Bearer Token:</label>
+            <input type="text" id="token" name="token" placeholder="Enter your Bearer token">
+        </div>
+        <button onclick="testAgentsTotals()">Test Agents Totals API</button>
+        <button onclick="clearResponse()">Clear Response</button>
+    </div>
+
+    <div class="container">
+        <h2>Response</h2>
+        <div id="response" class="response">Click "Test Agents Totals API" to see the response...</div>
+    </div>
+
+    <div class="container">
+        <h2>Formatted Results Table</h2>
+        <div id="tableContainer">
+            <p>Results will be displayed here after API call...</p>
+        </div>
+        <div id="paginationContainer"></div>
+    </div>
+
+    <script>
+        let currentPagination = null;
+
+        async function testAgentsTotals() {
+            const token = document.getElementById('token').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const perPage = document.getElementById('perPage').value;
+            const page = document.getElementById('page').value;
+            
+            if (!token) {
+                showResponse('Error: Bearer token is required', 'error');
+                return;
+            }
+
+            let url = '/api/dashboard/agents-totals';
+            const params = new URLSearchParams();
+            
+            if (startDate) params.append('start_date', startDate);
+            if (endDate) params.append('end_date', endDate);
+            if (perPage) params.append('per_page', perPage);
+            if (page) params.append('page', page);
+            
+            if (params.toString()) {
+                url += '?' + params.toString();
+            }
+
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse(JSON.stringify(data, null, 2), 'success');
+                    displayTable(data.data?.agents || []);
+                    displayPagination(data.data?.pagination);
+                    currentPagination = data.data?.pagination;
+                } else {
+                    showResponse(`Error ${response.status}: ${JSON.stringify(data, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                showResponse(`Network Error: ${error.message}`, 'error');
+            }
+        }
+
+        function showResponse(message, type = 'success') {
+            const responseDiv = document.getElementById('response');
+            responseDiv.textContent = message;
+            responseDiv.className = `response ${type}`;
+        }
+
+        function clearResponse() {
+            const responseDiv = document.getElementById('response');
+            responseDiv.textContent = 'Click "Test Agents Totals API" to see the response...';
+            responseDiv.className = 'response';
+            
+            const tableContainer = document.getElementById('tableContainer');
+            tableContainer.innerHTML = '<p>Results will be displayed here after API call...</p>';
+            
+            const paginationContainer = document.getElementById('paginationContainer');
+            paginationContainer.innerHTML = '';
+            
+            currentPagination = null;
+        }
+
+        function displayTable(agents) {
+            if (!agents || agents.length === 0) {
+                document.getElementById('tableContainer').innerHTML = '<p>No agents data available</p>';
+                return;
+            }
+
+            let tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="sr">Sr#</th>
+                            <th class="agent">Agent</th>
+                            <th class="bookings">Total Bookings</th>
+                            <th class="arrived">Total Arrived</th>
+                            <th class="revenue">Total Revenue</th>
+                            <th class="incentive">Total Incentive</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            agents.forEach(agent => {
+                tableHTML += `
+                    <tr>
+                        <td>${agent.sr}</td>
+                        <td>${agent.agent}</td>
+                        <td>${agent.total_bookings}</td>
+                        <td>${agent.total_arrived}</td>
+                        <td>$${agent.total_revenue.toFixed(2)}</td>
+                        <td>$${agent.total_incentive.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += '</tbody></table>';
+            document.getElementById('tableContainer').innerHTML = tableHTML;
+        }
+
+        function displayPagination(pagination) {
+            if (!pagination) {
+                document.getElementById('paginationContainer').innerHTML = '';
+                return;
+            }
+
+            const container = document.getElementById('paginationContainer');
+            
+            // Pagination info
+            const infoHTML = `
+                <div class="pagination-info">
+                    Showing ${pagination.from} to ${pagination.to} of ${pagination.total} agents
+                    (Page ${pagination.current_page} of ${pagination.last_page})
+                </div>
+            `;
+
+            // Pagination controls
+            const controlsHTML = `
+                <div class="pagination">
+                    <button onclick="changePage(1)" ${pagination.current_page === 1 ? 'disabled' : ''}>
+                        First
+                    </button>
+                    <button onclick="changePage(${pagination.current_page - 1})" ${pagination.current_page === 1 ? 'disabled' : ''}>
+                        Previous
+                    </button>
+                    <button onclick="changePage(${pagination.current_page + 1})" ${!pagination.has_more_pages ? 'disabled' : ''}>
+                        Next
+                    </button>
+                    <button onclick="changePage(${pagination.last_page})" ${pagination.current_page === pagination.last_page ? 'disabled' : ''}>
+                        Last
+                    </button>
+                </div>
+            `;
+
+            container.innerHTML = infoHTML + controlsHTML;
+        }
+
+        function changePage(page) {
+            if (page < 1 || (currentPagination && page > currentPagination.last_page)) {
+                return;
+            }
+            
+            document.getElementById('page').value = page;
+            testAgentsTotals();
+        }
+
+        // Set default dates to current month
+        window.onload = function() {
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            
+            document.getElementById('startDate').value = firstDay.toISOString().split('T')[0];
+            document.getElementById('endDate').value = lastDay.toISOString().split('T')[0];
+        };
+    </script>
+</body>
+</html>

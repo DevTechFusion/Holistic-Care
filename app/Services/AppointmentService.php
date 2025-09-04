@@ -775,4 +775,86 @@ class AppointmentService extends CrudeService
 
         return $query->paginate($perPage, ['*'], 'page', $page);
     }
+
+    /**
+     * Get total data for all agents
+     * Returns: sr#, agent, total_bookings, total_arrived, total_revenue, total_incentive
+     */
+    public function getAllAgentsTotals(string $startDate = null, string $endDate = null, int $perPage = 15, int $page = 1): array
+    {
+        // If no date range provided, use all time
+        $query = $this->model->query();
+        
+        if ($startDate && $endDate) {
+            $query = $query->byDateRange($startDate, $endDate);
+        }
+
+        // Get all agents with their appointment counts and revenue
+        $agentsData = $query
+            ->select([
+                'appointments.agent_id',
+                'u.name as agent_name',
+                DB::raw('COUNT(*) as total_bookings'),
+                DB::raw('SUM(CASE WHEN s.name = "Arrived" THEN 1 ELSE 0 END) as total_arrived'),
+                DB::raw('SUM(appointments.amount) as total_revenue')
+            ])
+            ->join('users as u', 'appointments.agent_id', '=', 'u.id')
+            ->leftJoin('statuses as s', 'appointments.status_id', '=', 's.id')
+            ->whereNotNull('appointments.agent_id')
+            ->groupBy('appointments.agent_id', 'u.name')
+            ->orderBy('u.name');
+
+        // Get total count for pagination
+        $totalAgents = (clone $agentsData)->count();
+        
+        // Apply pagination
+        $agentsData = $agentsData->skip(($page - 1) * $perPage)->take($perPage)->get();
+
+        // Get incentives for each agent
+        $incentivesQuery = $this->model->query();
+        if ($startDate && $endDate) {
+            $incentivesQuery = $incentivesQuery->byDateRange($startDate, $endDate);
+        }
+
+        $incentivesData = $incentivesQuery
+            ->select([
+                'appointments.agent_id',
+                DB::raw('SUM(i.incentive_amount) as total_incentive')
+            ])
+            ->leftJoin('incentives as i', 'i.appointment_id', '=', 'appointments.id')
+            ->whereNotNull('appointments.agent_id')
+            ->groupBy('appointments.agent_id')
+            ->get()
+            ->keyBy('agent_id');
+
+        // Combine the data and format the response
+        $result = [];
+        $sr = ($page - 1) * $perPage + 1; // Calculate starting serial number for current page
+
+        foreach ($agentsData as $agent) {
+            $totalIncentive = $incentivesData->get($agent->agent_id)?->total_incentive ?? 0.0;
+            
+            $result[] = [
+                'sr' => $sr++,
+                'agent' => $agent->agent_name,
+                'total_bookings' => (int) $agent->total_bookings,
+                'total_arrived' => (int) $agent->total_arrived,
+                'total_revenue' => (float) ($agent->total_revenue ?? 0.0),
+                'total_incentive' => (float) $totalIncentive,
+            ];
+        }
+
+        return [
+            'data' => $result,
+            'pagination' => [
+                'current_page' => $page,
+                'per_page' => $perPage,
+                'total' => $totalAgents,
+                'last_page' => (int) ceil($totalAgents / $perPage),
+                'from' => ($page - 1) * $perPage + 1,
+                'to' => min($page * $perPage, $totalAgents),
+                'has_more_pages' => $page < ceil($totalAgents / $perPage),
+            ]
+        ];
+    }
 }

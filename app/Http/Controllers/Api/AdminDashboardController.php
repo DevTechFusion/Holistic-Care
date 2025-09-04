@@ -91,6 +91,55 @@ class AdminDashboardController extends Controller
         ]);
     }
 
+    /**
+     * Get total data for all agents
+     * Returns: sr#, agent, total_bookings, total_arrived, total_revenue, total_incentive
+     * Query params: start_date, end_date (optional - if not provided, shows all time data)
+     * Query params: per_page, page (optional - for pagination)
+     */
+    public function getAgentsTotals(Request $request)
+    {
+        try {
+            $request->validate([
+                'start_date' => 'nullable|date',
+                'end_date' => 'nullable|date|after_or_equal:start_date',
+                'per_page' => 'nullable|integer|min:1|max:100',
+                'page' => 'nullable|integer|min:1',
+            ]);
+
+            $startDate = $request->get('start_date');
+            $endDate = $request->get('end_date');
+            $perPage = (int) $request->get('per_page', 15);
+            $page = (int) $request->get('page', 1);
+
+            $result = $this->appointmentService->getAllAgentsTotals($startDate, $endDate, $perPage, $page);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Agents totals retrieved successfully',
+                'data' => [
+                    'agents' => $result['data'],
+                    'pagination' => $result['pagination'],
+                    'filters' => [
+                        'start_date' => $startDate,
+                        'end_date' => $endDate,
+                        'per_page' => $perPage,
+                        'page' => $page,
+                    ],
+                ],
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Let Laravel handle validation exceptions (returns 422)
+            throw $e;
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to retrieve agents totals',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     private function resolveDateRange(string $range): array
     {
         $today = Carbon::today();
