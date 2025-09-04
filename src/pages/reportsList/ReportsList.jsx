@@ -17,11 +17,11 @@ import { getAllReports } from "../../DAL/reports";
 import { useSnackbar } from "notistack";
 
 const statusColors = {
-  "Already Taken": "#e7f2fe", // light blue
-  "Arrived": "#b3e5ca", // dark green
-  "Cancelled": "#f99f9f", // dark red
-  "Not Show": "#FFE4F7", // light pink
-  "Rescheduled": "#FFFEE0", // yellow
+  "Already Taken": "#e7f2fe", 
+  "Arrived": "#b3e5ca", 
+  "Cancelled": "#f99f9f", 
+  "Not Show": "#FFE4F7", 
+  "Rescheduled": "#FFFEE0", 
 };
 
 const ReportsPage = () => {
