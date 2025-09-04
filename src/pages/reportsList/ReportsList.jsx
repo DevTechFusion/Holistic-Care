@@ -51,7 +51,7 @@ const ReportsPage = () => {
     };
 
     fetchReports();
-  }, []);
+  }, [page, rowsPerPage]);
 
   if (error) {
     return <Typography color="error">Error fetching reports</Typography>;
@@ -156,7 +156,7 @@ const ReportsPage = () => {
               onPageChange={(e, newPage) => setPage(newPage)}
               rowsPerPage={rowsPerPage}
               onRowsPerPageChange={(e) => {
-                setRowsPerPage(parseInt(e.target.value, 10));
+                setRowsPerPage(parseInt(e.target.value));
                 setPage(0);
               }}
               rowsPerPageOptions={[15, 25, 50, 100]}

@@ -97,7 +97,7 @@ const ProceduresPage = () => {
                 {procedures.length > 0 ? (
                   procedures.map((proc, idx) => (
                     <TableRow key={proc.id || idx}>
-                      <TableCell>{idx + 1}</TableCell>
+                      <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
                       <TableCell>{proc.name}</TableCell>
                       <TableCell>
                         <ActionButtons
