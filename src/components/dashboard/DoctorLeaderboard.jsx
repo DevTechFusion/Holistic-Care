@@ -47,7 +47,6 @@ const DoctorLeaderboard = () => {
         const response = await getAdminDashboard("weekly");
         if (response?.status === "success") {
           const doctorData = response.data.doctor_wise_bookings || [];
-          // Sort doctors by bookings in descending order
           const sortedDoctors = doctorData.sort((a, b) => b.bookings - a.bookings);
           setDoctors(sortedDoctors);
         }
@@ -86,13 +85,14 @@ const DoctorLeaderboard = () => {
   return (
     <Card
       sx={{
+        position: "relative",
         height: "100%",
-        borderRadius: 3,
+        borderRadius: 2,
         boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
         backgroundColor: "white",
       }}
     >
-      <CardContent sx={{ p: 3 }}>
+      <CardContent sx={{ p: 2 }}>
         <Box
           sx={{
             display: "flex",
@@ -194,7 +194,7 @@ const DoctorLeaderboard = () => {
                     <Typography
                       variant="body2"
                       sx={{ 
-                        color: "#23C7B7",
+                        color: "#000000ff",
                         fontSize: "0.85rem",
                         fontWeight: 600,
                         mt: 0.5

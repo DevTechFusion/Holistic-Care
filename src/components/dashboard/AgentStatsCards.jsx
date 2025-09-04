@@ -5,13 +5,13 @@ import {
   Person,
   Update,
 } from "@mui/icons-material";
-import { getAdminDashboard } from "../../DAL/dashboard"; 
+import { getAgentDashboard } from "../../DAL/dashboard"; 
 
 const StatsCards = () => {
   const [cards, setCards] = useState(null);
 
   useEffect(() => {
-    getAdminDashboard("weekly").then((res) => {
+    getAgentDashboard("weekly").then((res) => {
       if (res?.data?.cards) {
         setCards(res.data.cards);
         console.log("Dashboard Cards Data:", res.data.cards);

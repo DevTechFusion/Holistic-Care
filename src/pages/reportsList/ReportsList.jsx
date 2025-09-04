@@ -37,7 +37,7 @@ const ReportsPage = () => {
   useEffect(() => {
     const fetchReports = async () => {
       try {
-        const res = await getAllReports();
+        const res = await getAllReports(page + 1, rowsPerPage);
 
         const reportList = res?.data?.data || [];
         setReports(reportList);
