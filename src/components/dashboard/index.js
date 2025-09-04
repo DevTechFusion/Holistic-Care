@@ -5,3 +5,5 @@ export { default as RevenueSection } from './RevenueSection';
 export { default as AgentWiseBooking } from './AgentWiseBooking'; 
 export { default as SourceWiseBooking } from './SourceWiseBooking';
 export { default as DoctorWiseBooking } from './DoctorWiseBooking';
+export { default as AgentStatsCards } from './AgentStatsCards';
+export { default as AgentAppointmentLeaderboard } from './AgentAppointmentLeaderboard';

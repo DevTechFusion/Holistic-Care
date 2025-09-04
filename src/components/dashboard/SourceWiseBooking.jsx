@@ -26,7 +26,7 @@ const SourceWiseBookings = () => {
         setLoading(true);
         setError(null);
 
-        const res = await getAdminDashboard("weekly");
+        const res = await getAdminDashboard();
         setData(res?.data?.source_wise_bookings || []);
         const rows =
           res?.data?.source_wise_bookings?.map((item) => ({

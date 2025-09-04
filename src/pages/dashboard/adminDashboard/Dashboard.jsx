@@ -16,21 +16,23 @@ import MedicalServicesIcon from "@mui/icons-material/MedicalServices";
 import BusinessIcon from "@mui/icons-material/Business";
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 
-import CreateUserModal from "../../components/forms/UserForm";
-import CreateProcedureModal from "../../components/forms/ProcedureForm";
-import CreateDepartmentModal from "../../components/forms/DepartmentForm";
-import CreateDoctorModal from "../../components/forms/DoctorForm";
-import CreateAppointmentModal from "../../components/forms/AppointmentForm";
+import CreateUserModal from "../../../components/forms/UserForm";
+import CreateProcedureModal from "../../../components/forms/ProcedureForm";
+import CreateDepartmentModal from "../../../components/forms/DepartmentForm";
+import CreateDoctorModal from "../../../components/forms/DoctorForm";
+import CreateAppointmentModal from "../../../components/forms/AppointmentForm";
 
-import AgentWiseBookings from "../../components/dashboard/AgentWiseBooking";
-import SourceWiseBookings from "../../components/dashboard/SourceWiseBooking";
-import DoctorWiseBooking from "../../components/dashboard/DoctorWiseBooking";
+import AgentWiseBookings from "../../../components/dashboard/AgentWiseBooking";
+import SourceWiseBookings from "../../../components/dashboard/SourceWiseBooking";
+import DoctorWiseBooking from "../../../components/dashboard/DoctorWiseBooking";
 import {
+  AgentAppointmentLeaderboard,
+  AgentStatsCards,
   DoctorLeaderboard,
   RevenueSection,
   StatsCards,
   WelcomeSection,
-} from "../../components/dashboard";
+} from "../../../components/dashboard";
 
 import { useSnackbar } from "notistack";
 
@@ -196,7 +198,10 @@ const Dashboard = () => {
           </Grid>
         </Grid>
       </Box>
-
+      <Grid item xs={12} md={6}>
+            <AgentAppointmentLeaderboard />
+          </Grid>
+      <AgentStatsCards />
       <AgentWiseBookings />
       <SourceWiseBookings />
       <DoctorWiseBooking />

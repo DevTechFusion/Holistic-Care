@@ -10,7 +10,7 @@ import ThemeConfig from "./theme";
 import "./App.css";
 import { SnackbarProvider } from "notistack";
 import LoginPage from "./pages/login/LoginPage";
-import Dashboard from "./pages/dashboard/Dashboard";
+import Dashboard from "./pages/dashboard/adminDashboard/Dashboard";
 import DepartmentsPage from "./pages/departmentsList/DepartmentsList";
 import AgentList from "./pages/usersList/AgentList";
 import ManagerList from "./pages/usersList/ManagerList";

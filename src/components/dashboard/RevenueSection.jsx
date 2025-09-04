@@ -19,20 +19,20 @@ import {
 import { getAdminDashboard } from '../../DAL/dashboard';
 
 const RevenueSection = () => {
-  const [revenueType, setRevenueType] = useState('pharmacy');
+ 
   const [revenueData, setRevenueData] = useState([]);
-  const [totals, setTotals] = useState({});
+
   const [loading, setLoading] = useState(true);
-  const [range, setRange] = useState('weekly');
+  
 
   useEffect(() => {
     const fetchRevenueData = async () => {
       try {
         setLoading(true);
-        const response = await getAdminDashboard(range);
+        const response = await getAdminDashboard("weekly");
         if (response?.status === "success") {
           setRevenueData(response.data.revenue?.rows || []);
-          setTotals(response.data.revenue?.totals || {});
+          
         }
       } catch (error) {
         console.error("Error fetching revenue data:", error);
@@ -42,7 +42,7 @@ const RevenueSection = () => {
     };
 
     fetchRevenueData();
-  }, [range]);
+  }, []);
 
   const calculatePercentage = (arrived, bookings) => {
     if (!bookings || bookings === 0) return 'NIL';
