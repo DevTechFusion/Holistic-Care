@@ -23,6 +23,7 @@ class Complaint extends Model
         'submitted_by',
         'platform',
         'occurred_at',
+        'is_resolved',
     ];
 
     /**
@@ -70,5 +71,6 @@ class Complaint extends Model
      */
     protected $casts = [
         'occurred_at' => 'datetime',
+        'is_resolved' => 'boolean',
     ];
 }

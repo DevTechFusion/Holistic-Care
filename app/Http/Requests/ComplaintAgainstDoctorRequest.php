@@ -28,6 +28,7 @@ class ComplaintAgainstDoctorRequest extends FormRequest
             'platform' => 'nullable|string|max:255',
             'occurred_at' => 'nullable|date',
             'appointment_id' => 'nullable|exists:appointments,id',
+            'is_resolved' => 'nullable|boolean',
         ];
     }
 
@@ -49,6 +50,7 @@ class ComplaintAgainstDoctorRequest extends FormRequest
             'platform.max' => 'Platform cannot exceed 255 characters.',
             'occurred_at.date' => 'Occurred date must be a valid date.',
             'appointment_id.exists' => 'Selected appointment does not exist.',
+            'is_resolved.boolean' => 'Resolved status must be true or false.',
         ];
     }
 
@@ -66,6 +68,7 @@ class ComplaintAgainstDoctorRequest extends FormRequest
             'platform' => 'platform',
             'occurred_at' => 'occurred date',
             'appointment_id' => 'appointment',
+            'is_resolved' => 'resolved status',
         ];
     }
 }

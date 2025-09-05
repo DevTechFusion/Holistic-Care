@@ -50,7 +50,8 @@ class ComplaintController extends Controller
                 'description' => 'required|string',
                 'agent_id' => 'nullable|exists:users,id',
                 'doctor_id' => 'nullable|exists:doctors,id',
-                'complaint_type_id' => 'nullable|exists:complaint_types,id'
+                'complaint_type_id' => 'nullable|exists:complaint_types,id',
+                'is_resolved' => 'nullable|boolean'
             ]);
 
             $complaint = $this->complaintService->createComplaint($request->all());
@@ -172,7 +173,8 @@ class ComplaintController extends Controller
                 'description' => 'required|string',
                 'agent_id' => 'nullable|exists:users,id',
                 'doctor_id' => 'nullable|exists:doctors,id',
-                'complaint_type_id' => 'nullable|exists:complaint_types,id'
+                'complaint_type_id' => 'nullable|exists:complaint_types,id',
+                'is_resolved' => 'nullable|boolean'
             ]);
 
             $complaint = $this->complaintService->updateComplaint($id, $request->all());

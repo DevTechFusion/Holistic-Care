@@ -27,6 +27,7 @@ class ComplaintAgainstAgentRequest extends FormRequest
             'complaint_type_id' => 'nullable|exists:complaint_types,id',
             'platform' => 'nullable|string|max:255',
             'occurred_at' => 'nullable|date',
+            'is_resolved' => 'nullable|boolean',
         ];
     }
 
@@ -47,6 +48,7 @@ class ComplaintAgainstAgentRequest extends FormRequest
             'platform.string' => 'Platform must be a string.',
             'platform.max' => 'Platform cannot exceed 255 characters.',
             'occurred_at.date' => 'Occurred date must be a valid date.',
+            'is_resolved.boolean' => 'Resolved status must be true or false.',
         ];
     }
 
@@ -63,6 +65,7 @@ class ComplaintAgainstAgentRequest extends FormRequest
             'complaint_type_id' => 'complaint type',
             'platform' => 'platform',
             'occurred_at' => 'occurred date',
+            'is_resolved' => 'resolved status',
         ];
     }
 }
