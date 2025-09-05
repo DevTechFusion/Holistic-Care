@@ -23,6 +23,9 @@ class AgentDashboardController extends Controller
      * - range = daily|weekly|monthly|yearly (default: daily)
      * - department_id = integer (optional, filters today's appointments and leaderboard by department)
      * When department_id is not provided, shows data from all departments.
+     * 
+     * Returns combined appointments and complaints data in the format:
+     * - procedure_date, complaint_date, pt_name, mr#, platform, procedure, doctor, staff_name, complaint
      */
     public function index(Request $request)
     {
@@ -49,7 +52,7 @@ class AgentDashboardController extends Controller
 
         $perPage = (int) $request->query('per_page', 20);
         $page = (int) $request->query('page', 1);
-        $table = $this->appointmentService->getAgentAppointmentsTable($agent->id, $startDate, $endDate, $perPage, $page);
+        $table = $this->appointmentService->getAgentAppointmentsComplaintsTable($agent->id, $startDate, $endDate, $perPage, $page);
 
         return response()->json([
             'status' => 'success',
@@ -69,7 +72,7 @@ class AgentDashboardController extends Controller
                 ],
                 'today_leaderboard' => $leaderboardToday,
                 'today_appointments' => $todayAppointments,
-                'appointments_table' => $table,
+                'appointments_complaints_table' => $table,
             ],
         ]);
     }

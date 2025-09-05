@@ -55,6 +55,8 @@ Route::middleware(['sanctum.token', 'auth:sanctum'])->group(function () {
     Route::get('complaints/doctor/{doctorId}', [App\Http\Controllers\Api\ComplaintController::class, 'byDoctor']);
     Route::get('complaints/type/{complaintTypeId}', [App\Http\Controllers\Api\ComplaintController::class, 'byType']);
     Route::get('complaints/stats', [App\Http\Controllers\Api\ComplaintController::class, 'stats']);
+    Route::post('complaints/against-doctor', [App\Http\Controllers\Api\ComplaintController::class, 'storeAgainstDoctor']);
+    Route::post('complaints/against-agent', [App\Http\Controllers\Api\ComplaintController::class, 'storeAgainstAgent']);
     Route::apiResource('complaints', App\Http\Controllers\Api\ComplaintController::class);
 
     // Mistake management routes (alias for complaints for frontend compatibility)

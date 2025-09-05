@@ -126,6 +126,22 @@ class Appointment extends Model
     }
 
     /**
+     * Get the complaint for this appointment.
+     */
+    public function complaint()
+    {
+        return $this->hasOne(Complaint::class);
+    }
+
+    /**
+     * Get the complaints for this appointment.
+     */
+    public function complaints()
+    {
+        return $this->hasMany(Complaint::class);
+    }
+
+    /**
      * Scope to get appointments by date range.
      */
     public function scopeByDateRange($query, $startDate, $endDate)

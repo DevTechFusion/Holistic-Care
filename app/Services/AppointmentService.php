@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Models\Appointment;
+use App\Models\Complaint;
 use App\Models\Incentive;
+use App\Models\User;
 use App\Services\ReportService;
 use Illuminate\Support\Facades\DB;
 
@@ -856,5 +858,129 @@ class AppointmentService extends CrudeService
                 'has_more_pages' => $page < ceil($totalAgents / $perPage),
             ]
         ];
+    }
+
+    /**
+     * Get combined appointments and complaints data for agent dashboard
+     * Returns data in the format: procedure_date, complaint_date, pt_name, mr#, platform, procedure, doctor, staff_name, complaint_description
+     * 
+     * For complaints: Links to related appointments by doctor_id and fills in patient data, procedure, etc.
+     * Staff name for complaints comes from complaint.submitted_by field
+     */
+    public function getAgentAppointmentsComplaintsTable(int $agentId, string $startDate, string $endDate, int $perPage = 20, int $page = 1)
+    {
+        // Get appointments that have complaints linked to them
+        $query = $this->model
+            ->select([
+                'appointments.date as procedure_date',
+                'appointments.patient_name as pt_name',
+                'appointments.mr_number',
+                'appointments.agent_id',
+                'appointments.doctor_id',
+                'appointments.procedure_id',
+                'appointments.id as appointment_id'
+            ])
+            ->byDateRange($startDate, $endDate)
+            ->where('appointments.agent_id', $agentId)
+            ->whereHas('complaints') // Only show appointments that have complaints
+            ->with(['doctor:id,name', 'procedure:id,name', 'agent:id,name']);
+
+        // Get complaints data for the same date range
+        // Only show complaints that have appointment_id (linked to appointments)
+        $complaintsQuery = Complaint::select([
+                'complaints.occurred_at',
+                'complaints.platform',
+                'complaints.description as complaint_description',
+                'complaints.agent_id',
+                'complaints.doctor_id',
+                'complaints.appointment_id',
+                'complaints.id as complaint_id'
+            ])
+            ->whereNotNull('complaints.appointment_id') // Only show complaints that have appointment_id
+            ->where(function($q) use ($startDate, $endDate) {
+                $q->whereBetween('complaints.occurred_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+                  ->orWhere(function($q2) use ($startDate, $endDate) {
+                      $q2->whereNull('complaints.occurred_at')
+                         ->whereBetween('complaints.created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+                  });
+            })
+            ->with(['doctor:id,name', 'appointment:id,date,patient_name,mr_number,procedure_id,agent_id', 'appointment.procedure:id,name', 'appointment.agent:id,name']); // Include doctor and appointment info for complaints
+
+        // Get appointments data
+        $appointments = $query->get();
+        
+        // Get complaints data
+        $complaints = $complaintsQuery->get();
+
+        // Combine the data
+        $combinedData = [];
+        
+        // foreach ($appointments as $appointment) {
+        //     $combinedData[] = [
+        //         'procedure_date' => $appointment->procedure_date ? \Carbon\Carbon::parse($appointment->procedure_date)->format('d/m/Y') : null,
+        //         'complaint_date' => null, // Will be filled if complaint exists
+        //         'pt_name' => $appointment->pt_name,
+        //         'mr_number' => $appointment->mr_number,
+        //         'platform' => null, // Will be filled if complaint exists
+        //         'procedure' => $appointment->procedure->name ?? null,
+        //         'doctor' => $appointment->doctor->name ?? null,
+        //         'staff_name' => $appointment->agent->name ?? null,
+        //         'complaint_description' => null, // Will be filled if complaint exists
+        //     ];
+        // }
+
+        // Add complaints with appointment data (now directly linked via appointment_id)
+        foreach ($complaints as $complaint) {
+            $complaintDate = $complaint->occurred_at ? $complaint->occurred_at->format('d/m/Y') : $complaint->created_at->format('d/m/Y');
+            
+            // Get the related appointment directly from the relationship
+            $relatedAppointment = $complaint->appointment;
+            
+            $combinedData[] = [
+                'procedure_date' => $relatedAppointment ? \Carbon\Carbon::parse($relatedAppointment->date)->format('d/m/Y') : null,
+                'complaint_date' => $complaintDate,
+                'pt_name' => $relatedAppointment ? $relatedAppointment->patient_name : null,
+                'mr_number' => $relatedAppointment ? $relatedAppointment->mr_number : null,
+                'platform' => $complaint->platform,
+                'procedure' => $relatedAppointment && $relatedAppointment->procedure ? $relatedAppointment->procedure->name : null,
+                'doctor' => $complaint->doctor ? ($complaint->doctor->name) : null,
+                // 'staff_name' => $complaint->submitted_by ? \App\Models\User::find($complaint->submitted_by)->name : null,
+                'staff_name' => $relatedAppointment && $relatedAppointment->agent ? $relatedAppointment->agent->name : null,
+                'complaint_description' => $complaint->complaint_description,
+            ];
+        }
+
+        // Sort by procedure date (appointments first) then by complaint date
+        usort($combinedData, function($a, $b) {
+            if ($a['procedure_date'] && $b['procedure_date']) {
+                return strtotime($b['procedure_date']) - strtotime($a['procedure_date']);
+            }
+            if ($a['procedure_date']) return -1;
+            if ($b['procedure_date']) return 1;
+            
+            if ($a['complaint_date'] && $b['complaint_date']) {
+                return strtotime($b['complaint_date']) - strtotime($a['complaint_date']);
+            }
+            return 0;
+        });
+
+        // Apply pagination manually
+        $total = count($combinedData);
+        $offset = ($page - 1) * $perPage;
+        $paginatedData = array_slice($combinedData, $offset, $perPage);
+
+        // Create a paginator-like structure to match the original method
+        $paginator = new \Illuminate\Pagination\LengthAwarePaginator(
+            $paginatedData,
+            $total,
+            $perPage,
+            $page,
+            [
+                'path' => request()->url(),
+                'pageName' => 'page',
+            ]
+        );
+
+        return $paginator;
     }
 }

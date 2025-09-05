@@ -16,6 +16,7 @@ class Complaint extends Model
      */
     protected $fillable = [
         'description',
+        'appointment_id',
         'agent_id',
         'doctor_id',
         'complaint_type_id',
@@ -54,6 +55,14 @@ class Complaint extends Model
     public function submittedBy()
     {
         return $this->belongsTo(User::class, 'submitted_by');
+    }
+
+    /**
+     * Get the appointment that this complaint is associated with.
+     */
+    public function appointment()
+    {
+        return $this->belongsTo(Appointment::class);
     }
 
     /**

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ComplaintAgainstDoctorRequest;
+use App\Http\Requests\ComplaintAgainstAgentRequest;
 use App\Services\ComplaintService;
 use Illuminate\Http\Request;
 
@@ -62,6 +64,71 @@ class ComplaintController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to create complaint',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Store a newly created complaint against doctor (without agent_id)
+     */
+    public function storeAgainstDoctor(ComplaintAgainstDoctorRequest $request)
+    {
+        try {
+            // Get the authenticated user (submitted_by)
+            $submittedBy = auth()->id();
+            
+            // Prepare data for complaint creation (excluding agent_id)
+            $complaintData = $request->validated();
+            $complaintData['submitted_by'] = $submittedBy;
+            
+            // Ensure agent_id is not included
+            unset($complaintData['agent_id']);
+
+            $complaint = $this->complaintService->createComplaint($complaintData);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Complaint against doctor created successfully',
+                'data' => $complaint
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to create complaint against doctor',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Store a newly created complaint against agent (without doctor_id and appointment_id)
+     */
+    public function storeAgainstAgent(ComplaintAgainstAgentRequest $request)
+    {
+        try {
+            // Get the authenticated user (submitted_by)
+            $submittedBy = auth()->id();
+            
+            // Prepare data for complaint creation (excluding doctor_id and appointment_id)
+            $complaintData = $request->validated();
+            $complaintData['submitted_by'] = $submittedBy;
+            
+            // Ensure doctor_id and appointment_id are not included
+            unset($complaintData['doctor_id']);
+            unset($complaintData['appointment_id']);
+
+            $complaint = $this->complaintService->createComplaint($complaintData);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Complaint against agent created successfully',
+                'data' => $complaint
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to create complaint against agent',
                 'error' => $e->getMessage()
             ], 500);
         }

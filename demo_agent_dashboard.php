@@ -65,7 +65,7 @@ echo json_encode([
                 'contact_number' => '+1234567890',
             ]
         ],
-        'appointments_table' => [
+        'appointments_complaints_table' => [
             'current_page' => 1,
             'data' => [
                 [

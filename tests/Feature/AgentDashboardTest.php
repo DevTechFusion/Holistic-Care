@@ -110,7 +110,7 @@ class AgentDashboardTest extends TestCase
                     'cards' => ['total_bookings', 'arrived', 'not_arrived', 'rescheduled', 'total_incentive'],
                     'today_leaderboard',
                     'today_appointments',
-                    'appointments_table' => [
+                    'appointments_complaints_table' => [
                         'current_page',
                         'data',
                         'per_page',
@@ -401,17 +401,18 @@ class AgentDashboardTest extends TestCase
         $this->assertEquals('Patient 3', $todayAppointments[0]['patient_name']);
     }
 
-    public function test_agent_dashboard_appointments_table_pagination(): void
+    public function test_agent_dashboard_appointments_complaints_table_pagination(): void
     {
         $user = $this->authenticate();
         $testData = $this->createTestData($user);
 
         // Create 25 appointments (more than default per_page of 20)
         for ($i = 1; $i <= 25; $i++) {
+            $hour = ($i % 24); // Ensure hour is between 0-23
             $this->createAppointment($user, [
                 'date' => now()->toDateString(),
-                'start_time' => sprintf('%02d:00:00', $i),
-                'end_time' => sprintf('%02d:59:00', $i),
+                'start_time' => sprintf('%02d:00:00', $hour),
+                'end_time' => sprintf('%02d:59:00', $hour),
                 'duration' => 59,
                 'patient_name' => "Patient {$i}",
             ], $testData);
@@ -424,15 +425,15 @@ class AgentDashboardTest extends TestCase
             ->assertStatus(200)
             ->assertJson([
                 'data' => [
-                    'appointments_table' => [
-                        'current_page' => 1,
-                        'per_page' => 10,
-                        'total' => 25,
-                    ],
+                                    'appointments_complaints_table' => [
+                    'current_page' => 1,
+                    'per_page' => 10,
+                    'total' => 25,
+                ],
                 ],
             ]);
 
-        $table = $response->json('data.appointments_table');
+        $table = $response->json('data.appointments_complaints_table');
         $this->assertCount(10, $table['data']); // First page should have 10 items
     }
 
@@ -528,10 +529,11 @@ class AgentDashboardTest extends TestCase
 
         // Create 30 appointments
         for ($i = 1; $i <= 30; $i++) {
+            $hour = ($i % 24); // Ensure hour is between 0-23
             $this->createAppointment($user, [
                 'date' => now()->toDateString(),
-                'start_time' => sprintf('%02d:00:00', $i),
-                'end_time' => sprintf('%02d:59:00', $i),
+                'start_time' => sprintf('%02d:00:00', $hour),
+                'end_time' => sprintf('%02d:59:00', $hour),
                 'duration' => 59,
                 'patient_name' => "Patient {$i}",
             ], $testData);
@@ -545,15 +547,15 @@ class AgentDashboardTest extends TestCase
             ->assertStatus(200)
             ->assertJson([
                 'data' => [
-                    'appointments_table' => [
-                        'current_page' => 2,
-                        'per_page' => 15,
-                        'total' => 30,
-                    ],
+                                    'appointments_complaints_table' => [
+                    'current_page' => 2,
+                    'per_page' => 15,
+                    'total' => 30,
+                ],
                 ],
             ]);
 
-        $table = $response->json('data.appointments_table');
+        $table = $response->json('data.appointments_complaints_table');
         $this->assertCount(15, $table['data']); // Second page should have 15 items
     }
 
@@ -579,7 +581,7 @@ class AgentDashboardTest extends TestCase
                     ],
                     'today_leaderboard' => [],
                     'today_appointments' => [],
-                    'appointments_table' => [
+                    'appointments_complaints_table' => [
                         'current_page' => 1,
                         'data' => [],
                         'per_page' => 20,
@@ -639,6 +641,63 @@ class AgentDashboardTest extends TestCase
 
         $response->assertStatus(200);
         $this->assertEquals(60.0, $response->json('data.cards.total_incentive'));
+    }
+
+    public function test_agent_dashboard_includes_complaints_data(): void
+    {
+        $user = $this->authenticate();
+        $testData = $this->createTestData($user);
+
+        // Create a complaint type
+        $complaintType = \App\Models\ComplaintType::create(['name' => 'Test Complaint Type']);
+
+        // Create a complaint for today
+        \App\Models\Complaint::create([
+            'description' => 'Test complaint description',
+            'agent_id' => $user->id,
+            'doctor_id' => $testData['doctor']->id,
+            'complaint_type_id' => $complaintType->id,
+            'submitted_by' => $user->id,
+            'platform' => 'Insta',
+            'occurred_at' => now(),
+        ]);
+
+        // Create an appointment for today
+        $this->createAppointment($user, [
+            'date' => now()->toDateString(),
+            'patient_name' => 'Test Patient',
+            'mr_number' => '12345',
+        ], $testData);
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $user->createToken('test-token')->plainTextToken)
+            ->getJson('/api/agent/dashboard?range=daily');
+
+        $response->assertStatus(200);
+
+        // Check that the complaints table contains the expected data structure
+        $table = $response->json('data.appointments_complaints_table');
+        $this->assertNotNull($table);
+        $this->assertArrayHasKey('data', $table);
+        $this->assertArrayHasKey('current_page', $table);
+        $this->assertArrayHasKey('per_page', $table);
+        $this->assertArrayHasKey('total', $table);
+
+        // Verify that we have data (appointments + complaints)
+        $this->assertGreaterThan(0, $table['total']);
+
+        // Check that the data contains the expected fields
+        if (count($table['data']) > 0) {
+            $firstRow = $table['data'][0];
+            $this->assertArrayHasKey('procedure_date', $firstRow);
+            $this->assertArrayHasKey('complaint_date', $firstRow);
+            $this->assertArrayHasKey('pt_name', $firstRow);
+            $this->assertArrayHasKey('mr_number', $firstRow);
+            $this->assertArrayHasKey('platform', $firstRow);
+            $this->assertArrayHasKey('procedure', $firstRow);
+            $this->assertArrayHasKey('doctor', $firstRow);
+            $this->assertArrayHasKey('staff_name', $firstRow);
+            $this->assertArrayHasKey('complaint_description', $firstRow);
+        }
     }
 }
 
