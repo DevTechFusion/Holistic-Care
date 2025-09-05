@@ -86,6 +86,26 @@ GET /api/complaints
 **Query Parameters:**
 - `per_page` (optional): Number of items per page (default: 15)
 - `page` (optional): Page number (default: 1)
+- `filter` (optional): Filter complaints by type (default: "all")
+  - `all`: Show all complaints (default)
+  - `agent`: Show only complaints that have an agent_id
+  - `doctor`: Show only complaints that have a doctor_id
+
+**Filter Examples:**
+```http
+# Show all complaints (default)
+GET /api/complaints
+GET /api/complaints?filter=all
+
+# Show only complaints with agent_id
+GET /api/complaints?filter=agent
+
+# Show only complaints with doctor_id
+GET /api/complaints?filter=doctor
+
+# With pagination
+GET /api/complaints?filter=agent&per_page=10&page=2
+```
 
 **Response:**
 ```json
@@ -100,6 +120,7 @@ GET /api/complaints
                 "agent_id": 1,
                 "doctor_id": null,
                 "complaint_type_id": 1,
+                "is_resolved": false,
                 "created_at": "2025-08-12T16:22:16.000000Z",
                 "updated_at": "2025-08-12T16:22:53.000000Z",
                 "agent": {
@@ -116,7 +137,8 @@ GET /api/complaints
         ],
         "total": 1,
         "per_page": 15
-    }
+    },
+    "filter_applied": "agent"
 }
 ```
 
@@ -131,7 +153,8 @@ POST /api/complaints
     "description": "Patient reported delayed response from customer service",
     "agent_id": 1,
     "doctor_id": null,
-    "complaint_type_id": 1
+    "complaint_type_id": 1,
+    "is_resolved": false
 }
 ```
 
@@ -140,6 +163,7 @@ POST /api/complaints
 - `agent_id`: Optional, must exist in users table
 - `doctor_id`: Optional, must exist in doctors table
 - `complaint_type_id`: Optional, must exist in complaint_types table
+- `is_resolved`: Optional, boolean (default: false)
 
 **Response:**
 ```json
@@ -152,8 +176,106 @@ POST /api/complaints
         "agent_id": 1,
         "doctor_id": null,
         "complaint_type_id": 1,
+        "is_resolved": false,
         "created_at": "2025-08-12T16:22:16.000000Z",
         "updated_at": "2025-08-12T16:22:16.000000Z"
+    }
+}
+```
+
+#### 2.1. Create Complaint Against Doctor
+```http
+POST /api/complaints/against-doctor
+```
+
+**Request Body:**
+```json
+{
+    "description": "Doctor was late for appointment and did not apologize",
+    "doctor_id": 1,
+    "complaint_type_id": 2,
+    "platform": "Phone Call",
+    "occurred_at": "2025-01-15 14:30:00",
+    "appointment_id": 123,
+    "is_resolved": false
+}
+```
+
+**Validation Rules:**
+- `description`: Required, string, max 1000 characters
+- `doctor_id`: Required, must exist in doctors table
+- `complaint_type_id`: Optional, must exist in complaint_types table
+- `platform`: Optional, string, max 255 characters
+- `occurred_at`: Optional, valid date
+- `appointment_id`: Optional, must exist in appointments table
+- `is_resolved`: Optional, boolean (default: false)
+
+**Note:** This endpoint excludes `agent_id` field and automatically sets `submitted_by` to the authenticated user.
+
+**Response:**
+```json
+{
+    "status": "success",
+    "message": "Complaint against doctor created successfully",
+    "data": {
+        "id": 1,
+        "description": "Doctor was late for appointment and did not apologize",
+        "doctor_id": 1,
+        "complaint_type_id": 2,
+        "platform": "Phone Call",
+        "occurred_at": "2025-01-15T14:30:00.000000Z",
+        "appointment_id": 123,
+        "is_resolved": false,
+        "submitted_by": 5,
+        "created_at": "2025-01-15T15:45:00.000000Z",
+        "updated_at": "2025-01-15T15:45:00.000000Z"
+    }
+}
+```
+
+#### 2.2. Create Complaint Against Agent
+```http
+POST /api/complaints/against-agent
+```
+
+**Request Body:**
+```json
+{
+    "description": "Agent was rude and unprofessional during customer service call",
+    "agent_id": 3,
+    "complaint_type_id": 1,
+    "platform": "Phone Call",
+    "occurred_at": "2025-01-15 10:30:00",
+    "is_resolved": false
+}
+```
+
+**Validation Rules:**
+- `description`: Required, string, max 1000 characters
+- `agent_id`: Required, must exist in users table
+- `complaint_type_id`: Optional, must exist in complaint_types table
+- `platform`: Optional, string, max 255 characters
+- `occurred_at`: Optional, valid date
+- `is_resolved`: Optional, boolean (default: false)
+
+**Note:** This endpoint excludes `doctor_id` and `appointment_id` fields and automatically sets `submitted_by` to the authenticated user.
+
+**Response:**
+```json
+{
+    "status": "success",
+    "message": "Complaint against agent created successfully",
+    "data": {
+        "id": 2,
+        "description": "Agent was rude and unprofessional during customer service call",
+        "agent_id": 3,
+        "complaint_type_id": 1,
+        "platform": "Phone Call",
+        "occurred_at": "2025-01-15T10:30:00.000000Z",
+        "is_resolved": false,
+        "submitted_by": 5,
+        "created_at": "2025-01-15T16:20:00.000000Z",
+        "updated_at": "2025-01-15T16:20:00.000000Z"
     }
 }
 ```
@@ -173,6 +295,7 @@ GET /api/complaints/{id}
         "agent_id": 1,
         "doctor_id": null,
         "complaint_type_id": 1,
+        "is_resolved": false,
         "created_at": "2025-08-12T16:22:16.000000Z",
         "updated_at": "2025-08-12T16:22:53.000000Z",
         "agent": {
@@ -199,9 +322,17 @@ PUT /api/complaints/{id}
 {
     "description": "Updated: Patient reported delayed response from customer service",
     "agent_id": 1,
-    "complaint_type_id": 1
+    "complaint_type_id": 1,
+    "is_resolved": true
 }
 ```
+
+**Validation Rules:**
+- `description`: Required, string
+- `agent_id`: Optional, must exist in users table
+- `doctor_id`: Optional, must exist in doctors table
+- `complaint_type_id`: Optional, must exist in complaint_types table
+- `is_resolved`: Optional, boolean
 
 **Response:**
 ```json
@@ -214,6 +345,7 @@ PUT /api/complaints/{id}
         "agent_id": 1,
         "doctor_id": null,
         "complaint_type_id": 1,
+        "is_resolved": true,
         "created_at": "2025-08-12T16:22:16.000000Z",
         "updated_at": "2025-08-12T16:22:53.000000Z",
         "agent": {
@@ -371,6 +503,84 @@ GET /api/complaints/stats
         ]
     }
 }
+```
+
+## Filtering and Search
+
+### Filtering Complaints
+
+The complaints API supports filtering to help you retrieve specific types of complaints based on their relationships.
+
+#### Available Filters
+
+**Filter Parameter:** `filter`
+
+| Filter Value | Description | SQL Condition |
+|--------------|-------------|---------------|
+| `all` (default) | Show all complaints | No additional condition |
+| `agent` | Show only complaints that have an agent_id | `WHERE agent_id IS NOT NULL` |
+| `doctor` | Show only complaints that have a doctor_id | `WHERE doctor_id IS NOT NULL` |
+
+#### Filter Examples
+
+```http
+# Show all complaints (default behavior)
+GET /api/complaints
+GET /api/complaints?filter=all
+
+# Show only complaints with agent_id
+GET /api/complaints?filter=agent
+
+# Show only complaints with doctor_id  
+GET /api/complaints?filter=doctor
+
+# Combine filters with pagination
+GET /api/complaints?filter=agent&per_page=10&page=2
+```
+
+#### Filter Response
+
+When using filters, the response includes a `filter_applied` field to indicate which filter was used:
+
+```json
+{
+    "status": "success",
+    "data": {
+        "current_page": 1,
+        "data": [...],
+        "total": 25,
+        "per_page": 15
+    },
+    "filter_applied": "agent"
+}
+```
+
+### Use Cases
+
+#### Agent-wise Filtering
+Use `filter=agent` when you want to:
+- View all complaints that are associated with agents
+- Generate reports for agent performance
+- Track agent-related issues
+
+#### Doctor-wise Filtering  
+Use `filter=doctor` when you want to:
+- View all complaints that are associated with doctors
+- Generate reports for doctor performance
+- Track doctor-related issues
+
+#### Combined with Other Endpoints
+You can also use the specialized endpoints for more specific filtering:
+
+```http
+# Get complaints for a specific agent
+GET /api/complaints/agent/1
+
+# Get complaints for a specific doctor
+GET /api/complaints/doctor/2
+
+# Search complaints by description
+GET /api/complaints/search?search=late
 ```
 
 ## Error Responses

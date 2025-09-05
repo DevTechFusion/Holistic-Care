@@ -14,9 +14,31 @@ class ComplaintService extends CrudeService
     /**
      * Get all complaints with pagination and relationships
      */
-    public function getAllComplaints($perPage = 15, $page = 1, $orderBy = 'created_at', $format = 'desc')
+    public function getAllComplaints($perPage = 15, $page = 1, $filter = 'all', $orderBy = 'created_at', $format = 'desc')
     {
-        return $this->_paginate($perPage, $page, null, ['agent', 'doctor', 'complaintType']);
+        // Build query based on filter
+        $query = $this->model;
+        
+        // Apply filters based on the filter parameter
+        switch ($filter) {
+            case 'agent':
+                // Show only complaints that have agent_id (not null)
+                $query = $query->whereNotNull('agent_id');
+                break;
+            case 'doctor':
+                // Show only complaints that have doctor_id (not null)
+                $query = $query->whereNotNull('doctor_id');
+                break;
+            case 'all':
+            default:
+                // Show all complaints (no additional filter)
+                break;
+        }
+        
+        // Add relationships and pagination
+        return $query->with(['agent', 'doctor', 'complaintType'])
+                    ->orderBy($orderBy, $format)
+                    ->paginate($perPage, ['*'], 'page', $page);
     }
 
     /**

@@ -18,18 +18,23 @@ class ComplaintController extends Controller
     }
 
     /**
-     * Display a listing of complaints
+     * Display a listing of complaints with optional filters
      */
     public function index()
     {
         try {
             $perPage = request()->get('per_page', 15);
             $page = request()->get('page', 1);
-            $complaints = $this->complaintService->getAllComplaints($perPage, $page);
+            
+            // Get filter parameters
+            $filter = request()->get('filter', 'all'); // all, agent, doctor
+            
+            $complaints = $this->complaintService->getAllComplaints($perPage, $page, $filter);
 
             return response()->json([
                 'status' => 'success',
-                'data' => $complaints
+                'data' => $complaints,
+                'filter_applied' => $filter
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
