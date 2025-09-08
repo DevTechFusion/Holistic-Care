@@ -87,6 +87,9 @@ class AppointmentController extends Controller
             if (str_contains($e->getMessage(), 'time conflicts')) {
                 $statusCode = 422;
                 $message = $e->getMessage();
+            } elseif (str_contains($e->getMessage(), 'not available')) {
+                $statusCode = 422;
+                $message = $e->getMessage();
             }
             
             return response()->json([
@@ -175,6 +178,9 @@ class AppointmentController extends Controller
             
             // Handle specific validation errors
             if (str_contains($e->getMessage(), 'time conflicts')) {
+                $statusCode = 422;
+                $message = $e->getMessage();
+            } elseif (str_contains($e->getMessage(), 'not available')) {
                 $statusCode = 422;
                 $message = $e->getMessage();
             }

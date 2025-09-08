@@ -137,7 +137,7 @@ class DoctorService extends CrudeService
     /**
      * Check if a doctor is available for a specific time slot
      */
-    private function isDoctorAvailableForSlot($doctor, array $filters)
+    public function isDoctorAvailableForSlot($doctor, array $filters)
     {
         $date = $filters['date'] ?? now()->format('Y-m-d');
         $time = $filters['time'] ?? '09:00';

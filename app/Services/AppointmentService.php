@@ -4,19 +4,23 @@ namespace App\Services;
 
 use App\Models\Appointment;
 use App\Models\Complaint;
+use App\Models\Doctor;
 use App\Models\Incentive;
 use App\Models\User;
 use App\Services\ReportService;
+use App\Services\DoctorService;
 use Illuminate\Support\Facades\DB;
 
 class AppointmentService extends CrudeService
 {
     protected $reportService;
+    protected $doctorService;
 
-    public function __construct(ReportService $reportService)
+    public function __construct(ReportService $reportService, DoctorService $doctorService)
     {
         $this->model(Appointment::class);
         $this->reportService = $reportService;
+        $this->doctorService = $doctorService;
     }
 
     /**
@@ -44,8 +48,32 @@ class AppointmentService extends CrudeService
      */
     public function createAppointment($data)
     {
-        // Check for time conflicts before creating appointment
+        // Check doctor availability and time conflicts before creating appointment
         if (isset($data['doctor_id']) && isset($data['date']) && isset($data['start_time']) && isset($data['end_time'])) {
+            // Log the incoming time data for debugging
+            \Log::info('Creating appointment with time data', [
+                'start_time' => $data['start_time'],
+                'end_time' => $data['end_time'],
+                'start_time_type' => gettype($data['start_time']),
+                'end_time_type' => gettype($data['end_time'])
+            ]);
+            
+            // Calculate duration if not provided
+            $duration = isset($data['duration']) ? $data['duration'] : $this->calculateDuration($data['start_time'], $data['end_time']);
+            
+            // Check if doctor is available at the requested time (working hours, day availability, lunch breaks)
+            $isAvailable = $this->isDoctorAvailable(
+                $data['doctor_id'],
+                $data['date'],
+                $data['start_time'],
+                $duration
+            );
+            
+            if (!$isAvailable) {
+                throw new \Exception('Doctor is not available at the requested date and time. Please check the doctor\'s working hours and availability schedule.');
+            }
+            
+            // Check for time conflicts with existing appointments
             $hasConflict = $this->hasTimeConflict(
                 $data['doctor_id'],
                 $data['date'],
@@ -82,8 +110,33 @@ class AppointmentService extends CrudeService
      */
     public function updateAppointment($id, $data)
     {
-        // Check for time conflicts before updating appointment
+        // Check doctor availability and time conflicts before updating appointment
         if (isset($data['doctor_id']) && isset($data['date']) && isset($data['start_time']) && isset($data['end_time'])) {
+            // Log the incoming time data for debugging
+            \Log::info('Updating appointment with time data', [
+                'appointment_id' => $id,
+                'start_time' => $data['start_time'],
+                'end_time' => $data['end_time'],
+                'start_time_type' => gettype($data['start_time']),
+                'end_time_type' => gettype($data['end_time'])
+            ]);
+            
+            // Calculate duration if not provided
+            $duration = isset($data['duration']) ? $data['duration'] : $this->calculateDuration($data['start_time'], $data['end_time']);
+            
+            // Check if doctor is available at the requested time (working hours, day availability, lunch breaks)
+            $isAvailable = $this->isDoctorAvailable(
+                $data['doctor_id'],
+                $data['date'],
+                $data['start_time'],
+                $duration
+            );
+            
+            if (!$isAvailable) {
+                throw new \Exception('Doctor is not available at the requested date and time. Please check the doctor\'s working hours and availability schedule.');
+            }
+            
+            // Check for time conflicts with existing appointments
             $hasConflict = $this->hasTimeConflict(
                 $data['doctor_id'],
                 $data['date'],
@@ -152,6 +205,30 @@ class AppointmentService extends CrudeService
     }
 
     /**
+     * Check if doctor is available at the specified date and time
+     * 
+     * @param int $doctorId
+     * @param string $date
+     * @param string $startTime
+     * @param int $duration Duration in minutes
+     * @return bool
+     */
+    public function isDoctorAvailable($doctorId, $date, $startTime, $duration = 60)
+    {
+        $doctor = Doctor::find($doctorId);
+        
+        if (!$doctor) {
+            return false;
+        }
+
+        return $this->doctorService->isDoctorAvailableForSlot($doctor, [
+            'date' => $date,
+            'time' => $startTime,
+            'duration' => $duration
+        ]);
+    }
+
+    /**
      * Check if there's a time conflict for a doctor on a specific date
      * 
      * @param int $doctorId
@@ -194,15 +271,28 @@ class AppointmentService extends CrudeService
      */
     public function calculateDuration($startTime, $endTime)
     {
-        $start = \Carbon\Carbon::parse($startTime);
-        $end = \Carbon\Carbon::parse($endTime);
-        
-        // Ensure end time is after start time
-        if ($end <= $start) {
-            throw new \Exception('End time must be after start time.');
+        try {
+            // Clean and parse time strings
+            $cleanStartTime = trim($startTime);
+            $cleanEndTime = trim($endTime);
+            
+            $start = \Carbon\Carbon::parse($cleanStartTime);
+            $end = \Carbon\Carbon::parse($cleanEndTime);
+            
+            // Ensure end time is after start time
+            if ($end <= $start) {
+                throw new \Exception('End time must be after start time.');
+            }
+            
+            return $start->diffInMinutes($end);
+        } catch (\Carbon\Exceptions\InvalidFormatException $e) {
+            throw new \Exception("Invalid time format. Expected format: HH:MM:SS (e.g., 10:00:00). Start time: '{$startTime}', End time: '{$endTime}'");
+        } catch (\Exception $e) {
+            if (str_contains($e->getMessage(), 'Trailing data')) {
+                throw new \Exception("Invalid time format - trailing data found. Expected format: HH:MM:SS (e.g., 10:00:00). Start time: '{$startTime}', End time: '{$endTime}'");
+            }
+            throw $e;
         }
-        
-        return $start->diffInMinutes($end);
     }
 
     /**
