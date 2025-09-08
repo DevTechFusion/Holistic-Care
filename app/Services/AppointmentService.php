@@ -894,7 +894,8 @@ class AppointmentService extends CrudeService
                 'complaints.agent_id',
                 'complaints.doctor_id',
                 'complaints.appointment_id',
-                'complaints.id as complaint_id'
+                'complaints.id as complaint_id',
+                'complaints.is_resolved'
             ])
             ->whereNotNull('complaints.appointment_id') // Only show complaints that have appointment_id
             ->where(function($q) use ($startDate, $endDate) {
@@ -947,6 +948,7 @@ class AppointmentService extends CrudeService
                 // 'staff_name' => $complaint->submitted_by ? \App\Models\User::find($complaint->submitted_by)->name : null,
                 'staff_name' => $relatedAppointment && $relatedAppointment->agent ? $relatedAppointment->agent->name : null,
                 'complaint_description' => $complaint->complaint_description,
+                'status' => $complaint->is_resolved ? 'Resolved' : 'Unresolved',
             ];
         }
 
