@@ -22,7 +22,8 @@ class UpdateDoctorRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'sometimes|required|string|max:255',
+            // 'name' => 'sometimes|required|string|max:255',
+            'name' => 'sometimes|required|string|max:255|regex:/^[a-zA-Z]+$/',
             'phone_number' => 'sometimes|required|string|max:20',
             'department_id' => 'sometimes|required|exists:departments,id',
             'procedures' => 'sometimes|required|array|min:1',
@@ -44,6 +45,7 @@ class UpdateDoctorRequest extends FormRequest
         return [
             'name.required' => 'The name field is required.',
             'name.string' => 'The name must be a string.',
+            'name.regex' => 'The name must contain only alphabetic characters (letters only).',
             'name.max' => 'The name cannot exceed 255 characters.',
             'phone_number.required' => 'The phone number field is required.',
             'phone_number.string' => 'The phone number must be a string.',

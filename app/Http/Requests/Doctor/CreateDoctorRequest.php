@@ -22,7 +22,8 @@ class CreateDoctorRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
+            // 'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|regex:/^[a-zA-Z]+$/',
             'phone_number' => 'required|string|max:20',
             'department_id' => 'required|exists:departments,id',
             'procedures' => 'required|array|min:1',
@@ -44,6 +45,7 @@ class CreateDoctorRequest extends FormRequest
         return [
             'name.required' => 'The name field is required.',
             'name.string' => 'The name must be a string.',
+            'name.regex' => 'The name must contain only alphabetic characters (letters only).',
             'name.max' => 'The name cannot exceed 255 characters.',
             'phone_number.required' => 'The phone number field is required.',
             'phone_number.string' => 'The phone number must be a string.',

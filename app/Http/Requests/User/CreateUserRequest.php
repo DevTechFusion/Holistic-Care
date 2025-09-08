@@ -22,7 +22,7 @@ class CreateUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|regex:/^[a-zA-Z]+$/',
             'email' => 'required|string|email:filter|max:255|unique:users',
             'password' => 'required|string|min:8',
             'role' => 'nullable|string|exists:roles,name'
@@ -40,6 +40,7 @@ class CreateUserRequest extends FormRequest
             'name.required' => 'The name field is required.',
             'name.string' => 'The name must be a string.',
             'name.max' => 'The name cannot exceed 255 characters.',
+            'name.regex' => 'The name must contain only alphabetic characters (letters only).',
             'email.required' => 'The email field is required.',
             'email.string' => 'The email must be a string.',
             'email.email' => 'Please enter a valid email address.',

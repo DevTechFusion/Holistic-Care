@@ -25,7 +25,8 @@ class UpdateUserRequest extends FormRequest
         $userId = $this->route('user'); // Get the user ID from the route parameter
 
         return [
-            'name' => 'required|string|max:255',
+            // 'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|regex:/^[a-zA-Z]+$/',
             'email' => [
                 'required',
                 'string',
@@ -48,6 +49,7 @@ class UpdateUserRequest extends FormRequest
         return [
             'name.required' => 'Name is required.',
             'name.max' => 'Name cannot exceed 255 characters.',
+            'name.regex' => 'The name must contain only alphabetic characters (letters only).',
             'email.required' => 'Email is required.',
             'email.email' => 'Please enter a valid email address.',
             'email.unique' => 'This email is already registered.',
