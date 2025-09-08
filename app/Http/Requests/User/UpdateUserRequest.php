@@ -29,7 +29,7 @@ class UpdateUserRequest extends FormRequest
             'email' => [
                 'required',
                 'string',
-                'email',
+                'email:filter',
                 'max:255',
                 Rule::unique('users', 'email')->ignore($userId)
             ],
