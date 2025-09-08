@@ -1,25 +1,23 @@
 import { useEffect, useState } from "react";
 import { Box, Grid, Card, CardContent, Typography } from "@mui/material";
-import {
-  CalendarToday,
-  Person,
-  Update,
-} from "@mui/icons-material";
-import { getAgentDashboard } from "../../DAL/dashboard"; 
+import { CalendarToday, Person, Update } from "@mui/icons-material";
+import { getManagerDashboard } from "../../DAL/dashboard";
 
-const AgentStatsCards = () => {
+const StatsCards = () => {
   const [cards, setCards] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const response = await getAgentDashboard("weekly");
+        const response = await getManagerDashboard();
         if (response?.status === "success") {
+         
           setCards(response.data.cards);
+          console.log("fetched manager dashboard:", response.data.cards);
         }
       } catch (error) {
-        console.error("Error fetching agent dashboard:", error);
+        console.error("Error fetching manager dashboard:", error);
       } finally {
         setLoading(false);
       }
@@ -33,27 +31,27 @@ const AgentStatsCards = () => {
 
   const stats = [
     {
-      title: "Total Bookings",
+      title: "Total Mistakes",
       icon: CalendarToday,
-      value: cards.total_bookings,
+      value: cards.total_mistakes,
       color: "#23C7B7",
     },
     {
-      title: "Arrived Today",
+      title: "Frequent Mistake Type",
       icon: Person,
-      value: cards.arrived,
+      value: cards.most_frequent_type?.complaint_type?.name || "N/A",
       color: "#23C7B7",
     },
     {
-      title: "Not Arrived",
+      title: "Top Agent By Mistake Type",
       icon: Person,
-      value: cards.not_arrived,
+      value: cards.top_agent?.agent?.name || "N/A",
       color: "#23C7B7",
     },
     {
-      title: "Rescheduled",
+      title: "New Clients",
       icon: Update,
-      value: cards.rescheduled,
+      value: cards.new_clients,
       color: "#23C7B7",
     },
   ];
@@ -82,28 +80,31 @@ const AgentStatsCards = () => {
                   <IconComponent sx={{ color: stat.color, fontSize: 32 }} />
                 </Box>
 
-                {/* Value */}
-                <Typography
-                  variant="h4"
-                  sx={{
-                    fontWeight: "bold",
-                    color: stat.color,
-                    mb: 1,
-                  }}
-                >
-                  {stat.value}
-                </Typography>
-
-                {/* Title */}
+                 {/* Title */}
                 <Typography
                   variant="body2"
                   sx={{
+                    fontWeight: "bold",
                     color: "text.secondary",
                     mb: 2,
                   }}
                 >
                   {stat.title}
                 </Typography>
+
+                {/* Value */}
+                <Typography
+                  variant="h4"
+                  sx={{
+                    fontWeight: "bold",
+                    color: "black",
+                    mb: 1,
+                  }}
+                >
+                  {stat.value}
+                </Typography>
+
+               
               </CardContent>
             </Card>
           </Grid>
@@ -113,4 +114,4 @@ const AgentStatsCards = () => {
   );
 };
 
-export default AgentStatsCards;
+export default StatsCards;

@@ -9,17 +9,26 @@ import { getAdminDashboard } from "../../DAL/dashboard";
 
 const StatsCards = () => {
   const [cards, setCards] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getAdminDashboard("weekly").then((res) => {
-      if (res?.data?.cards) {
-        setCards(res.data.cards);
-        console.log("Dashboard Cards Data:", res.data.cards);
-      }
-    });
+    const fetchDashboard = async () => {
+      try {
+        const response = await getAdminDashboard();
+        if (response?.status === "success") {
+          setCards(response.data.cards);
+        }
+      } catch (error) {
+        console.error("Error fetching agent dashboard:", error);
+      } finally {
+        setLoading(false);
+      }   };
+
+    fetchDashboard();
   }, []);
 
-  if (!cards) return <p>Loading...</p>;
+ if (loading) return <p>Loading...</p>;
+  if (!cards) return <p>No data available</p>;
 
   const stats = [
     {

@@ -1,4 +1,4 @@
-// Dashboard.jsx
+// src/pages/dashboard/adminDashboard/Dashboard.jsx
 import { useState } from "react";
 import {
   Divider,
@@ -21,7 +21,7 @@ import CreateProcedureModal from "../../../components/forms/ProcedureForm";
 import CreateDepartmentModal from "../../../components/forms/DepartmentForm";
 import CreateDoctorModal from "../../../components/forms/DoctorForm";
 import CreateAppointmentModal from "../../../components/forms/AppointmentForm";
-
+import ComplaintForm from "../../../components/forms/ComplaintForm";
 import AgentWiseBookings from "../../../components/dashboard/AgentWiseBooking";
 import SourceWiseBookings from "../../../components/dashboard/SourceWiseBooking";
 import DoctorWiseBooking from "../../../components/dashboard/DoctorWiseBooking";
@@ -32,9 +32,14 @@ import {
   RevenueSection,
   StatsCards,
   WelcomeSection,
+  DoctorsAvailabilityCard,
+  ManagerStatsCards,
+  MistakesLog,
+  MistakesCount,
 } from "../../../components/dashboard";
 
 import { useSnackbar } from "notistack";
+
 
 const Dashboard = () => {
   const [openModal, setOpenModal] = useState(null);
@@ -50,7 +55,7 @@ const Dashboard = () => {
     if (type) setOpenModal(type);
   };
 
-  // Centralized modal close + snackbar feedback
+  
   const handleModalClose = (success = false, message = "", type = null) => {
     setOpenModal(null);
     if (success) {
@@ -121,6 +126,12 @@ const Dashboard = () => {
           </ListItemIcon>
           <ListItemText primary="Appointment" />
         </MenuItem>
+        <MenuItem onClick={() => handleClose("complaint")}>
+        <ListItemIcon>
+          <LocalHospitalIcon fontSize="small" />
+        </ListItemIcon>
+        <ListItemText primary="Complaint" />
+        </MenuItem>
       </Menu>
 
       {/* Modals with success/error handling */}
@@ -152,6 +163,12 @@ const Dashboard = () => {
         open={openModal === "appointment"}
         onClose={(success, message) =>
           handleModalClose(success, message, "Appointment")
+        }
+      />
+      <ComplaintForm
+        open={openModal === "complaint"}
+        onClose={(success, message) =>
+          handleModalClose(success, message, "Complaint")
         }
       />
 
@@ -199,12 +216,18 @@ const Dashboard = () => {
         </Grid>
       </Box>
       <Grid item xs={12} md={6}>
+        
             <AgentAppointmentLeaderboard />
           </Grid>
       <AgentStatsCards />
       <AgentWiseBookings />
       <SourceWiseBookings />
+      <DoctorsAvailabilityCard />
+      <ManagerStatsCards />
       <DoctorWiseBooking />
+      <MistakesLog />
+      <MistakesCount />
+     
     </div>
   );
 };

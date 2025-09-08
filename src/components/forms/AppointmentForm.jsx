@@ -96,7 +96,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
           status_id: data.status_id || data.status?.id || "",
           amount: data.amount || "",
           payment_mode: data.payment_mode || "",
-          update_report: true, // ✅ fixed typo (was update_reports)
+          update_report: true, 
         });
       } else {
         setFormData(resetForm());
@@ -150,46 +150,170 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
   };
 
   const fields = [
-    { name: "date", label: "Date", type: "date", required: true, value: formData.date,
-      onChange: (e) => setFormData((p) => ({ ...p, date: e.target.value })) },
-    { name: "start_time", label: "Start Time", type: "time", required: true, value: formData.start_time,
-      onChange: (e) => setFormData((p) => ({ ...p, start_time: e.target.value })) },
-    { name: "end_time", label: "End Time", type: "time", required: true, value: formData.end_time,
-      onChange: (e) => setFormData((p) => ({ ...p, end_time: e.target.value })) },
-      { name: "patient_name", label: "Patient Name", type: "text", required: true, value: formData.patient_name,
-      onChange: (e) => setFormData((p) => ({ ...p, patient_name: e.target.value })) },
-    { name: "contact_number", label: "Contact Number", type: "text", required: true, value: formData.contact_number,
-      onChange: (e) => setFormData((p) => ({ ...p, contact_number: e.target.value })) },
-    { name: "agent_id", label: "Agent", type: "select", required: true, value: formData.agent_id,
-      onChange: (e) => setFormData((p) => ({ ...p, agent_id: e.target.value })), options: roles.map((r) => ({ value: r.id, label: r.name })) },
-    { name: "doctor_id", label: "Doctor", type: "select", required: true, value: formData.doctor_id,
-      onChange: (e) => setFormData((p) => ({ ...p, doctor_id: e.target.value })), options: doctors.map((d) => ({ value: d.id, label: d.name })) },
-    { name: "procedure_id", label: "Procedure", type: "select", required: true, value: formData.procedure_id,
-      onChange: (e) => setFormData((p) => ({ ...p, procedure_id: e.target.value })), options: procedures.map((p) => ({ value: p.id, label: p.name })) },
-    { name: "category_id", label: "Category", type: "select", required: true, value: formData.category_id,
-      onChange: (e) => setFormData((p) => ({ ...p, category_id: e.target.value })), options: categories.map((c) => ({ value: c.id, label: c.name })) },
-    { name: "department_id", label: "Department", type: "select", required: true, value: formData.department_id,
-      onChange: (e) => setFormData((p) => ({ ...p, department_id: e.target.value })), options: departments.map((d) => ({ value: d.id, label: d.name })) },
-    { name: "source_id", label: "Source", type: "select", required: true, value: formData.source_id,
-      onChange: (e) => setFormData((p) => ({ ...p, source_id: e.target.value })), options: sources.map((s) => ({ value: s.id, label: s.name })) },
-    { name: "notes", label: "Notes", type: "text", value: formData.notes,
-      onChange: (e) => setFormData((p) => ({ ...p, notes: e.target.value })) },
-    { name: "mr_number", label: "MR Number", type: "text", value: formData.mr_number,
-      onChange: (e) => setFormData((p) => ({ ...p, mr_number: e.target.value })) },
-    { name: "remarks_1_id", label: "Remarks 1", type: "select", value: formData.remarks_1_id,
-      onChange: (e) => setFormData((p) => ({ ...p, remarks_1_id: e.target.value })), options: remarks1.map((r) => ({ value: r.id, label: r.name })) },
-    { name: "remarks_2_id", label: "Remarks 2", type: "select", value: formData.remarks_2_id,
-      onChange: (e) => setFormData((p) => ({ ...p, remarks_2_id: e.target.value })), options: remarks2.map((r) => ({ value: r.id, label: r.name })) },
-    { name: "status_id", label: "Status", type: "select", value: formData.status_id,
-      onChange: (e) => setFormData((p) => ({ ...p, status_id: e.target.value })), options: statuses.map((s) => ({ value: s.id, label: s.name })) },
-    { name: "amount", label: "Amount", type: "number", value: formData.amount,
-      onChange: (e) => setFormData((p) => ({ ...p, amount: e.target.value })) },
-    { name: "payment_mode", label: "Payment Mode", type: "select", value: formData.payment_mode,
-      onChange: (e) => setFormData((p) => ({ ...p, payment_mode: e.target.value })), options: [
+    {
+      name: "date",
+      label: "Date",
+      type: "date",
+      required: true,
+      value: formData.date,
+      onChange: (e) => setFormData((p) => ({ ...p, date: e.target.value })),
+    },
+    {
+      name: "start_time",
+      label: "Start Time",
+      type: "time",
+      required: true,
+      value: formData.start_time,
+      onChange: (e) =>
+        setFormData((p) => ({ ...p, start_time: e.target.value })),
+    },
+    {
+      name: "end_time",
+      label: "End Time",
+      type: "time",
+      required: true,
+      value: formData.end_time,
+      onChange: (e) => setFormData((p) => ({ ...p, end_time: e.target.value })),
+    },
+    {
+      name: "patient_name",
+      label: "Patient Name",
+      type: "text",
+      required: true,
+      value: formData.patient_name,
+      onChange: (e) =>
+        setFormData((p) => ({ ...p, patient_name: e.target.value })),
+    },
+    {
+      name: "contact_number",
+      label: "Contact Number",
+      type: "text",
+      required: true,
+      value: formData.contact_number,
+      onChange: (e) =>
+        setFormData((p) => ({ ...p, contact_number: e.target.value })),
+    },
+    {
+      name: "agent_id",
+      label: "Agent",
+      type: "select",
+      required: true,
+      value: formData.agent_id,
+      onChange: (e) => setFormData((p) => ({ ...p, agent_id: e.target.value })),
+      options: roles.map((r) => ({ value: r.id, label: r.name })),
+    },
+    {
+      name: "doctor_id",
+      label: "Doctor",
+      type: "select",
+      required: true,
+      value: formData.doctor_id,
+      onChange: (e) =>
+        setFormData((p) => ({ ...p, doctor_id: e.target.value })),
+      options: doctors.map((d) => ({ value: d.id, label: d.name })),
+    },
+    {
+      name: "procedure_id",
+      label: "Procedure",
+      type: "select",
+      required: true,
+      value: formData.procedure_id,
+      onChange: (e) =>
+        setFormData((p) => ({ ...p, procedure_id: e.target.value })),
+      options: procedures.map((p) => ({ value: p.id, label: p.name })),
+    },
+    {
+      name: "category_id",
+      label: "Category",
+      type: "select",
+      required: true,
+      value: formData.category_id,
+      onChange: (e) =>
+        setFormData((p) => ({ ...p, category_id: e.target.value })),
+      options: categories.map((c) => ({ value: c.id, label: c.name })),
+    },
+    {
+      name: "department_id",
+      label: "Department",
+      type: "select",
+      required: true,
+      value: formData.department_id,
+      onChange: (e) =>
+        setFormData((p) => ({ ...p, department_id: e.target.value })),
+      options: departments.map((d) => ({ value: d.id, label: d.name })),
+    },
+    {
+      name: "source_id",
+      label: "Source",
+      type: "select",
+      required: true,
+      value: formData.source_id,
+      onChange: (e) =>
+        setFormData((p) => ({ ...p, source_id: e.target.value })),
+      options: sources.map((s) => ({ value: s.id, label: s.name })),
+    },
+    {
+      name: "notes",
+      label: "Notes",
+      type: "text",
+      value: formData.notes,
+      onChange: (e) => setFormData((p) => ({ ...p, notes: e.target.value })),
+    },
+    {
+      name: "mr_number",
+      label: "MR Number",
+      type: "text",
+      value: formData.mr_number,
+      onChange: (e) =>
+        setFormData((p) => ({ ...p, mr_number: e.target.value })),
+    },
+    {
+      name: "remarks_1_id",
+      label: "Remarks 1",
+      type: "select",
+      value: formData.remarks_1_id,
+      onChange: (e) =>
+        setFormData((p) => ({ ...p, remarks_1_id: e.target.value })),
+      options: remarks1.map((r) => ({ value: r.id, label: r.name })),
+    },
+    {
+      name: "remarks_2_id",
+      label: "Remarks 2",
+      type: "select",
+      value: formData.remarks_2_id,
+      onChange: (e) =>
+        setFormData((p) => ({ ...p, remarks_2_id: e.target.value })),
+      options: remarks2.map((r) => ({ value: r.id, label: r.name })),
+    },
+    {
+      name: "status_id",
+      label: "Status",
+      type: "select",
+      value: formData.status_id,
+      onChange: (e) =>
+        setFormData((p) => ({ ...p, status_id: e.target.value })),
+      options: statuses.map((s) => ({ value: s.id, label: s.name })),
+    },
+    {
+      name: "amount",
+      label: "Amount",
+      type: "number",
+      value: formData.amount,
+      onChange: (e) => setFormData((p) => ({ ...p, amount: e.target.value })),
+    },
+    {
+      name: "payment_mode",
+      label: "Payment Mode",
+      type: "select",
+      value: formData.payment_mode,
+      onChange: (e) =>
+        setFormData((p) => ({ ...p, payment_mode: e.target.value })),
+      options: [
         { value: "cash", label: "Cash" },
         { value: "card", label: "Card" },
         { value: "online", label: "Online Transfer" },
-      ] },
+      ],
+    },
   ];
 
   return (

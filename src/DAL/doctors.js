@@ -43,6 +43,6 @@ export const getDoctorsByProcedure = (id) => {
 };
 
 // getDoctorsByAvailability
-export const getDoctorsByAvailability = () => {
-  return invokeApi({ path: `api/doctors/availability` });
+export const getDoctorsByAvailability = (id, format) => {
+  return invokeApi({ path: `api/doctor-availability/${id}?format=${format}` });
 };

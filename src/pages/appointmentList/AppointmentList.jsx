@@ -11,6 +11,7 @@ import {
   TableCell,
   TableBody,
   TablePagination,
+  IconButton,
 } from "@mui/material";
 import {
   getAppointments,
@@ -19,6 +20,8 @@ import {
 import CreateAppointmentModal from "../../components/forms/AppointmentForm";
 import ActionButtons from "../../constants/actionButtons";
 import { useSnackbar } from "notistack";
+import { DoctorsAvailabilityCard } from "../../components/dashboard";
+import ComplaintForm from "../../components/forms/ComplaintForm";
 
 const AppointmentsPage = () => {
   const [appointments, setAppointments] = useState([]);
@@ -73,6 +76,11 @@ const AppointmentsPage = () => {
  
   const handleCreateAppointment = () => {
     setTargetItem(null); // Clear any previous data
+    setOpenModal(true);
+  };
+
+  const handleAddComplaint = (appointment) => {
+    setTargetItem(appointment); 
     setOpenModal(true);
   };
 
@@ -135,6 +143,7 @@ const AppointmentsPage = () => {
                         onEdit={() => handleUpdateAppointment(appt)}
                         onDelete={() => handleDeleteAppointment(appt.id)}
                       />
+                      <IconButton onClick={() => handleAddComplaint(appt)}>c</IconButton>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -158,6 +167,8 @@ const AppointmentsPage = () => {
         )}
       </Paper>
 
+      <DoctorsAvailabilityCard />
+
       {/* Create/Edit Appointment Modal */}
       <CreateAppointmentModal
         isEditing={!!targetItem}
@@ -168,6 +179,10 @@ const AppointmentsPage = () => {
           fetchAppointments(); 
           setTargetItem(null);
         }}
+      />
+      <ComplaintForm
+      data={targetItem}
+      
       />
     </Box>
   );
