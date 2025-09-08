@@ -23,7 +23,7 @@ class UpdateDoctorRequest extends FormRequest
     {
         return [
             // 'name' => 'sometimes|required|string|max:255',
-            'name' => 'sometimes|required|string|max:255|regex:/^[a-zA-Z]+$/',
+            'name' => 'sometimes|required|string|max:255|regex:/^[a-zA-Z\s]+$/',
             'phone_number' => 'sometimes|required|string|max:20',
             'department_id' => 'sometimes|required|exists:departments,id',
             'procedures' => 'sometimes|required|array|min:1',
