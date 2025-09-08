@@ -20,6 +20,7 @@ import ReportsPage from "./pages/reportsList/ReportsList";
 import AppointmentsList from "./pages/appointmentList/AppointmentList";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import AuthLayout from "./layouts/AuthLayout";
+import ComplaintList from "./pages/complaintList/ComplaintList";
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -58,6 +59,7 @@ const AppRoutes = () => {
         <Route path="doctors" element={<DoctorsList/>} />
         <Route path="appointments" element={<AppointmentsList/>} />
         <Route path="reports" element={<ReportsPage />} />
+        <Route path="complaints" element={<ComplaintList />} />
       </Route>
       <Route
         path="/"

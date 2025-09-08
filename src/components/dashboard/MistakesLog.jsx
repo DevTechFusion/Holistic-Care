@@ -60,7 +60,6 @@ export default function MistakeLogTable() {
               <TableCell>Day</TableCell>
               <TableCell>Agent</TableCell>
               <TableCell>Type</TableCell>
-              <TableCell>Platform</TableCell>
               <TableCell>Description</TableCell>
               <TableCell>Status</TableCell>
             </TableRow>
@@ -74,7 +73,7 @@ export default function MistakeLogTable() {
                 <TableCell sx={{ color: "red" }}>
                   {log.complaint_type?.name}
                 </TableCell>
-                <TableCell>{log.platform}</TableCell>
+                
                 <TableCell>{log.description}</TableCell>
                 <TableCell>
                   <Chip

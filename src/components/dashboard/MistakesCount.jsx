@@ -54,22 +54,23 @@ export default function MistakesCount() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {count.map((row) => (
-              <TableRow key={row.agent_id}>
-                <TableCell>{row.agent_name}</TableCell>
-                <TableCell>{row["Missed reply"] || "-"}</TableCell>
-                <TableCell>{row["Disinformation"] || "-"}</TableCell>
-                <TableCell>{row["Incomplete Chat"] || "-"}</TableCell>
-                <TableCell>{row["Retargeting"] || "-"}</TableCell>
-                <TableCell sx={{ fontWeight: "bold", color: "teal" }}>
-                  {row.total}
-                </TableCell>
-              </TableRow>
-            ))}
+            {count
+              .filter((row) => row.agent_id)
+              .map((row) => (
+                <TableRow key={row.agent_id}>
+                  <TableCell>{row.agent_name}</TableCell>
+                  <TableCell>{row["Missed reply"] || "-"}</TableCell>
+                  <TableCell>{row["Disinformation"] || "-"}</TableCell>
+                  <TableCell>{row["Incomplete Chat"] || "-"}</TableCell>
+                  <TableCell>{row["Retargeting"] || "-"}</TableCell>
+                  <TableCell sx={{ fontWeight: "bold", color: "teal" }}>
+                    {row.total}
+                  </TableCell>
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
       )}
     </TableContainer>
   );
 }
-

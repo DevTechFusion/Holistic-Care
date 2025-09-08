@@ -13,10 +13,7 @@ import {
   TablePagination,
   IconButton,
 } from "@mui/material";
-import {
-  getAppointments,
-  deleteAppointment,
-} from "../../DAL/appointments";
+import { getAppointments, deleteAppointment } from "../../DAL/appointments";
 import CreateAppointmentModal from "../../components/forms/AppointmentForm";
 import ActionButtons from "../../constants/actionButtons";
 import { useSnackbar } from "notistack";
@@ -32,6 +29,7 @@ const AppointmentsPage = () => {
   const [total, setTotal] = useState(0);
   const [targetItem, setTargetItem] = useState(null);
   const { enqueueSnackbar } = useSnackbar();
+  const [complaintModalOpen, setComplaintModalOpen] = useState(false);
 
   // Fetch Appointments
   const fetchAppointments = async () => {
@@ -66,22 +64,24 @@ const AppointmentsPage = () => {
     }
   };
 
-
   const handleUpdateAppointment = (appointment) => {
     console.log("Opening edit modal with data:", appointment);
-    setTargetItem(appointment); 
+    setTargetItem(appointment);
     setOpenModal(true);
   };
 
- 
   const handleCreateAppointment = () => {
-    setTargetItem(null); // Clear any previous data
+    setTargetItem(null);
     setOpenModal(true);
   };
 
   const handleAddComplaint = (appointment) => {
-    setTargetItem(appointment); 
-    setOpenModal(true);
+    setTargetItem(appointment);
+    setComplaintModalOpen(true);
+  };
+  const handleCloseComplaint = () => {
+    setTargetItem();
+    setComplaintModalOpen(false);
   };
 
   return (
@@ -143,7 +143,9 @@ const AppointmentsPage = () => {
                         onEdit={() => handleUpdateAppointment(appt)}
                         onDelete={() => handleDeleteAppointment(appt.id)}
                       />
-                      <IconButton onClick={() => handleAddComplaint(appt)}>c</IconButton>
+                      <IconButton onClick={() => handleAddComplaint(appt)}>
+                        c
+                      </IconButton>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -176,13 +178,14 @@ const AppointmentsPage = () => {
         open={openModal}
         onClose={() => {
           setOpenModal(false);
-          fetchAppointments(); 
+          fetchAppointments();
           setTargetItem(null);
         }}
       />
       <ComplaintForm
-      data={targetItem}
-      
+        data={targetItem}
+        open={complaintModalOpen}
+        onClose={handleCloseComplaint}
       />
     </Box>
   );

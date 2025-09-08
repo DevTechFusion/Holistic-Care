@@ -57,6 +57,11 @@ const SidebarConfig = {
       icon: ReportIcon,
       path: "/reports",
     },
+    {
+      title: "Complaints",
+      icon: ReportIcon,
+      path: "/complaints",
+    },
   ],
   agent: [
     {
