@@ -1,33 +1,28 @@
 import { useEffect, useState } from "react";
 import { Box, Grid, Card, CardContent, Typography } from "@mui/material";
-import {
-  CalendarToday,
-  Person,
-  Update,
-} from "@mui/icons-material";
-import { getAdminDashboard } from "../../DAL/dashboard"; 
+import { CalendarToday, Person, Update } from "@mui/icons-material";
+import { getAdminDashboard } from "../../DAL/dashboard";
 
-const StatsCards = () => {
+const StatsCards = ({ filter }) => {
   const [cards, setCards] = useState(null);
   const [loading, setLoading] = useState(true);
-
+  const fetchDashboard = async () => {
+    try {
+      const response = await getAdminDashboard(filter);
+      if (response?.status === "success") {
+        setCards(response.data.cards);
+      }
+    } catch (error) {
+      console.error("Error fetching agent dashboard:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
-    const fetchDashboard = async () => {
-      try {
-        const response = await getAdminDashboard();
-        if (response?.status === "success") {
-          setCards(response.data.cards);
-        }
-      } catch (error) {
-        console.error("Error fetching agent dashboard:", error);
-      } finally {
-        setLoading(false);
-      }   };
-
     fetchDashboard();
-  }, []);
+  }, [filter]);
 
- if (loading) return <p>Loading...</p>;
+  if (loading) return <p>Loading...</p>;
   if (!cards) return <p>No data available</p>;
 
   const stats = [
@@ -66,6 +61,7 @@ const StatsCards = () => {
             <Card
               sx={{
                 height: "150px",
+
                 borderRadius: 3,
                 boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                 "&:hover": {

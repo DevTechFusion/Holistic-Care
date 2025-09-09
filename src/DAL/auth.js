@@ -14,11 +14,11 @@ export const getUserProfile = () => {
   return invokeApi({ path: "api/profile" });
 };
 
-export const logout = () => {
-  const reqObj = { 
+export const logout = (token) => {
+  const reqObj = {
     method: "POST",
     path: "api/logout",
-    postData: { token: localStorage.getItem("token") },
+    postData: { token },
   };
-  return invokeApi(reqObj); 
+  return invokeApi(reqObj);
 };

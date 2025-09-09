@@ -1,3 +1,4 @@
+// src/components/dashboard/DoctorLeaderboard.jsx
 import { useEffect, useState } from "react";
 import {
   Box,
@@ -9,48 +10,58 @@ import {
   FormControl,
   Select,
   MenuItem,
+  Alert,
 } from "@mui/material";
 import { getAdminDashboard } from "../../DAL/dashboard";
 import { getAllDepartments } from "../../DAL/departments";
 
-const DoctorLeaderboard = () => {
+const DoctorLeaderboard = ({ filter }) => {
   const [doctors, setDoctors] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [selectedDepartment, setSelectedDepartment] = useState("all");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  // Fetch departments
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
         const response = await getAllDepartments();
-        if (response?.status === "success" || response?.data) {
-          setDepartments(response.data?.data || response.data || []);
-        }
-      } catch (error) {
-        console.error("Error fetching departments:", error);
+        const payload = response?.data?.data ?? response?.data ?? [];
+        setDepartments(payload);
+      } catch (err) {
+        console.error("Error fetching departments:", err);
       }
     };
     fetchDepartments();
   }, []);
 
+  // Fetch doctors leaderboard
   useEffect(() => {
-    const fetchDashboard = async () => {
+    const fetchDoctors = async () => {
       try {
         setLoading(true);
-        const response = await getAdminDashboard("weekly");
-        if (response?.status === "success") {
-          const doctorData = response.data.doctor_wise_bookings || [];
-          const sortedDoctors = doctorData.sort((a, b) => b.bookings - a.bookings);
-          setDoctors(sortedDoctors);
-        }
-      } catch (error) {
-        console.error("Error fetching doctor leaderboard:", error);
+        setError(null);
+
+        const response = await getAdminDashboard(filter);
+        const doctorData = response?.data?.doctor_wise_bookings ?? [];
+
+        const sortedDoctors = [...doctorData].sort(
+          (a, b) => (b.bookings ?? 0) - (a.bookings ?? 0)
+        );
+
+        setDoctors(sortedDoctors);
+      } catch (err) {
+        console.error("Error fetching doctor leaderboard:", err);
+        setError(err?.message ?? "Failed to fetch doctor leaderboard.");
+        setDoctors([]);
       } finally {
         setLoading(false);
       }
     };
-    fetchDashboard();
-  }, []);
+
+    fetchDoctors();
+  }, [filter]);
 
   const handleDepartmentChange = (event) => {
     setSelectedDepartment(event.target.value);
@@ -59,17 +70,32 @@ const DoctorLeaderboard = () => {
   const filteredDoctors =
     selectedDepartment === "all"
       ? doctors
-      : doctors.filter((doc) => doc.doctor?.department_id === selectedDepartment);
+      : doctors.filter(
+          (doc) =>
+            String(doc.doctor?.department_id) === String(selectedDepartment)
+        );
 
   return (
-    <Card sx={{ p: 2, borderRadius: 3, boxShadow: "0px 2px 8px rgba(0,0,0,0.05)" }}>
+    <Card
+      sx={{
+        p: 2,
+        borderRadius: 3,
+        boxShadow: "0px 2px 8px rgba(0,0,0,0.05)",
+        height: "100%",
+      }}
+    >
       {/* Header */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
         <Typography variant="h6" fontWeight={600}>
-          Doctor Booking Leaderboard
+          Doctor Leaderboard
         </Typography>
 
-        <FormControl size="small" sx={{ minWidth: 140 }}>
+        <FormControl size="small" sx={{ minWidth: 160 }}>
           <Select
             value={selectedDepartment}
             onChange={handleDepartmentChange}
@@ -83,7 +109,7 @@ const DoctorLeaderboard = () => {
           >
             <MenuItem value="all">All Departments</MenuItem>
             {departments.map((dept) => (
-              <MenuItem key={dept.id} value={dept.id}>
+              <MenuItem key={dept.id} value={String(dept.id)}>
                 {dept.name}
               </MenuItem>
             ))}
@@ -93,26 +119,45 @@ const DoctorLeaderboard = () => {
 
       <Divider />
 
-      {/* Leaderboard List */}
+      {/* Content */}
       {loading ? (
-        <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
-          <CircularProgress size={28} sx={{ color: "#23C7B7" }} />
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: 200,
+          }}
+        >
+          <CircularProgress size={32} sx={{ color: "#23C7B7" }} />
         </Box>
+      ) : error ? (
+        <Alert severity="error" sx={{ mt: 2 }}>
+          {error}
+        </Alert>
       ) : filteredDoctors.length === 0 ? (
-        <Typography variant="body2" color="text.secondary" textAlign="center" mt={2}>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          textAlign="center"
+          mt={2}
+        >
           No booking data available.
         </Typography>
       ) : (
         <Box display="flex" flexDirection="column">
           {filteredDoctors.map((doc, index) => (
             <Box
-              key={`${doc.doctor_id}-${index}`}
+              key={doc.doctor_id ?? index}
               sx={{
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
                 py: 2,
-                borderBottom: index !== filteredDoctors.length - 1 ? "1px solid #f0f0f0" : "none",
+                borderBottom:
+                  index !== filteredDoctors.length - 1
+                    ? "1px solid #f0f0f0"
+                    : "none",
               }}
             >
               {/* Left side */}
@@ -122,7 +167,8 @@ const DoctorLeaderboard = () => {
                   alt={doc.doctor?.name}
                   sx={{ width: 40, height: 40 }}
                 >
-                  {!doc.doctor?.profile_picture && (doc.doctor?.name?.charAt(0) || "D")}
+                  {!doc.doctor?.profile_picture &&
+                    (doc.doctor?.name?.charAt(0) || "D")}
                 </Avatar>
 
                 <Box>
@@ -130,7 +176,7 @@ const DoctorLeaderboard = () => {
                     {doc.doctor?.name || "Unknown Doctor"}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Bookings: {doc.bookings || 0}
+                    Bookings: {doc.bookings ?? 0}
                   </Typography>
                 </Box>
               </Box>

@@ -1,12 +1,16 @@
 import { Box, CircularProgress } from "@mui/material";
 import React from "react";
 import Topbar from "../components/topbar/Topbar";
-import { Outlet } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import Sidebar from "../components/sidebar/Sidebar";
 import { useAuth } from "../contexts/AuthContext";
 
 const AuthLayout = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, isAuthenticated } = useAuth();
+console.log(user, loading, isAuthenticated);
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
 
   if (loading) {
     return (

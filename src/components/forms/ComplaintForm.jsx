@@ -30,16 +30,16 @@ const ComplaintForm = ({ open, onClose, isEditing, data }) => {
       const complaintsRes = await getAllComplaintsTypes();
       setComplaints(complaintsRes?.data?.data || []);
 
-      //   if (isEditing && data) {
-      //     setFormData({
-      //       appointment_id: data.appointment_id || "",
-      //       complaint_type_id: data.complaint_type_id || "",
-      //       description: data.description || "",
-      //       platform: data.platform || "",
-      //       occurred_at: data.occurred_at || "",
-      //       submitted_by: data.submitted_by || "",
-      //     });
-      //   }
+        if (isEditing && data) {
+          setFormData({
+            appointment_id: data.appointment_id || "",
+            complaint_type_id: data.complaint_type_id || "",
+            description: data.description || "",
+            platform: data.platform || "",
+            occurred_at: data.occurred_at || "",
+            submitted_by: data.submitted_by || "",
+          });
+        }
     } catch (err) {
       console.error("Error fetching complaints/appointments:", err);
       enqueueSnackbar("Failed to fetch required data", {
@@ -105,13 +105,7 @@ const ComplaintForm = ({ open, onClose, isEditing, data }) => {
   };
 
   const fields = [
-    // {
-    //   name: "appointment_id",
-    //   label: "Appointment ID",
-    //   type: "select",
-    //   value: formData.appointment_id,
-    //   required: true,
-    // },
+   
     {
       name: "complaint_type_id",
       label: "Complaint Type",
@@ -147,20 +141,7 @@ const ComplaintForm = ({ open, onClose, isEditing, data }) => {
       onChange: (e) =>
         setFormData({ ...formData, description: e.target.value }),
     },
-    // {
-    //   name: "occurred_at",
-    //   label: "Occurred At",
-    //   type: "currentDate",
-    //   value: formData.occurred_at,
-    //   required: true,
-    // },
-    // {
-    //   name: "submitted_by",
-    //   label: "Submitted By",
-    //   type: "text",
-    //   value: formData.submitted_by,
-    //   required: true,
-    // },
+    
     {
       name: "is_resolved",
       label: "Status",

@@ -54,7 +54,7 @@ const DoctorAvailabilityCard = () => {
       try {
         const res = await getDoctorsByAvailability(selectedDoctor, "weekly");
         
-        const schedule = res?.data?.availability || {};
+        const schedule = res?.data?.weekly_schedule || {};
         setAvailability(schedule);
       } catch (err) {
         console.error("Error fetching availability:", err);

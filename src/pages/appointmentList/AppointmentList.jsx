@@ -65,7 +65,7 @@ const AppointmentsPage = () => {
   };
 
   const handleUpdateAppointment = (appointment) => {
-    console.log("Opening edit modal with data:", appointment);
+    
     setTargetItem(appointment);
     setOpenModal(true);
   };
@@ -168,8 +168,6 @@ const AppointmentsPage = () => {
           </>
         )}
       </Paper>
-
-      <DoctorsAvailabilityCard />
 
       {/* Create/Edit Appointment Modal */}
       <CreateAppointmentModal

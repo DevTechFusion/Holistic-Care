@@ -17,7 +17,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import SidebarConfig from "./SidebarConfig";
 import logo from "../../assets/images/logo.svg";
 import { logout } from "../../DAL/auth";
-import { enqueueSnackbar } from "notistack";
 import { useAuth } from "../../contexts/AuthContext";
 
 const Sidebar = () => {
@@ -39,10 +38,10 @@ const Sidebar = () => {
 
   const handleLogout = async () => {
     try {
-      await logout();
-      enqueueSnackbar("Logout successful", { variant: "success" });
+      let token = localStorage.getItem("token");
+      await logout(token);
       localStorage.removeItem("token");
-      navigate("/");
+      navigate("/login");
     } catch (error) {
       console.error("Logout failed:", error);
     }

@@ -10,6 +10,8 @@ import {
   Box,
   Button,
   Stack,
+  Select,
+  Typography,
 } from "@mui/material";
 import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 import MedicalServicesIcon from "@mui/icons-material/MedicalServices";
@@ -21,30 +23,24 @@ import CreateProcedureModal from "../../../components/forms/ProcedureForm";
 import CreateDepartmentModal from "../../../components/forms/DepartmentForm";
 import CreateDoctorModal from "../../../components/forms/DoctorForm";
 import CreateAppointmentModal from "../../../components/forms/AppointmentForm";
-import ComplaintForm from "../../../components/forms/ComplaintForm";
+
 import AgentWiseBookings from "../../../components/dashboard/AgentWiseBooking";
 import SourceWiseBookings from "../../../components/dashboard/SourceWiseBooking";
 import DoctorWiseBooking from "../../../components/dashboard/DoctorWiseBooking";
 import {
-  AgentAppointmentLeaderboard,
-  AgentStatsCards,
   DoctorLeaderboard,
   RevenueSection,
   StatsCards,
   WelcomeSection,
-  DoctorsAvailabilityCard,
-  ManagerStatsCards,
-  MistakesLog,
-  MistakesCount,
 } from "../../../components/dashboard";
 
 import { useSnackbar } from "notistack";
-
 
 const Dashboard = () => {
   const [openModal, setOpenModal] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const { enqueueSnackbar } = useSnackbar();
+  const [filter, setFilter] = useState("daily");
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -55,7 +51,6 @@ const Dashboard = () => {
     if (type) setOpenModal(type);
   };
 
-  
   const handleModalClose = (success = false, message = "", type = null) => {
     setOpenModal(null);
     if (success) {
@@ -72,7 +67,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div>
+    <Box sx={{ bgcolor: "#f9f9f9", minHeight: "100vh", p: 3 }}>
       {/* Dropdown Menu */}
       <Menu
         anchorEl={anchorEl}
@@ -80,12 +75,7 @@ const Dashboard = () => {
         onClose={() => handleClose()}
         PaperProps={{
           elevation: 6,
-          sx: {
-            borderRadius: "10px",
-            minWidth: 200,
-            mt: 1,
-            overflow: "hidden",
-          },
+          sx: { borderRadius: 2, minWidth: 200, mt: 1 },
         }}
       >
         <MenuItem onClick={() => handleClose("user")}>
@@ -95,7 +85,6 @@ const Dashboard = () => {
           <ListItemText primary="User" />
         </MenuItem>
         <Divider />
-
         <MenuItem onClick={() => handleClose("procedure")}>
           <ListItemIcon>
             <MedicalServicesIcon fontSize="small" />
@@ -103,7 +92,6 @@ const Dashboard = () => {
           <ListItemText primary="Procedure" />
         </MenuItem>
         <Divider />
-
         <MenuItem onClick={() => handleClose("department")}>
           <ListItemIcon>
             <BusinessIcon fontSize="small" />
@@ -111,7 +99,6 @@ const Dashboard = () => {
           <ListItemText primary="Department" />
         </MenuItem>
         <Divider />
-
         <MenuItem onClick={() => handleClose("doctor")}>
           <ListItemIcon>
             <LocalHospitalIcon fontSize="small" />
@@ -119,27 +106,18 @@ const Dashboard = () => {
           <ListItemText primary="Doctor" />
         </MenuItem>
         <Divider />
-
         <MenuItem onClick={() => handleClose("appointment")}>
           <ListItemIcon>
             <LocalHospitalIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText primary="Appointment" />
         </MenuItem>
-        <MenuItem onClick={() => handleClose("complaint")}>
-        <ListItemIcon>
-          <LocalHospitalIcon fontSize="small" />
-        </ListItemIcon>
-        <ListItemText primary="Complaint" />
-        </MenuItem>
       </Menu>
 
-      {/* Modals with success/error handling */}
+      {/* Modals */}
       <CreateUserModal
         open={openModal === "user"}
-        onClose={(success, message) =>
-          handleModalClose(success, message, "User")
-        }
+        onClose={(success, message) => handleModalClose(success, message, "User")}
       />
       <CreateProcedureModal
         open={openModal === "procedure"}
@@ -155,9 +133,7 @@ const Dashboard = () => {
       />
       <CreateDoctorModal
         open={openModal === "doctor"}
-        onClose={(success, message) =>
-          handleModalClose(success, message, "Doctor")
-        }
+        onClose={(success, message) => handleModalClose(success, message, "Doctor")}
       />
       <CreateAppointmentModal
         open={openModal === "appointment"}
@@ -165,70 +141,76 @@ const Dashboard = () => {
           handleModalClose(success, message, "Appointment")
         }
       />
-      <ComplaintForm
-        open={openModal === "complaint"}
-        onClose={(success, message) =>
-          handleModalClose(success, message, "Complaint")
-        }
-      />
 
-      <Box sx={{ mt: 2 }}>
-        {/* Welcome Section + Create Button */}
-        <Stack
-          direction="row"
-          justifyContent="space-between"
-          alignItems="start"
-          flexWrap="wrap"
-          spacing={2}
-          mb={4}
-        >
-          <WelcomeSection />
+      {/* Top Section */}
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="flex-start"
+        flexWrap="wrap"
+        spacing={2}
+        mb={4}
+      >
+        <WelcomeSection />
+        <Stack direction="row" spacing={2}>
           <Button
             variant="contained"
             onClick={handleClick}
             sx={{
-              background: "linear-gradient(135deg, primary.main, primary.dark)",
-              borderRadius: "xl",
+              borderRadius: "12px",
               textTransform: "none",
               fontWeight: "bold",
               px: 3,
-              py: 1,
               boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-              "&:hover": {
-                background: "linear-gradient(135deg, primary.dark, primary.main)",
-              },
             }}
           >
             + Create New
           </Button>
+          <Select
+            size="small"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            sx={{
+              borderRadius: "12px",
+              fontWeight: "bold",
+              bgcolor: "#fff",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+              px: 2,
+            }}
+          >
+            <MenuItem value="daily">Daily</MenuItem>
+            <MenuItem value="weekly">Weekly</MenuItem>
+            <MenuItem value="monthly">Monthly</MenuItem>
+          </Select>
         </Stack>
+      </Stack>
 
-        <Grid container spacing={3} width="100%">
-          <Grid item xs={12} md={6}>
-            <StatsCards />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <DoctorLeaderboard />
-          </Grid>
-          <Grid item xs={12}>
-            <RevenueSection />
-          </Grid>
+      {/* Stats + Leaderboard */}
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={6}>
+          <StatsCards filter={filter} />
         </Grid>
-      </Box>
-      <Grid item xs={12} md={6}>
-        
-            <AgentAppointmentLeaderboard />
-          </Grid>
-      <AgentStatsCards />
-      <AgentWiseBookings />
-      <SourceWiseBookings />
-      <DoctorsAvailabilityCard />
-      <ManagerStatsCards />
-      <DoctorWiseBooking />
-      <MistakesLog />
-      <MistakesCount />
-     
-    </div>
+        <Grid item xs={12} md={6}>
+          <DoctorLeaderboard filter={filter} />
+        </Grid>
+
+        {/* Revenue Section */}
+        <Grid item xs={12}>
+          <RevenueSection filter={filter} />
+        </Grid>
+
+        {/* Bottom 3 Tables */}
+        <Grid item xs={12} md={4}>
+          <AgentWiseBookings filter={filter} />
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <SourceWiseBookings filter={filter} />
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <DoctorWiseBooking filter={filter} />
+        </Grid>
+      </Grid>
+    </Box>
   );
 };
 

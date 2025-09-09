@@ -77,19 +77,33 @@ const SidebarConfig = {
     {
       title: "Management",
       icon: UserIcon,
-      path: "",
       children: [
         {
           title: "Doctor List",
           icon: DoctorIcon,
           path: "/agent/doctors",
         },
+        {
+          title: "Departments List",
+          icon: AgentIcon,
+          path: "/agent/departments",
+        },
+        {
+          title: "Procedures List",
+          icon: ManagerIcon,
+          path: "/agent/procedures",
+        },
       ],
     },
     {
       title: "Reports",
       icon: ReportIcon,
-      path: "#",
+      path: "/agent/reports",
+    },
+    {
+      title: "Complaints",
+      icon: ReportIcon,
+      path: "/agent/complaints",
     },
   ],
    managerly: [
@@ -99,14 +113,18 @@ const SidebarConfig = {
       path: "/manager/dashboard",
     },
     {
+      title: "Appointment Booking",
+      icon: BookIcon,
+      path: "/manager/appointments",
+    },
+    {
       title: "Management",
       icon: UserIcon,
-      path: "",
       children: [
         {
           title: "Agent List",
           icon: AgentIcon,
-          path: "#",
+          path: "/manager/agents",
         },
         {
           title: "Doctor List",
@@ -116,14 +134,14 @@ const SidebarConfig = {
       ],
     },
     {
-      title: "Complaints",
-      icon: ComplaintIcon,
-      path: "#",
-    },
-    {
       title: "Reports",
       icon: ReportIcon,
-      path: "#",
+      path: "/manager/reports",
+    },
+     {
+      title: "Complaints",
+      icon: ComplaintIcon,
+      path: "/manager/complaints",
     },
   ],
 };

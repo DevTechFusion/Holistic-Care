@@ -15,11 +15,13 @@ import {
 import { useSnackbar } from "notistack";
 import ActionButtons from "../../constants/actionButtons";
 import { getAllMistakes } from "../../DAL/mistakes";
+import ComplaintForm from "../../components/forms/ComplaintForm";
+import { set } from "lodash";
 
 const ComplaintList = () => {
   const { enqueueSnackbar } = useSnackbar();
   const [complaints, setComplaints] = useState([]);
-  const [page, setPage] = useState(0); // MUI pagination is 0-based
+  const [page, setPage] = useState(0); 
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
@@ -29,8 +31,8 @@ const ComplaintList = () => {
   const fetchComplaints = async () => {
     setLoading(true);
     try {
-      const res = await getAllMistakes(page + 1, rowsPerPage); // API is 1-based
-      setComplaints(res?.data?.data || []); // nested `data` because of Laravel pagination
+      const res = await getAllMistakes(page + 1, rowsPerPage); 
+      setComplaints(res?.data?.data || []); 
       setTotal(res?.data?.total || 0);
     } catch (err) {
       console.error("Failed to fetch complaints", err);
@@ -71,6 +73,8 @@ const ComplaintList = () => {
                   <TableCell>Appointment ID</TableCell>
                   <TableCell>Complaint Type</TableCell>
                   <TableCell>Description</TableCell>
+                  <TableCell>Doctor</TableCell>
+                  <TableCell>Agent</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell>Actions</TableCell>
                 </TableRow>
@@ -84,6 +88,8 @@ const ComplaintList = () => {
                     <TableCell>{complaint.appointment_id || "-"}</TableCell>
                     <TableCell>{complaint.complaint_type?.name || "-"}</TableCell>
                     <TableCell>{complaint.description}</TableCell>
+                    <TableCell>{complaint.doctor?.name || "-"}</TableCell>
+                    <TableCell>{complaint.agent?.name || "-"}</TableCell>
                     <TableCell>
                       {complaint.is_resolved ? (
                         <Chip label="Resolved" color="success" size="small" />
@@ -93,7 +99,7 @@ const ComplaintList = () => {
                     </TableCell>
                     <TableCell>
                       <ActionButtons
-                        handleUpdate={() => handleUpdateComplaint(complaint)}
+                        onEdit={() => handleUpdateComplaint(complaint)}
                       />
                     </TableCell>
                   </TableRow>
@@ -117,6 +123,16 @@ const ComplaintList = () => {
           </>
         )}
       </Paper>
+      <ComplaintForm
+      isEditing={!!targetItem}
+      data={targetItem}
+      open={complaintModalOpen}
+      onClose={() => {
+        setComplaintModalOpen(false);
+        setTargetItem(null);
+        fetchComplaints();
+      }}
+      />
     </Box>
   );
 };
