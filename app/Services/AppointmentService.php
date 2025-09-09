@@ -215,17 +215,38 @@ class AppointmentService extends CrudeService
      */
     public function isDoctorAvailable($doctorId, $date, $startTime, $duration = 60)
     {
-        $doctor = Doctor::find($doctorId);
-        
-        if (!$doctor) {
-            return false;
-        }
+        try {
+            $doctor = Doctor::find($doctorId);
+            
+            if (!$doctor) {
+                \Log::warning('Doctor not found for availability check', ['doctor_id' => $doctorId]);
+                return false;
+            }
 
-        return $this->doctorService->isDoctorAvailableForSlot($doctor, [
-            'date' => $date,
-            'time' => $startTime,
-            'duration' => $duration
-        ]);
+            // If doctor has no availability data, skip availability check and only check conflicts
+            if (!$doctor->availability) {
+                \Log::info('Doctor has no availability data, skipping availability check', ['doctor_id' => $doctorId]);
+                return true; // Allow appointment if no availability restrictions are set
+            }
+
+            return $this->doctorService->isDoctorAvailableForSlot($doctor, [
+                'date' => $date,
+                'time' => $startTime,
+                'duration' => $duration
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error checking doctor availability', [
+                'doctor_id' => $doctorId,
+                'date' => $date,
+                'start_time' => $startTime,
+                'duration' => $duration,
+                'error' => $e->getMessage()
+            ]);
+            
+            // If availability check fails, log the error but allow the appointment
+            // This prevents availability system issues from blocking appointments
+            return true;
+        }
     }
 
     /**

@@ -179,10 +179,34 @@ class DoctorService extends CrudeService
         $startTime = $daySchedule['start_time'] ?? '09:00';
         $endTime = $daySchedule['end_time'] ?? '17:00';
 
-        $requestedStart = \Carbon\Carbon::createFromFormat('H:i', $requestedTime);
+        // Handle both H:i:s and H:i formats for requested time
+        try {
+            // First try H:i:s format (e.g., "10:00:00")
+            $requestedStart = \Carbon\Carbon::createFromFormat('H:i:s', $requestedTime);
+        } catch (\Exception $e) {
+            try {
+                // Fallback to H:i format (e.g., "10:00")
+                $requestedStart = \Carbon\Carbon::createFromFormat('H:i', $requestedTime);
+            } catch (\Exception $e2) {
+                // If both fail, use Carbon::parse as last resort
+                $requestedStart = \Carbon\Carbon::parse($requestedTime);
+            }
+        }
+        
         $requestedEnd = $requestedStart->copy()->addMinutes($duration);
-        $workStart = \Carbon\Carbon::createFromFormat('H:i', $startTime);
-        $workEnd = \Carbon\Carbon::createFromFormat('H:i', $endTime);
+        
+        // Handle both formats for schedule times
+        try {
+            $workStart = \Carbon\Carbon::createFromFormat('H:i:s', $startTime);
+        } catch (\Exception $e) {
+            $workStart = \Carbon\Carbon::createFromFormat('H:i', $startTime);
+        }
+        
+        try {
+            $workEnd = \Carbon\Carbon::createFromFormat('H:i:s', $endTime);
+        } catch (\Exception $e) {
+            $workEnd = \Carbon\Carbon::createFromFormat('H:i', $endTime);
+        }
 
         // Check if appointment fits within working hours
         if ($requestedStart->lt($workStart) || $requestedEnd->gt($workEnd)) {
@@ -191,8 +215,18 @@ class DoctorService extends CrudeService
 
         // Check lunch break if exists
         if (isset($daySchedule['lunch_break'])) {
-            $lunchStart = \Carbon\Carbon::createFromFormat('H:i', $daySchedule['lunch_break']['start']);
-            $lunchEnd = \Carbon\Carbon::createFromFormat('H:i', $daySchedule['lunch_break']['end']);
+            // Handle both formats for lunch break times
+            try {
+                $lunchStart = \Carbon\Carbon::createFromFormat('H:i:s', $daySchedule['lunch_break']['start']);
+            } catch (\Exception $e) {
+                $lunchStart = \Carbon\Carbon::createFromFormat('H:i', $daySchedule['lunch_break']['start']);
+            }
+            
+            try {
+                $lunchEnd = \Carbon\Carbon::createFromFormat('H:i:s', $daySchedule['lunch_break']['end']);
+            } catch (\Exception $e) {
+                $lunchEnd = \Carbon\Carbon::createFromFormat('H:i', $daySchedule['lunch_break']['end']);
+            }
 
             // Check if appointment overlaps with lunch break
             if ($requestedStart->lt($lunchEnd) && $requestedEnd->gt($lunchStart)) {
@@ -250,8 +284,21 @@ class DoctorService extends CrudeService
             return [];
         }
 
-        $startTime = \Carbon\Carbon::createFromFormat('H:i', $daySchedule['start_time'] ?? '09:00');
-        $endTime = \Carbon\Carbon::createFromFormat('H:i', $daySchedule['end_time'] ?? '17:00');
+        // Handle both formats for schedule times
+        $startTimeStr = $daySchedule['start_time'] ?? '09:00';
+        $endTimeStr = $daySchedule['end_time'] ?? '17:00';
+        
+        try {
+            $startTime = \Carbon\Carbon::createFromFormat('H:i:s', $startTimeStr);
+        } catch (\Exception $e) {
+            $startTime = \Carbon\Carbon::createFromFormat('H:i', $startTimeStr);
+        }
+        
+        try {
+            $endTime = \Carbon\Carbon::createFromFormat('H:i:s', $endTimeStr);
+        } catch (\Exception $e) {
+            $endTime = \Carbon\Carbon::createFromFormat('H:i', $endTimeStr);
+        }
 
         $slots = [];
         $currentTime = $startTime->copy();
