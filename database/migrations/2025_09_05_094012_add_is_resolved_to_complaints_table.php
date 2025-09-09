@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('complaints', function (Blueprint $table) {
-            $table->boolean('is_resolved')->default(false)->after('status_id');
+            $table->boolean('is_resolved')->default(false)->after('platform');
         });
     }
 
