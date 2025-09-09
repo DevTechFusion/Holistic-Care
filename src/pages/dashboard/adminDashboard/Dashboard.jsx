@@ -11,7 +11,6 @@ import {
   Button,
   Stack,
   Select,
-  Typography,
 } from "@mui/material";
 import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 import MedicalServicesIcon from "@mui/icons-material/MedicalServices";
@@ -40,7 +39,7 @@ const Dashboard = () => {
   const [openModal, setOpenModal] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const { enqueueSnackbar } = useSnackbar();
-  const [filter, setFilter] = useState("daily");
+  const [filter, setFilter] = useState("weekly");
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);

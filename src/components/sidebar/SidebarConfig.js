@@ -59,7 +59,7 @@ const SidebarConfig = {
     },
     {
       title: "Complaints",
-      icon: ReportIcon,
+      icon: ComplaintIcon,
       path: "/complaints",
     },
   ],
@@ -102,7 +102,7 @@ const SidebarConfig = {
     },
     {
       title: "Complaints",
-      icon: ReportIcon,
+      icon: ComplaintIcon,
       path: "/agent/complaints",
     },
   ],

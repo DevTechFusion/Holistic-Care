@@ -1,5 +1,5 @@
 // src/components/dashboard/DoctorAvailabilityCard.jsx
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -19,18 +19,28 @@ const DoctorAvailabilityCard = () => {
   const [selectedDoctor, setSelectedDoctor] = useState("");
   const [availability, setAvailability] = useState({});
   const [loading, setLoading] = useState(false);
-  const [loadingDoctors, setLoadingDoctors] = useState(false);
   const [error, setError] = useState(null);
 
-  // Fetch doctors for dropdown
+  const days = [
+    "Monday",
+    "Tuesday", 
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ];
+
+
   useEffect(() => {
     const fetchDoctors = async () => {
-      setLoadingDoctors(true);
+      setLoading(true);
+      setError(null);
       try {
         const res = await getDoctors();
-        const docs = res?.data?.data || []; 
+        const docs = res?.data?.data || [];
         setDoctors(docs);
-
+        
         if (docs.length > 0) {
           setSelectedDoctor(docs[0].id);
         }
@@ -38,24 +48,23 @@ const DoctorAvailabilityCard = () => {
         console.error("Error fetching doctors:", err);
         setError("Failed to fetch doctors");
       } finally {
-        setLoadingDoctors(false);
+        setLoading(false);
       }
     };
 
     fetchDoctors();
   }, []);
 
-  
   useEffect(() => {
     if (!selectedDoctor) return;
-0
+
     const fetchAvailability = async () => {
       setLoading(true);
+      setError(null);
       try {
-        const res = await getDoctorsByAvailability(selectedDoctor, "weekly");
-        
-        const schedule = res?.data?.weekly_schedule || {};
-        setAvailability(schedule);
+        const res = await getDoctorsByAvailability(selectedDoctor);
+        setAvailability(res?.data?.weekly_schedule || {});
+        console.log(res?.data?.weekly_schedule);
       } catch (err) {
         console.error("Error fetching availability:", err);
         setError("Failed to fetch availability");
@@ -67,17 +76,7 @@ const DoctorAvailabilityCard = () => {
     fetchAvailability();
   }, [selectedDoctor]);
 
-  const days = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-  ];
-
-  if (loadingDoctors || loading) {
+  if (loading && !selectedDoctor) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" p={4}>
         <CircularProgress />
@@ -85,7 +84,9 @@ const DoctorAvailabilityCard = () => {
     );
   }
 
-  if (error) return <Alert severity="error">{error}</Alert>;
+  if (error) {
+    return <Alert severity="error">{error}</Alert>;
+  }
 
   return (
     <Card sx={{ maxWidth: 800, mx: "auto", borderRadius: 3, boxShadow: 2 }}>
@@ -95,7 +96,7 @@ const DoctorAvailabilityCard = () => {
           display="flex"
           justifyContent="space-between"
           alignItems="center"
-          mb={2}
+          mb={3}
         >
           <Typography variant="h6" fontWeight="bold">
             Doctor Availability
@@ -105,7 +106,7 @@ const DoctorAvailabilityCard = () => {
             <Select
               value={selectedDoctor}
               onChange={(e) => setSelectedDoctor(e.target.value)}
-              displayEmpty
+              disabled={loading}
             >
               {doctors.map((doc) => (
                 <MenuItem key={doc.id} value={doc.id}>
@@ -116,28 +117,51 @@ const DoctorAvailabilityCard = () => {
           </FormControl>
         </Box>
 
-        {/* Availability Grid */}
-        <Grid container spacing={2}>
-          {days.map((day) => {
-            const key = day.toLowerCase();
-            const schedule = availability?.[key];
-            const displayTime =
-              schedule?.available && schedule?.start_time && schedule?.end_time
-                ? `${schedule.start_time} - ${schedule.end_time}`
-                : "Off";
+        {/* Loading state for availability */}
+        {loading && selectedDoctor && (
+          <Box display="flex" justifyContent="center" p={2}>
+            <CircularProgress size={24} />
+          </Box>
+        )}
 
-            return (
-              <Grid item xs={12} sm={6} md={4} key={day}>
-                <Typography variant="subtitle2" fontWeight="bold">
-                  {day}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {displayTime}
-                </Typography>
-              </Grid>
-            );
-          })}
-        </Grid>
+        {/* Availability Grid */}
+        {!loading && (
+          <Grid container spacing={2}>
+            {days.map((day) => {
+              const dayKey = day.toLowerCase();
+              const schedule = availability[dayKey];
+              
+              // Use formatted_time from API response directly
+              const displayTime = schedule?.formatted_time || "Off";
+
+              return (
+                <Grid item xs={12} sm={6} md={4} key={day}>
+                  <Box 
+                    p={2} 
+                    border={1} 
+                    borderColor="grey.200" 
+                    borderRadius={1}
+                    bgcolor={schedule?.available ? "success.light" : "grey.100"}
+                  >
+                    <Typography 
+                      variant="subtitle2" 
+                      fontWeight="bold"
+                      color={schedule?.available ? "success.dark" : "text.secondary"}
+                    >
+                      {day}
+                    </Typography>
+                    <Typography 
+                      variant="body2" 
+                      color={schedule?.available ? "success.dark" : "text.secondary"}
+                    >
+                      {displayTime}
+                    </Typography>
+                  </Box>
+                </Grid>
+              );
+            })}
+          </Grid>
+        )}
       </CardContent>
     </Card>
   );

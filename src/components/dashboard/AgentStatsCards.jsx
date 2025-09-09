@@ -1,32 +1,28 @@
 import { useEffect, useState } from "react";
 import { Box, Grid, Card, CardContent, Typography } from "@mui/material";
-import {
-  CalendarToday,
-  Person,
-  Update,
-} from "@mui/icons-material";
-import { getAgentDashboard } from "../../DAL/dashboard"; 
+import { CalendarToday, Person, Update } from "@mui/icons-material";
+import { getAgentDashboard } from "../../DAL/dashboard";
 
-const AgentStatsCards = () => {
+const AgentStatsCards = ({ filter }) => {
   const [cards, setCards] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchDashboard = async () => {
-      try {
-        const response = await getAgentDashboard("weekly");
-        if (response?.status === "success") {
-          setCards(response.data.cards);
-        }
-      } catch (error) {
-        console.error("Error fetching agent dashboard:", error);
-      } finally {
-        setLoading(false);
+  const fetchDashboard = async () => {
+    try {
+      const response = await getAgentDashboard(filter);
+      if (response?.status === "success") {
+        setCards(response.data.cards);
+        console.log("fetched agent dashboard:", response.data.cards);
       }
-    };
-
+    } catch (error) {
+      console.error("Error fetching agent dashboard:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
     fetchDashboard();
-  }, []);
+  }, [filter]);
 
   if (loading) return <p>Loading...</p>;
   if (!cards) return <p>No data available</p>;

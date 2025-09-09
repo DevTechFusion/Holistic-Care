@@ -4,6 +4,7 @@ import {
       ManagerStatsCards,
   MistakesLog,
   MistakesCount,
+  WelcomeSection
 } from "../../../components/dashboard";
 
 const ManagerDashboard = () => {
