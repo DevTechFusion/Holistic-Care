@@ -6,3 +6,5 @@ export {default as DoctorIcon} from './doctor.svg';
 export {default as ManagerIcon} from './manager.svg';
 export {default as ReportIcon} from './reports.svg';
 export {default as ComplaintIcon} from './complaint.svg';
+export {default as ProcedureIcon} from './procedure.svg';
+export {default as DepartmentIcon} from './department.svg';

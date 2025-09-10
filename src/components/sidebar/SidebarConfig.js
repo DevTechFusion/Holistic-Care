@@ -7,6 +7,8 @@ import {
   ManagerIcon,
   ReportIcon,
   ComplaintIcon,
+  ProcedureIcon,
+  DepartmentIcon,
 } from "../../assets/icons/sidebar";
 
 const SidebarConfig = {
@@ -37,7 +39,7 @@ const SidebarConfig = {
         },
         {
           title: "Departments List",
-          icon: AgentIcon,
+          icon: DepartmentIcon,
           path: "/departments",
         },
         {
@@ -47,7 +49,7 @@ const SidebarConfig = {
         },
         {
           title: "Procedures List",
-          icon: ManagerIcon,
+          icon: ProcedureIcon,
           path: "/procedures",
         },
       ],
@@ -85,12 +87,12 @@ const SidebarConfig = {
         },
         {
           title: "Departments List",
-          icon: AgentIcon,
+          icon: DepartmentIcon,
           path: "/agent/departments",
         },
         {
           title: "Procedures List",
-          icon: ManagerIcon,
+          icon: ProcedureIcon,
           path: "/agent/procedures",
         },
       ],

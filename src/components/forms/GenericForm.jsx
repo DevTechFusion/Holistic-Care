@@ -9,6 +9,7 @@ import {
   Box,
   TextField,
   MenuItem,
+  Typography,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import TimePicker from "react-time-picker";
@@ -18,7 +19,7 @@ const GenericFormModal = ({
   onClose,
   onSubmit,
   title,
-  fields = [], // ✅ Default to empty array
+  fields = [],
   isSubmitting = false,
   children,
 }) => {
@@ -43,75 +44,80 @@ const GenericFormModal = ({
       <form onSubmit={handleSubmit}>
         <DialogContent dividers>
           <Box display="flex" flexDirection="column" gap={2}>
-            {/* Render Fields */}
-            {(fields || []).map((field, idx) => {
+            {fields.map((field, idx) => {
               if (!field) return null;
+              const key = field.name || idx;
 
+              // TimePicker
               if (field.type === "timepicker") {
                 return (
-                  <div>
-                    <label>{field.label}</label>
+                  <Box key={key}>
+                    <Typography variant="body2" gutterBottom>
+                      {field.label}
+                    </Typography>
                     <TimePicker
                       onChange={field.onChange}
                       value={field.value}
                       disableClock
                       format="HH:mm:ss"
+                      clearIcon={null}
+                      className="w-full"
                     />
-                  </div>
+                  </Box>
                 );
               }
 
-              if (field.type === "select") {
+              // Select & MultiSelect
+              if (field.type === "select" || field.type === "multiselect") {
                 return (
                   <TextField
-                    key={field.name || idx}
+                    key={key}
                     select
+                    fullWidth
+                    label={field.label}
+                    value={field.value ?? (field.type === "multiselect" ? [] : "")}
+                    onChange={field.onChange}
+                    required={field.required}
+                    disabled={field.disabled}
+                    SelectProps={field.type === "multiselect" ? { multiple: true } : {}}
+                  >
+                    {(field.options ?? []).map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                );
+              }
+
+              // TextArea
+              if (field.type === "textarea") {
+                return (
+                  <TextField
+                    key={key}
                     label={field.label}
                     value={field.value ?? ""}
                     onChange={field.onChange}
                     fullWidth
                     required={field.required}
-                  >
-                    {(field.options || []).map((option) => (
-                      <MenuItem key={option.value} value={option.value}>
-                        {option.label}
-                      </MenuItem>
-                    ))}
-                  </TextField>
+                    disabled={field.disabled}
+                    multiline
+                    rows={field.rows || 4}
+                  />
                 );
               }
 
-              if (field.type === "multiselect") {
-                return (
-                  <TextField
-                    key={field.name || idx}
-                    select
-                    label={field.label}
-                    value={field.value ?? []}
-                    onChange={field.onChange}
-                    fullWidth
-                    required={field.required}
-                    SelectProps={{ multiple: true }}
-                  >
-                    {(field.options || []).map((option) => (
-                      <MenuItem key={option.value} value={option.value}>
-                        {option.label}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                );
-              }
-
-              // Default text field
+              // Default TextField
               return (
                 <TextField
-                  key={field.name || idx}
+                  key={key}
                   label={field.label}
                   type={field.type || "text"}
                   value={field.value ?? ""}
                   onChange={field.onChange}
                   fullWidth
                   required={field.required}
+                  disabled={field.disabled}
                 />
               );
             })}

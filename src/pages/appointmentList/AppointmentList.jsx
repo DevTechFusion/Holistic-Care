@@ -17,7 +17,6 @@ import { getAppointments, deleteAppointment } from "../../DAL/appointments";
 import CreateAppointmentModal from "../../components/forms/AppointmentForm";
 import ActionButtons from "../../constants/actionButtons";
 import { useSnackbar } from "notistack";
-import { DoctorsAvailabilityCard } from "../../components/dashboard";
 import ComplaintForm from "../../components/forms/ComplaintForm";
 
 const AppointmentsPage = () => {
@@ -65,7 +64,6 @@ const AppointmentsPage = () => {
   };
 
   const handleUpdateAppointment = (appointment) => {
-    
     setTargetItem(appointment);
     setOpenModal(true);
   };
@@ -112,6 +110,7 @@ const AppointmentsPage = () => {
                   <TableCell>Date</TableCell>
                   <TableCell>Start Time</TableCell>
                   <TableCell>End Time</TableCell>
+                  <TableCell>Appt. ID</TableCell>
                   <TableCell>Duration</TableCell>
                   <TableCell>Patient</TableCell>
                   <TableCell>Contact</TableCell>
@@ -130,6 +129,7 @@ const AppointmentsPage = () => {
                     <TableCell>{appt.date}</TableCell>
                     <TableCell>{appt.start_time}</TableCell>
                     <TableCell>{appt.end_time}</TableCell>
+                    <TableCell>{appt.id}</TableCell>
                     <TableCell>{appt.duration}</TableCell>
                     <TableCell>{appt.patient_name}</TableCell>
                     <TableCell>{appt.contact_number}</TableCell>
@@ -142,10 +142,8 @@ const AppointmentsPage = () => {
                       <ActionButtons
                         onEdit={() => handleUpdateAppointment(appt)}
                         onDelete={() => handleDeleteAppointment(appt.id)}
+                        onAdd={() => handleAddComplaint(appt)}
                       />
-                      <IconButton onClick={() => handleAddComplaint(appt)}>
-                        c
-                      </IconButton>
                     </TableCell>
                   </TableRow>
                 ))}

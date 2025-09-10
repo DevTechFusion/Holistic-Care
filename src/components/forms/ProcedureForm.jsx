@@ -1,4 +1,3 @@
-// src/components/forms/ProcedureForm.jsx
 import { useState, useEffect } from "react";
 import GenericFormModal from "./GenericForm";
 import { useSnackbar } from "notistack";
@@ -17,23 +16,21 @@ const CreateProcedureModal = ({ open, onClose, isEditing, data }) => {
         : await createProcedure({ name });
 
       if (res?.status === 200 || res?.status === "success") {
-        enqueueSnackbar("Procedure created successfully!", {
-          variant: "success",
-        });
-        console.log("Procedure created:", res);
+        enqueueSnackbar(
+          isEditing ? "Procedure updated successfully!" : "Procedure created successfully!",
+          { variant: "success" }
+        );
         setName("");
         onClose();
       } else {
-        enqueueSnackbar(res?.message || "Failed to create procedure", {
+        enqueueSnackbar(res?.message || "Failed to save procedure", {
           variant: "error",
         });
-        console.warn("API error response:", res);
       }
     } catch (error) {
-      console.error("Error creating procedure:", error);
+      console.error("Error saving procedure:", error);
       enqueueSnackbar(
-        error?.response?.data?.message ||
-          "Something went wrong. Please try again.",
+        error?.response?.data?.message || "Something went wrong. Please try again.",
         { variant: "error" }
       );
     } finally {
@@ -43,16 +40,20 @@ const CreateProcedureModal = ({ open, onClose, isEditing, data }) => {
 
   useEffect(() => {
     if (open && isEditing && data) {
-      setName(data.name);
+      setName(data.name || "");
     }
-  }, [open, data, isEditing]);
+  }, [open, isEditing, data]);
+
+  const handleClose = () => {
+    if (!isEditing) setName("");
+    onClose();
+  };
 
   const fields = [
     {
       name: "name",
       label: "Procedure",
       required: true,
-      defaultValue: "",
       value: name,
       onChange: (e) => setName(e.target.value),
     },
@@ -61,10 +62,10 @@ const CreateProcedureModal = ({ open, onClose, isEditing, data }) => {
   return (
     <GenericFormModal
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       onSubmit={handleSubmit}
-      title="Create Procedure"
-      fields={fields || []}
+      title={isEditing ? "Edit Procedure" : "Create Procedure"}
+      fields={fields}
       isSubmitting={isSubmitting}
     />
   );

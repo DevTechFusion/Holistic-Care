@@ -1,4 +1,4 @@
-// src/components/forms/CreateAppointmentModal.jsx
+// src/components/forms/AppointmentForm.jsx
 import { useEffect, useState } from "react";
 import GenericFormModal from "./GenericForm";
 import { useSnackbar } from "notistack";
@@ -27,17 +27,13 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
 
   const { enqueueSnackbar } = useSnackbar();
 
-  // 👉 helper: API -> input
-  const formatTimeForInput = (time) => {
-    if (!time) return "";
-    return time.split(":").slice(0, 2).join(":"); // "14:30:00" -> "14:30"
-  };
-
-  // 👉 helper: input -> API
+  const formatTimeForInput = (time) =>
+    time ? time.split(":").slice(0, 2).join(":") : "";
   const normalizeTime = (time) => (time ? `${time}:00` : "");
 
+ 
   const resetForm = () => ({
-    date: "",
+    date: new Date().toISOString().split("T")[0], 
     start_time: "",
     end_time: "",
     patient_name: "",
@@ -79,8 +75,8 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
       if (isEditing && data) {
         setFormData({
           date: data.date || "",
-          start_time: formatTimeForInput(data.start_time) || "",
-          end_time: formatTimeForInput(data.end_time) || "",
+          start_time: formatTimeForInput(data.start_time),
+          end_time: formatTimeForInput(data.end_time),
           patient_name: data.patient_name || "",
           contact_number: data.contact_number || "",
           agent_id: data.agent_id || data.agent?.id || "",
@@ -96,7 +92,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
           status_id: data.status_id || data.status?.id || "",
           amount: data.amount || "",
           payment_mode: data.payment_mode || "",
-          update_report: true, 
+          update_report: true,
         });
       } else {
         setFormData(resetForm());
@@ -122,7 +118,6 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
           `Appointment ${isEditing ? "updated" : "created"} successfully!`,
           { variant: "success" }
         );
-
         if (!isEditing) setFormData(resetForm());
         onClose();
       } else {
@@ -133,7 +128,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
         );
       }
     } catch (error) {
-      console.error("Error with appointment:", error);
+      console.error("Error saving appointment:", error);
       enqueueSnackbar(
         error?.response?.data?.message ||
           "Something went wrong. Please try again.",
@@ -153,9 +148,10 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
     {
       name: "date",
       label: "Date",
-      type: "date",
+      type: "date", 
       required: true,
       value: formData.date,
+      disabled: isEditing,
       onChange: (e) => setFormData((p) => ({ ...p, date: e.target.value })),
     },
     {
@@ -164,6 +160,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
       type: "time",
       required: true,
       value: formData.start_time,
+      disabled: isEditing,
       onChange: (e) =>
         setFormData((p) => ({ ...p, start_time: e.target.value })),
     },
@@ -173,6 +170,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
       type: "time",
       required: true,
       value: formData.end_time,
+      disabled: isEditing,
       onChange: (e) => setFormData((p) => ({ ...p, end_time: e.target.value })),
     },
     {
@@ -181,6 +179,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
       type: "text",
       required: true,
       value: formData.patient_name,
+      disabled: isEditing,
       onChange: (e) =>
         setFormData((p) => ({ ...p, patient_name: e.target.value })),
     },
@@ -190,6 +189,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
       type: "text",
       required: true,
       value: formData.contact_number,
+      disabled: isEditing,
       onChange: (e) =>
         setFormData((p) => ({ ...p, contact_number: e.target.value })),
     },
@@ -199,6 +199,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
       type: "select",
       required: true,
       value: formData.agent_id,
+      disabled: isEditing,
       onChange: (e) => setFormData((p) => ({ ...p, agent_id: e.target.value })),
       options: roles.map((r) => ({ value: r.id, label: r.name })),
     },
@@ -208,6 +209,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
       type: "select",
       required: true,
       value: formData.doctor_id,
+      disabled: isEditing,
       onChange: (e) =>
         setFormData((p) => ({ ...p, doctor_id: e.target.value })),
       options: doctors.map((d) => ({ value: d.id, label: d.name })),
@@ -218,6 +220,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
       type: "select",
       required: true,
       value: formData.procedure_id,
+      disabled: isEditing,
       onChange: (e) =>
         setFormData((p) => ({ ...p, procedure_id: e.target.value })),
       options: procedures.map((p) => ({ value: p.id, label: p.name })),
@@ -228,6 +231,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
       type: "select",
       required: true,
       value: formData.category_id,
+      disabled: isEditing,
       onChange: (e) =>
         setFormData((p) => ({ ...p, category_id: e.target.value })),
       options: categories.map((c) => ({ value: c.id, label: c.name })),
@@ -238,6 +242,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
       type: "select",
       required: true,
       value: formData.department_id,
+      disabled: isEditing,
       onChange: (e) =>
         setFormData((p) => ({ ...p, department_id: e.target.value })),
       options: departments.map((d) => ({ value: d.id, label: d.name })),
@@ -248,6 +253,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
       type: "select",
       required: true,
       value: formData.source_id,
+      disabled: isEditing,
       onChange: (e) =>
         setFormData((p) => ({ ...p, source_id: e.target.value })),
       options: sources.map((s) => ({ value: s.id, label: s.name })),
@@ -264,56 +270,63 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
       label: "MR Number",
       type: "text",
       value: formData.mr_number,
+      disabled: isEditing,
       onChange: (e) =>
         setFormData((p) => ({ ...p, mr_number: e.target.value })),
     },
-    {
-      name: "remarks_1_id",
-      label: "Remarks 1",
-      type: "select",
-      value: formData.remarks_1_id,
-      onChange: (e) =>
-        setFormData((p) => ({ ...p, remarks_1_id: e.target.value })),
-      options: remarks1.map((r) => ({ value: r.id, label: r.name })),
-    },
-    {
-      name: "remarks_2_id",
-      label: "Remarks 2",
-      type: "select",
-      value: formData.remarks_2_id,
-      onChange: (e) =>
-        setFormData((p) => ({ ...p, remarks_2_id: e.target.value })),
-      options: remarks2.map((r) => ({ value: r.id, label: r.name })),
-    },
-    {
-      name: "status_id",
-      label: "Status",
-      type: "select",
-      value: formData.status_id,
-      onChange: (e) =>
-        setFormData((p) => ({ ...p, status_id: e.target.value })),
-      options: statuses.map((s) => ({ value: s.id, label: s.name })),
-    },
-    {
-      name: "amount",
-      label: "Amount",
-      type: "number",
-      value: formData.amount,
-      onChange: (e) => setFormData((p) => ({ ...p, amount: e.target.value })),
-    },
-    {
-      name: "payment_mode",
-      label: "Payment Mode",
-      type: "select",
-      value: formData.payment_mode,
-      onChange: (e) =>
-        setFormData((p) => ({ ...p, payment_mode: e.target.value })),
-      options: [
-        { value: "cash", label: "Cash" },
-        { value: "card", label: "Card" },
-        { value: "online", label: "Online Transfer" },
-      ],
-    },
+
+    ...(isEditing
+      ? [
+          {
+            name: "remarks_1_id",
+            label: "Remarks 1",
+            type: "select",
+            value: formData.remarks_1_id,
+            onChange: (e) =>
+              setFormData((p) => ({ ...p, remarks_1_id: e.target.value })),
+            options: remarks1.map((r) => ({ value: r.id, label: r.name })),
+          },
+          {
+            name: "remarks_2_id",
+            label: "Remarks 2",
+            type: "select",
+            value: formData.remarks_2_id,
+            onChange: (e) =>
+              setFormData((p) => ({ ...p, remarks_2_id: e.target.value })),
+            options: remarks2.map((r) => ({ value: r.id, label: r.name })),
+          },
+          {
+            name: "status_id",
+            label: "Status",
+            type: "select",
+            value: formData.status_id,
+            onChange: (e) =>
+              setFormData((p) => ({ ...p, status_id: e.target.value })),
+            options: statuses.map((s) => ({ value: s.id, label: s.name })),
+          },
+          {
+            name: "amount",
+            label: "Amount",
+            type: "number",
+            value: formData.amount,
+            onChange: (e) =>
+              setFormData((p) => ({ ...p, amount: e.target.value })),
+          },
+          {
+            name: "payment_mode",
+            label: "Payment Mode",
+            type: "select",
+            value: formData.payment_mode,
+            onChange: (e) =>
+              setFormData((p) => ({ ...p, payment_mode: e.target.value })),
+            options: [
+              { value: "cash", label: "Cash" },
+              { value: "card", label: "Card" },
+              { value: "online", label: "Online Transfer" },
+            ],
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -324,7 +337,6 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
       title={isEditing ? "Edit Appointment" : "Create Appointment"}
       fields={fields}
       isSubmitting={isSubmitting}
-      isEditing={isEditing}
     />
   );
 };

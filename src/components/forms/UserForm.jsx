@@ -1,4 +1,3 @@
-// src/components/forms/CreateUserModal.jsx
 import { useState, useEffect } from "react";
 import GenericFormModal from "./GenericForm";
 import { useSnackbar } from "notistack";
@@ -19,30 +18,24 @@ const CreateUserModal = ({ open, onClose, isEditing, data }) => {
     try {
       const res = isEditing
         ? await updateUser(data.id, formData)
-        
         : await createUser(formData);
 
       if (res?.status === 200 || res?.status === "success") {
-        enqueueSnackbar("User created successfully!", { variant: "success" });
-        console.log("User created:", res);
-        setFormData({
-          name: "",
-          email: "",
-          password: "",
-          role: "",
-        });
+        enqueueSnackbar(
+          isEditing ? "User updated successfully!" : "User created successfully!",
+          { variant: "success" }
+        );
+        setFormData({ name: "", email: "", password: "", role: "" });
         onClose();
       } else {
-        enqueueSnackbar(res?.message || "Failed to create user", {
+        enqueueSnackbar(res?.message || "Failed to save user", {
           variant: "error",
         });
-        console.warn("API error response:", res);
       }
     } catch (error) {
-      console.error("Error creating user:", error);
+      console.error("Error saving user:", error);
       enqueueSnackbar(
-        error?.response?.data?.message ||
-          "Something went wrong. Please try again.",
+        error?.response?.data?.message || "Something went wrong. Please try again.",
         { variant: "error" }
       );
     } finally {
@@ -61,63 +54,56 @@ const CreateUserModal = ({ open, onClose, isEditing, data }) => {
     }
   }, [open, isEditing, data]);
 
+  const handleClose = () => {
+    if (!isEditing) setFormData({ name: "", email: "", password: "", role: "" });
+    onClose();
+  };
+
   const fields = [
     {
       name: "name",
       label: "Name",
       required: true,
-      defaultValue: "",
       value: formData.name,
-      onChange: (e) =>
-        setFormData((prev) => ({ ...prev, name: e.target.value })),
-      
+      onChange: (e) => setFormData((p) => ({ ...p, name: e.target.value })),
     },
     {
       name: "email",
       label: "Email",
       type: "email",
       required: true,
-      defaultValue: "",
       value: formData.email,
-      onChange: (e) =>
-        setFormData((prev) => ({ ...prev, email: e.target.value })),
-     
+      onChange: (e) => setFormData((p) => ({ ...p, email: e.target.value })),
     },
     {
       name: "password",
       label: "Password",
       type: "password",
       required: true,
-      defaultValue: "",
       value: formData.password,
-      onChange: (e) =>
-        setFormData((prev) => ({ ...prev, password: e.target.value })),
-     
+      onChange: (e) => setFormData((p) => ({ ...p, password: e.target.value })),
     },
     {
       name: "role",
       label: "Role",
-      required: true,
-      defaultValue: "agent",
-      value: formData.role,
       type: "select",
-      onChange: (e) =>
-        setFormData((prev) => ({ ...prev, role: e.target.value })),
+      required: true,
+      value: formData.role,
+      onChange: (e) => setFormData((p) => ({ ...p, role: e.target.value })),
       options: [
         { value: "agent", label: "Agent" },
-        { value: "managerly", label: "Manager" },
+        { value: "manager", label: "Manager" },
       ],
-      
     },
   ];
 
   return (
     <GenericFormModal
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       onSubmit={handleSubmit}
       title={isEditing ? "Edit User" : "Create User"}
-      fields={fields || []}
+      fields={fields}
       isSubmitting={isSubmitting}
     />
   );

@@ -1,4 +1,3 @@
-// src/components/forms/CreateDoctorModal.jsx
 import { useState, useEffect } from "react";
 import GenericFormModal from "./GenericForm";
 import { useSnackbar } from "notistack";
@@ -26,6 +25,18 @@ const CreateDoctorModal = ({ open, onClose, isEditing, data }) => {
       getProcedures().then((res) => setProcedures(res?.data?.data || []));
     }
   }, [open]);
+
+  useEffect(() => {
+    if (isEditing && data) {
+      setFormData({
+        name: data.name || "",
+        department_id: data.department_id || "",
+        procedures: data.procedures?.map((item) => item.id) || [],
+        phone_number: data.phone_number || "",
+        availability: data.availability || {},
+      });
+    }
+  }, [isEditing, data]);
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
@@ -55,8 +66,7 @@ const CreateDoctorModal = ({ open, onClose, isEditing, data }) => {
     } catch (error) {
       console.error("Error saving doctor:", error);
       enqueueSnackbar(
-        error?.response?.data?.message ||
-          "Something went wrong. Please try again.",
+        error?.response?.data?.message || "Something went wrong. Please try again.",
         { variant: "error" }
       );
     } finally {
@@ -64,17 +74,18 @@ const CreateDoctorModal = ({ open, onClose, isEditing, data }) => {
     }
   };
 
-  useEffect(() => {
-    if (isEditing && data) {
+  const handleCancel = () => {
+    if (!isEditing) {
       setFormData({
-        name: data.name || "",
-        department_id: data.department_id || "",
-        procedures: data.procedures?.map((item) => item.id) || [],
-        phone_number: data.phone_number || "",
-        availability: data.availability || {},
+        name: "",
+        department_id: "",
+        procedures: [],
+        phone_number: "",
+        availability: {},
       });
     }
-  }, [isEditing, data]);
+    onClose();
+  };
 
   const fields = [
     {
@@ -83,8 +94,7 @@ const CreateDoctorModal = ({ open, onClose, isEditing, data }) => {
       type: "text",
       required: true,
       value: formData.name,
-      onChange: (e) =>
-        setFormData((prev) => ({ ...prev, name: e.target.value })),
+      onChange: (e) => setFormData((p) => ({ ...p, name: e.target.value })),
     },
     {
       name: "phone_number",
@@ -92,8 +102,7 @@ const CreateDoctorModal = ({ open, onClose, isEditing, data }) => {
       type: "text",
       required: true,
       value: formData.phone_number,
-      onChange: (e) =>
-        setFormData((prev) => ({ ...prev, phone_number: e.target.value })),
+      onChange: (e) => setFormData((p) => ({ ...p, phone_number: e.target.value })),
     },
     {
       name: "department_id",
@@ -101,11 +110,7 @@ const CreateDoctorModal = ({ open, onClose, isEditing, data }) => {
       type: "select",
       required: true,
       value: formData.department_id,
-      onChange: (e) =>
-        setFormData((prev) => ({
-          ...prev,
-          department_id: Number(e.target.value),
-        })),
+      onChange: (e) => setFormData((p) => ({ ...p, department_id: Number(e.target.value) })),
       options: departments.map((d) => ({ value: d.id, label: d.name })),
     },
     {
@@ -115,8 +120,8 @@ const CreateDoctorModal = ({ open, onClose, isEditing, data }) => {
       required: true,
       value: formData.procedures,
       onChange: (e) =>
-        setFormData((prev) => ({
-          ...prev,
+        setFormData((p) => ({
+          ...p,
           procedures: Array.isArray(e.target.value)
             ? e.target.value.map(Number)
             : [Number(e.target.value)],
@@ -128,10 +133,10 @@ const CreateDoctorModal = ({ open, onClose, isEditing, data }) => {
   return (
     <GenericFormModal
       open={open}
-      onClose={onClose}
+      onClose={handleCancel}
       onSubmit={handleSubmit}
       title={isEditing ? "Edit Doctor" : "Create Doctor"}
-      fields={fields || []}
+      fields={fields}
       isSubmitting={isSubmitting}
     >
       <WeeklyAvailability setFormData={setFormData} formData={formData} />

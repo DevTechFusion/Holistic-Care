@@ -35,7 +35,7 @@ const StatsCards = ({ filter }) => {
     {
       title: "Arrived Today",
       icon: Person,
-      value: cards.arrived_today,
+      value: cards.arrived,
       color: "#23C7B7",
     },
     {

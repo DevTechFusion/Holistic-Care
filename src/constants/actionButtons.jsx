@@ -2,29 +2,44 @@
 import { IconButton, Tooltip } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import AddIcon from "@mui/icons-material/Add";
 
-const ActionButtons = ({ onEdit, onDelete }) => {
+const ActionButtons = ({ onEdit, onDelete, onAdd }) => {
   return (
     <div style={{ display: "flex", gap: "0.5rem" }}>
-      <Tooltip title="Edit">
-        <IconButton color="primary" size="small" onClick={onEdit}>
-          <EditIcon fontSize="small" />
-        </IconButton>
-      </Tooltip>
+      {onEdit && (
+        <Tooltip title="Edit">
+          <IconButton color="primary" size="small" onClick={onEdit}>
+            <EditIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      )}
 
-      <Tooltip title="Delete">
-        <IconButton
-          color="error"
-          size="small"
-          onClick={() => {
-            if (window.confirm("Are you sure you want to delete this item?")) {
-              onDelete();
-            }
-          }}
-        >
-          <DeleteIcon fontSize="small" />
-        </IconButton>
-      </Tooltip>
+      {onDelete && (
+        <Tooltip title="Delete">
+          <IconButton
+            color="error"
+            size="small"
+            onClick={() => {
+              if (
+                window.confirm("Are you sure you want to delete this item?")
+              ) {
+                onDelete();
+              }
+            }}
+          >
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      )}
+
+      {onAdd && (
+        <Tooltip title="Add Complaint">
+          <IconButton color="secondary" size="small" onClick={onAdd}>
+            <AddIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      )}
     </div>
   );
 };
