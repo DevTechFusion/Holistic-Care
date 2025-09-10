@@ -16,7 +16,7 @@ import { useSnackbar } from "notistack";
 import ActionButtons from "../../constants/actionButtons";
 import { getAllMistakes } from "../../DAL/mistakes";
 import ComplaintForm from "../../components/forms/ComplaintForm";
-import { set } from "lodash";
+
 
 const ComplaintList = () => {
   const { enqueueSnackbar } = useSnackbar();

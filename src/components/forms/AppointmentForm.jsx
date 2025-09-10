@@ -4,8 +4,6 @@ import GenericFormModal from "./GenericForm";
 import { useSnackbar } from "notistack";
 import { createAppointment, updateAppointment } from "../../DAL/appointments";
 import { getDoctors } from "../../DAL/doctors";
-import { getProcedures } from "../../DAL/procedure";
-import { getAllDepartments } from "../../DAL/departments";
 import { getCategories } from "../../DAL/category";
 import { getSources } from "../../DAL/source";
 import { getRoles } from "../../DAL/modelRoles";
@@ -17,7 +15,8 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [doctors, setDoctors] = useState([]);
   const [procedures, setProcedures] = useState([]);
-  const [departments, setDepartments] = useState([]);
+  const [selectedDepartment, setSelectedDepartment] = useState(null);
+
   const [categories, setCategories] = useState([]);
   const [sources, setSources] = useState([]);
   const [roles, setRoles] = useState([]);
@@ -31,9 +30,8 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
     time ? time.split(":").slice(0, 2).join(":") : "";
   const normalizeTime = (time) => (time ? `${time}:00` : "");
 
- 
   const resetForm = () => ({
-    date: new Date().toISOString().split("T")[0], 
+    date: new Date().toISOString().split("T")[0],
     start_time: "",
     end_time: "",
     patient_name: "",
@@ -59,8 +57,6 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
   useEffect(() => {
     if (open) {
       getDoctors().then((res) => setDoctors(res?.data?.data || []));
-      getProcedures().then((res) => setProcedures(res?.data?.data || []));
-      getAllDepartments().then((res) => setDepartments(res?.data?.data || []));
       getCategories().then((res) => setCategories(res?.data?.data || []));
       getSources().then((res) => setSources(res?.data?.data || []));
       getRoles().then((res) => setRoles(res?.data?.data || []));
@@ -94,11 +90,22 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
           payment_mode: data.payment_mode || "",
           update_report: true,
         });
+
+        // pre-fill procedures & department for editing
+        const selectedDoctor = doctors.find(
+          (d) => d.id === (data.doctor_id || data.doctor?.id)
+        );
+        if (selectedDoctor) {
+          setSelectedDepartment(selectedDoctor.department);
+          setProcedures(selectedDoctor.procedures || []);
+        }
       } else {
         setFormData(resetForm());
+        setSelectedDepartment(null);
+        setProcedures([]);
       }
     }
-  }, [open, isEditing, data]);
+  }, [open, isEditing, data, doctors]);
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
@@ -148,7 +155,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
     {
       name: "date",
       label: "Date",
-      type: "date", 
+      type: "date",
       required: true,
       value: formData.date,
       disabled: isEditing,
@@ -210,9 +217,36 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
       required: true,
       value: formData.doctor_id,
       disabled: isEditing,
-      onChange: (e) =>
-        setFormData((p) => ({ ...p, doctor_id: e.target.value })),
+      onChange: (e) => {
+        const doctorId = e.target.value;
+        setFormData((p) => ({ ...p, doctor_id: doctorId }));
+
+        const selectedDoctor = doctors.find((d) => d.id === Number(doctorId));
+        if (selectedDoctor) {
+          setSelectedDepartment(selectedDoctor.department);
+          setFormData((p) => ({
+            ...p,
+            doctor_id: doctorId,
+            department_id: selectedDoctor.department?.id || "",
+          }));
+          setProcedures(selectedDoctor.procedures || []);
+        } else {
+          setSelectedDepartment(null);
+          setProcedures([]);
+        }
+      },
       options: doctors.map((d) => ({ value: d.id, label: d.name })),
+    },
+    {
+      name: "department_id",
+      label: "Department",
+      type: "select",
+      required: true,
+      value: formData.department_id,
+      disabled: true, // auto-filled from doctor
+      options: selectedDepartment
+        ? [{ value: selectedDepartment.id, label: selectedDepartment.name }]
+        : [],
     },
     {
       name: "procedure_id",
@@ -235,17 +269,6 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
       onChange: (e) =>
         setFormData((p) => ({ ...p, category_id: e.target.value })),
       options: categories.map((c) => ({ value: c.id, label: c.name })),
-    },
-    {
-      name: "department_id",
-      label: "Department",
-      type: "select",
-      required: true,
-      value: formData.department_id,
-      disabled: isEditing,
-      onChange: (e) =>
-        setFormData((p) => ({ ...p, department_id: e.target.value })),
-      options: departments.map((d) => ({ value: d.id, label: d.name })),
     },
     {
       name: "source_id",
