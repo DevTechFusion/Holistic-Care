@@ -30,6 +30,16 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
     time ? time.split(":").slice(0, 2).join(":") : "";
   const normalizeTime = (time) => (time ? `${time}:00` : "");
 
+  // 🔹 Helper to add minutes to a time string
+  const addMinutes = (time, minsToAdd) => {
+    if (!time) return "";
+    const [hours, minutes] = time.split(":").map(Number);
+    const totalMinutes = hours * 60 + minutes + minsToAdd;
+    const newHours = String(Math.floor(totalMinutes / 60)).padStart(2, "0");
+    const newMinutes = String(totalMinutes % 60).padStart(2, "0");
+    return `${newHours}:${newMinutes}`;
+  };
+
   const resetForm = () => ({
     date: new Date().toISOString().split("T")[0],
     start_time: "",
@@ -107,6 +117,16 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
     }
   }, [open, isEditing, data, doctors]);
 
+  // 🔹 Auto-calculate end_time when start_time changes
+  useEffect(() => {
+    if (formData.start_time && !isEditing) {
+      setFormData((p) => ({
+        ...p,
+        end_time: addMinutes(p.start_time, 30),
+      }));
+    }
+  }, [formData.start_time, isEditing]);
+
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
@@ -177,8 +197,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
       type: "time",
       required: true,
       value: formData.end_time,
-      disabled: isEditing,
-      onChange: (e) => setFormData((p) => ({ ...p, end_time: e.target.value })),
+      disabled: true, // 🔒 readonly
     },
     {
       name: "patient_name",
@@ -243,7 +262,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
       type: "select",
       required: true,
       value: formData.department_id,
-      disabled: true, // auto-filled from doctor
+      disabled: true, // auto-filled
       options: selectedDepartment
         ? [{ value: selectedDepartment.id, label: selectedDepartment.name }]
         : [],
