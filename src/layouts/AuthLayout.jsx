@@ -7,7 +7,6 @@ import { useAuth } from "../contexts/AuthContext";
 
 const AuthLayout = () => {
   const { user, loading, isAuthenticated } = useAuth();
-console.log(user, loading, isAuthenticated);
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }

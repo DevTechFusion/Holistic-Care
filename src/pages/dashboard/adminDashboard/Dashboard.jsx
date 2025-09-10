@@ -184,20 +184,19 @@ const Dashboard = () => {
         </Stack>
       </Stack>
 
-      {/* Stats + Leaderboard */}
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
+       
           <StatsCards filter={filter} />
-        </Grid>
-        <Grid item xs={12} md={6}>
+        
+        
           <DoctorLeaderboard filter={filter} />
-        </Grid>
+     
 
-        {/* Revenue Section */}
-        <Grid item xs={12}>
+        
+        
           <RevenueSection filter={filter} />
-        </Grid>
+        
 
+          <Grid container spacing={2}>
         {/* Bottom 3 Tables */}
         <Grid item xs={12} md={4}>
           <AgentWiseBookings filter={filter} />
