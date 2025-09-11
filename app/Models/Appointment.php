@@ -142,6 +142,14 @@ class Appointment extends Model
     }
 
     /**
+     * Get the incentive related to this appointment (one-to-one relationship).
+     */
+    public function incentive()
+    {
+        return $this->hasOne(Incentive::class);
+    }
+
+    /**
      * Scope to get appointments by date range.
      */
     public function scopeByDateRange($query, $startDate, $endDate)

@@ -12,6 +12,7 @@ class Incentive extends Model
     protected $fillable = [
         'appointment_id',
         'agent_id',
+        'pharmacy_id',
         'amount',
         'percentage',
         'incentive_amount',
@@ -22,4 +23,28 @@ class Incentive extends Model
         'percentage' => 'decimal:2',
         'incentive_amount' => 'decimal:2',
     ];
+
+    /**
+     * Get the agent (user) that earned this incentive.
+     */
+    public function agent()
+    {
+        return $this->belongsTo(User::class, 'agent_id');
+    }
+
+    /**
+     * Get the appointment this incentive is related to.
+     */
+    public function appointment()
+    {
+        return $this->belongsTo(Appointment::class);
+    }
+
+    /**
+     * Get the pharmacy record this incentive is related to.
+     */
+    public function pharmacy()
+    {
+        return $this->belongsTo(Pharmacy::class);
+    }
 }
