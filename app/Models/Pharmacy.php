@@ -30,6 +30,7 @@ class Pharmacy extends Model
         'status',
         'amount',
         'payment_mode',
+        'description',
     ];
 
     /**

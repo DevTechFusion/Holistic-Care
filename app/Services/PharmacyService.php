@@ -159,6 +159,7 @@ class PharmacyService extends CrudeService
                   ->orWhere('pharmacy_mr_number', 'like', "%{$searchTerm}%")
                   ->orWhere('status', 'like', "%{$searchTerm}%")
                   ->orWhere('payment_mode', 'like', "%{$searchTerm}%")
+                  ->orWhere('description', 'like', "%{$searchTerm}%")
                   ->orWhereHas('agent', function ($agentQuery) use ($searchTerm) {
                       $agentQuery->where('name', 'like', "%{$searchTerm}%");
                   });
@@ -208,6 +209,7 @@ class PharmacyService extends CrudeService
                   ->orWhere('p.pharmacy_mr_number', 'like', "%{$searchTerm}%")
                   ->orWhere('p.status', 'like', "%{$searchTerm}%")
                   ->orWhere('p.payment_mode', 'like', "%{$searchTerm}%")
+                  ->orWhere('p.description', 'like', "%{$searchTerm}%")
                   ->orWhereExists(function ($agentQuery) use ($searchTerm) {
                       $agentQuery->select(DB::raw(1))
                                  ->from('users')

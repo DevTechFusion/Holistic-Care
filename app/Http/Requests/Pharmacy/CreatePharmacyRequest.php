@@ -30,6 +30,7 @@ class CreatePharmacyRequest extends FormRequest
             'status' => 'nullable|string|max:255',
             'amount' => 'nullable|numeric|min:0|max:99999999.99',
             'payment_mode' => 'nullable|string|max:255',
+            'description' => 'nullable|string|max:1000',
         ];
     }
 
@@ -57,6 +58,8 @@ class CreatePharmacyRequest extends FormRequest
             'amount.max' => 'Amount cannot exceed 99,999,999.99.',
             'payment_mode.string' => 'Payment mode must be a string.',
             'payment_mode.max' => 'Payment mode cannot exceed 255 characters.',
+            'description.string' => 'Description must be a string.',
+            'description.max' => 'Description cannot exceed 1000 characters.',
         ];
     }
 
@@ -76,6 +79,7 @@ class CreatePharmacyRequest extends FormRequest
             'status' => 'status',
             'amount' => 'amount',
             'payment_mode' => 'payment mode',
+            'description' => 'description',
         ];
     }
 }
