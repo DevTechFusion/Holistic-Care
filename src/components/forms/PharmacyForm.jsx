@@ -88,6 +88,7 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
     <GenericFormModal
       open={open}
       onClose={onClose}
+      onSubmit={handleSubmit}
       isEditing={isEditing}
       handleSubmit={handleSubmit}
       isSubmitting={isSubmitting}
