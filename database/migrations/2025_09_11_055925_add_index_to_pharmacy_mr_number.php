@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('complaints', function (Blueprint $table) {
-            $table->boolean('is_resolved')->default(false);
+        Schema::table('pharmacy', function (Blueprint $table) {
+            $table->index('pharmacy_mr_number');
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('complaints', function (Blueprint $table) {
-            $table->dropColumn('is_resolved');
+        Schema::table('pharmacy', function (Blueprint $table) {
+            $table->dropIndex(['pharmacy_mr_number']);
         });
     }
 };

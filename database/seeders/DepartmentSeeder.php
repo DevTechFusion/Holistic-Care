@@ -34,9 +34,9 @@ class DepartmentSeeder extends Seeder
             [
                 'name' => 'OPD',
             ],
-            [
-                'name' => 'Pharmacy',
-            ],
+            // [
+            //     'name' => 'Pharmacy',
+            // ],
         ];
 
         foreach ($departments as $department) {

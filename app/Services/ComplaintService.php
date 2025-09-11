@@ -394,6 +394,11 @@ class ComplaintService extends CrudeService
 
         $result = [];
         foreach ($typeCounts as $typeCount) {
+            // Skip if complaintType is null (orphaned foreign key)
+            if (!$typeCount->complaintType) {
+                continue;
+            }
+            
             $percentage = round(($typeCount->count / $totalMistakes) * 100, 1);
             $result[] = [
                 'type_id' => $typeCount->complaint_type_id,
@@ -617,6 +622,11 @@ class ComplaintService extends CrudeService
 
         $result = [];
         foreach ($typeCounts as $typeCount) {
+            // Skip if complaintType is null (orphaned foreign key)
+            if (!$typeCount->complaintType) {
+                continue;
+            }
+            
             $percentage = round(($typeCount->count / $totalMistakes) * 100, 1);
             $result[] = [
                 'type_id' => $typeCount->complaint_type_id,

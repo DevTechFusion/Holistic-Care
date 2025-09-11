@@ -86,6 +86,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Pharmacy records handled by this user (as agent).
+     */
+    public function pharmacyRecords(): HasMany
+    {
+        return $this->hasMany(Pharmacy::class, 'agent_id');
+    }
+
+    /**
      * Get profile picture URL accessor.
      */
     protected function profilePictureUrl(): Attribute

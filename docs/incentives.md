@@ -1,76 +1,114 @@
-## Agent Incentives
+# Incentives System
 
-### Overview
-- Agents earn an incentive equal to 1% of the appointment `amount`.
-- Incentive is calculated and stored whenever an appointment with an `amount` is created or updated.
-- Incentives are stored per-appointment and linked to the agent.
+## Overview
 
-### Data Model
-- Table: `incentives`
-  - `appointment_id` (unique, FK → appointments, cascade on delete)
-  - `agent_id` (FK → users, cascade on delete)
-  - `amount` (decimal 10,2) – copied from appointment
-  - `percentage` (decimal 5,2) – defaults to `1.00`
-  - `incentive_amount` (decimal 10,2) – computed as `amount * percentage / 100`
+The Incentives system tracks earnings for agents based on appointments and pharmacy records. Each incentive record can be associated with either an appointment or a pharmacy record (or both).
 
-### Behavior
-- On appointment create/update (via `AppointmentService`), if `amount` and `agent_id` are present:
-  - Upsert `incentives` record with 1% of `amount`.
-  - If `amount` changes later, the incentive gets updated automatically.
+## Database Schema
 
-### Example Calculation
-- Appointment amount: `1000.00`
-- Percentage: `1.00%`
-- Incentive amount: `1000.00 * 1.00 / 100 = 10.00`
+### Incentives Table Structure
+- `id`: Primary key (auto-increment)
+- `appointment_id`: Foreign key to appointments table (nullable)
+- `agent_id`: Foreign key to users table (required)
+- `pharmacy_id`: Foreign key to pharmacy table (nullable)
+- `amount`: Base amount used for calculation (decimal 10,2)
+- `percentage`: Percentage rate for incentive calculation (decimal 10,2)
+- `incentive_amount`: Final calculated incentive amount (decimal 10,2)
+- `created_at`: Record creation timestamp
+- `updated_at`: Record last update timestamp
 
-### Example Flow
-1) Create appointment
-```json
-{
-  "date": "2025-08-27",
-  "time_slot": "10:00",
-  "patient_name": "Jane Doe",
-  "contact_number": "+123456789",
-  "agent_id": 5,
-  "doctor_id": 3,
-  "procedure_id": 2,
-  "category_id": 4,
-  "department_id": 1,
-  "source_id": 2,
-  "amount": 1000.00
-}
+## Relationships
+
+### Incentive Model Relationships
+- `belongsTo(User::class, 'agent_id')`: Each incentive belongs to an agent (user)
+- `belongsTo(Appointment::class)`: Each incentive can be related to an appointment
+- `belongsTo(Pharmacy::class)`: Each incentive can be related to a pharmacy record
+
+### Related Model Extensions
+- **User Model**: `hasMany(Incentive::class, 'agent_id')` - Agent's incentives
+- **Appointment Model**: `hasOne(Incentive::class)` - Appointment-related incentive (one-to-one)
+- **Pharmacy Model**: `hasOne(Incentive::class)` - Pharmacy-related incentive (one-to-one)
+
+## Usage Patterns
+
+### Appointment-Based Incentives
+Currently implemented in `AppointmentService::upsertIncentiveForAppointment()`:
+- Automatically created when appointment has an amount and agent
+- Uses 1% of appointment amount as incentive
+- Updates existing incentive if appointment is modified
+
+### Pharmacy-Based Incentives
+With the pharmacy_id relationship, incentives are now:
+- Associated with pharmacy records in a one-to-one relationship
+- Calculated based on pharmacy transaction amounts (1% of pharmacy amount)
+- Automatically created/updated when pharmacy records are created/updated
+- Tracked separately from appointment incentives
+- Enforced by unique constraint on pharmacy_id to ensure one incentive per pharmacy record
+
+### Dual Association
+An incentive record can potentially be associated with both:
+- An appointment (via `appointment_id`)
+- A pharmacy record (via `pharmacy_id`)
+- This allows for complex incentive scenarios
+
+## API Integration
+
+### User Incentives Endpoint
+`GET /api/users/{id}/incentives`
+
+Returns paginated incentives for a specific agent, including:
+- Date range filtering
+- Related appointment and pharmacy data (when eager loaded)
+
+### Query Examples
+
+```php
+// Get all incentives for an agent
+$user->incentives()->get();
+
+// Get appointment-related incentives only
+$user->incentives()->whereNotNull('appointment_id')->get();
+
+// Get pharmacy-related incentives only
+$user->incentives()->whereNotNull('pharmacy_id')->get();
+
+// Get incentives with related data
+$user->incentives()->with(['appointment', 'pharmacy'])->get();
 ```
 
-2) Incentive stored
-```json
-{
-  "appointment_id": 10,
-  "agent_id": 5,
-  "amount": 1000.00,
-  "percentage": 1.00,
-  "incentive_amount": 10.00
-}
-```
+## Data Integrity
 
-3) Update appointment amount to `1234.56`
-```json
-{ "amount": 1234.56 }
-```
+### Foreign Key Constraints
+- `agent_id`: Required, references users table with cascade delete
+- `appointment_id`: Optional, references appointments table with cascade delete
+- `pharmacy_id`: Optional, references pharmacy table with cascade delete
 
-4) Incentive updated
-```json
-{
-  "appointment_id": 10,
-  "agent_id": 5,
-  "amount": 1234.56,
-  "percentage": 1.00,
-  "incentive_amount": 12.35
-}
-```
+### Business Rules
+- Every incentive must have an agent (`agent_id` is required)
+- At least one of `appointment_id` or `pharmacy_id` should be present (business logic)
+- Amount calculations should be consistent and auditable
+- **One-to-one relationship**: Each pharmacy record can have only one incentive (enforced by unique constraint)
+- **One-to-one relationship**: Each appointment can have only one incentive (enforced by unique constraint)
+- Incentives are automatically managed through model events (created/updated/deleted)
 
-### Notes
-- Incentives are keyed by `appointment_id` to avoid duplicates.
-- Deleting an appointment will cascade-delete the incentive.
-- Future: You can aggregate incentives by agent and date range for revenue reports.
+## Future Enhancements
 
+### Potential Features
+- Bulk incentive calculation for pharmacy records
+- Different percentage rates for different types of transactions
+- Incentive approval workflows
+- Commission tracking and reporting
+- Integration with payroll systems
 
+### Performance Considerations
+- Index on `agent_id` for fast agent-based queries
+- Index on `appointment_id` and `pharmacy_id` for relationship queries
+- Consider partitioning for large datasets
+- Aggregation tables for reporting
+
+## Migration History
+
+1. **Initial Incentives Table**: Created with appointment and agent relationships
+2. **Pharmacy Integration**: Added `pharmacy_id` foreign key (2025_09_11_061929)
+
+This system provides flexible incentive tracking that can accommodate various business models and commission structures.

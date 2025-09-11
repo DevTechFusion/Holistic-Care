@@ -734,15 +734,36 @@ class AppointmentService extends CrudeService
 
     /**
      * Get total incentive for an agent within date range.
+     * Includes both appointment and pharmacy incentives.
      */
     public function getAgentTotalIncentive(int $agentId, string $startDate, string $endDate): float
     {
-        return $this->model
+        // Get appointment incentives
+        $appointmentIncentives = $this->model
             ->byDateRange($startDate, $endDate)
             ->where('appointments.agent_id', $agentId)
             ->leftJoin('incentives as i', 'i.appointment_id', '=', 'appointments.id')
             ->sum('i.incentive_amount') ?? 0.0;
+
+        // Get pharmacy incentives
+        $pharmacyIncentives = DB::table('incentives as i')
+            ->leftJoin('pharmacy as p', 'i.pharmacy_id', '=', 'p.id')
+            ->where('i.agent_id', $agentId)
+            ->whereNotNull('i.pharmacy_id')
+            ->whereBetween('p.date', [$startDate, $endDate])
+            ->sum('i.incentive_amount') ?? 0.0;
+
+        return $appointmentIncentives + $pharmacyIncentives;
     }
+
+    // public function getAgentTotalIncentive(int $agentId, string $startDate, string $endDate): float
+    // {
+    //     return $this->model
+    //         ->byDateRange($startDate, $endDate)
+    //         ->where('appointments.agent_id', $agentId)
+    //         ->leftJoin('incentives as i', 'i.appointment_id', '=', 'appointments.id')
+    //         ->sum('i.incentive_amount') ?? 0.0;
+    // }
 
     /**
      * Today's appointment leaderboard for a specific agent (top 5 by time descending).

@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('complaints', function (Blueprint $table) {
-            $table->boolean('is_resolved')->default(false);
+        Schema::table('incentives', function (Blueprint $table) {
+            $table->foreignId('pharmacy_id')->nullable()->constrained('pharmacy')->onDelete('cascade');
         });
     }
 
@@ -21,8 +21,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('complaints', function (Blueprint $table) {
-            $table->dropColumn('is_resolved');
+        Schema::table('incentives', function (Blueprint $table) {
+            $table->dropForeign(['pharmacy_id']);
+            $table->dropColumn('pharmacy_id');
         });
     }
 };

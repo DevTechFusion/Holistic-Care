@@ -17,6 +17,7 @@ Complete API Reference for Frontend Developers
 - [Report Management](#report-management)
 - [Procedure Management](#procedure-management)
 - [Doctor Management](#doctor-management)
+- [Pharmacy Management](#pharmacy-management)
  - [Mistake Management](#mistake-management)
 - [Role Management](#role-management)
 - [Permission Management](#permission-management)
@@ -271,6 +272,50 @@ All API responses follow this standard format:
 | GET | `/api/doctors/department/{departmentId}` | Get doctors by department |
 | GET | `/api/doctors/procedure/{procedureId}` | Get doctors by procedure |
 | GET | `/api/doctors/available` | Get available doctors |
+
+## Pharmacy Management
+
+### Pharmacy CRUD Operations
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/pharmacy` | Get all pharmacy records (paginated) |
+| POST | `/api/pharmacy` | Create a new pharmacy record |
+| GET | `/api/pharmacy/{id}` | Get specific pharmacy record by ID |
+| PUT/PATCH | `/api/pharmacy/{id}` | Update specific pharmacy record |
+| DELETE | `/api/pharmacy/{id}` | Delete specific pharmacy record |
+
+### Pharmacy Search and Filtering
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/pharmacy/agent/{agentId}` | Get pharmacy records by agent |
+| GET | `/api/pharmacy/status/{status}` | Get pharmacy records by status |
+| GET | `/api/pharmacy/payment-mode/{paymentMode}` | Get pharmacy records by payment mode |
+| GET | `/api/pharmacy/date-range` | Get pharmacy records by date range |
+| GET | `/api/pharmacy/stats` | Get pharmacy statistics |
+
+### Pharmacy Query Parameters
+
+**List/Filter Parameters:**
+- `per_page`: Number of records per page (default: 15)
+- `page`: Page number (default: 1)
+- `agent_id`: Filter by specific agent ID
+- `status`: Filter by status
+- `payment_mode`: Filter by payment mode
+- `start_date`: Filter records from this date (YYYY-MM-DD)
+- `end_date`: Filter records until this date (YYYY-MM-DD)
+- `search`: Search across patient name, phone number, pharmacy MR number, status, payment mode, and agent name
+
+**Note:** All parameters can be combined. For example: `/api/pharmacy?search=John&status=completed&agent_id=1&per_page=10`
+
+**Date Range Parameters:**
+- `start_date`: Start date (required, YYYY-MM-DD)
+- `end_date`: End date (required, YYYY-MM-DD)
+- `per_page`: Number of records per page
+- `page`: Page number
+
+For detailed request/response examples and field validation, see `docs/pharmacy-api.md`.
 
 ## Mistake Management
 

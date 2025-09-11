@@ -126,6 +126,14 @@ Route::middleware(['sanctum.token', 'auth:sanctum'])->group(function () {
     Route::post('/roles/check-permissions', [App\Http\Controllers\Api\RoleController::class, 'checkRolePermissions']);
     Route::get('/roles/{id}/available-permissions', [App\Http\Controllers\Api\RoleController::class, 'getAvailablePermissions']);
 
+    // Pharmacy management routes
+    Route::get('pharmacy/date-range', [App\Http\Controllers\Api\PharmacyController::class, 'byDateRange']);
+    Route::get('pharmacy/agent/{agentId}', [App\Http\Controllers\Api\PharmacyController::class, 'byAgent']);
+    Route::get('pharmacy/status/{status}', [App\Http\Controllers\Api\PharmacyController::class, 'byStatus']);
+    Route::get('pharmacy/payment-mode/{paymentMode}', [App\Http\Controllers\Api\PharmacyController::class, 'byPaymentMode']);
+    Route::get('pharmacy/stats', [App\Http\Controllers\Api\PharmacyController::class, 'stats']);
+    Route::apiResource('pharmacy', App\Http\Controllers\Api\PharmacyController::class);
+
     // File management routes
     Route::prefix('files')->name('files.')->group(function () {
         // File upload routes
