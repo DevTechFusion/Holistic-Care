@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Pharmacy;
+use Illuminate\Support\Facades\DB;
 
 class PharmacyService extends CrudeService
 {
@@ -166,5 +167,67 @@ class PharmacyService extends CrudeService
 
         return $query->orderBy('created_at', 'desc')
             ->paginate($perPage, ['*'], 'page', $page);
+    }
+
+    /**
+     * Get total pharmacy incentives based on the same filters used for records
+     */
+    public function getTotalPharmacyIncentives($filters = [])
+    {
+        $query = DB::table('incentives as i')
+            ->leftJoin('pharmacy as p', 'i.pharmacy_id', '=', 'p.id')
+            ->whereNotNull('i.pharmacy_id')
+            ->whereNull('i.appointment_id');
+
+        // Apply the same filters as getFilteredPharmacyRecords
+        if (isset($filters['agent_id']) && $filters['agent_id']) {
+            $query->where('p.agent_id', $filters['agent_id']);
+        }
+
+        if (isset($filters['status']) && $filters['status']) {
+            $query->where('p.status', $filters['status']);
+        }
+
+        if (isset($filters['payment_mode']) && $filters['payment_mode']) {
+            $query->where('p.payment_mode', $filters['payment_mode']);
+        }
+
+        if (isset($filters['start_date']) && $filters['start_date']) {
+            $query->where('p.date', '>=', $filters['start_date']);
+        }
+
+        if (isset($filters['end_date']) && $filters['end_date']) {
+            $query->where('p.date', '<=', $filters['end_date']);
+        }
+
+        if (isset($filters['search']) && $filters['search']) {
+            $searchTerm = $filters['search'];
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('p.patient_name', 'like', "%{$searchTerm}%")
+                  ->orWhere('p.phone_number', 'like', "%{$searchTerm}%")
+                  ->orWhere('p.pharmacy_mr_number', 'like', "%{$searchTerm}%")
+                  ->orWhere('p.status', 'like', "%{$searchTerm}%")
+                  ->orWhere('p.payment_mode', 'like', "%{$searchTerm}%")
+                  ->orWhereExists(function ($agentQuery) use ($searchTerm) {
+                      $agentQuery->select(DB::raw(1))
+                                 ->from('users')
+                                 ->whereColumn('users.id', 'p.agent_id')
+                                 ->where('users.name', 'like', "%{$searchTerm}%");
+                  });
+            });
+        }
+
+        return $query->sum('i.incentive_amount') ?? 0.0;
+    }
+
+    /**
+     * Get total pharmacy incentives for all records (no filters)
+     */
+    public function getTotalPharmacyIncentivesAll()
+    {
+        return DB::table('incentives')
+            ->whereNotNull('pharmacy_id')
+            ->whereNull('appointment_id')
+            ->sum('incentive_amount') ?? 0.0;
     }
 }

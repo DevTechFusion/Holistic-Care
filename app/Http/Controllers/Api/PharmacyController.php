@@ -31,13 +31,16 @@ class PharmacyController extends Controller
             
             if (array_filter($filters)) {
                 $pharmacyRecords = $this->pharmacyService->getFilteredPharmacyRecords($filters, $perPage, $page);
+                $totalIncentive = $this->pharmacyService->getTotalPharmacyIncentives($filters);
             } else {
                 $pharmacyRecords = $this->pharmacyService->getAllPharmacyRecords($perPage, $page);
+                $totalIncentive = $this->pharmacyService->getTotalPharmacyIncentivesAll();
             }
 
             return response()->json([
                 'status' => 'success',
-                'data' => $pharmacyRecords
+                'data' => $pharmacyRecords,
+                'total_incentive' => $totalIncentive
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
