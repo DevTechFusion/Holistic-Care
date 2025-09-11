@@ -3,14 +3,14 @@ import { Box, Grid, Card, CardContent, Typography } from "@mui/material";
 import { CalendarToday, Person, Update } from "@mui/icons-material";
 import { getManagerDashboard } from "../../DAL/dashboard";
 
-const StatsCards = () => {
+const StatsCards = ({ filter }) => {
   const [cards, setCards] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const response = await getManagerDashboard();
+        const response = await getManagerDashboard(filter);
         if (response?.status === "success") {
          
           setCards(response.data.cards);
@@ -24,7 +24,7 @@ const StatsCards = () => {
     };
 
     fetchDashboard();
-  }, []);
+  }, [filter]);
 
   if (loading) return <p>Loading...</p>;
   if (!cards) return <p>No data available</p>;

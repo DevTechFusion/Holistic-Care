@@ -59,7 +59,7 @@ const GenericFormModal = ({
                       onChange={field.onChange}
                       value={field.value}
                       disableClock
-                      format="HH:mm:ss"
+                      format="hh:mm a"
                       clearIcon={null}
                       className="w-full"
                     />

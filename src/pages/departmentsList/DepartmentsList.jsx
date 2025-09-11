@@ -15,6 +15,7 @@ import {
 import { getAllDepartments, deleteDepartment } from "../../DAL/departments";
 import CreateDepartmentModal from "../../components/forms/DepartmentForm";
 import ActionButtons from "../../constants/actionButtons";
+import { useAuth } from "../../contexts/AuthContext";
 const DepartmentsPage = () => {
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -24,6 +25,10 @@ const DepartmentsPage = () => {
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [total, setTotal] = useState(0);
   const [targetItem, setTargetItem] = useState(null);
+
+  const { user } = useAuth();
+    const role = user?.roles?.[0]?.name ?? null;
+    const isSuperAdmin = role === "super_admin";
 
   const fetchDepartments = async () => {
     setLoading(true);
@@ -66,9 +71,11 @@ const DepartmentsPage = () => {
         mb={2}
       >
         <Typography variant="h5">Departments</Typography>
-        <Button variant="contained" onClick={() => setOpenModal(true)}>
-          + Add Department
-        </Button>
+        {isSuperAdmin && (
+          <Button variant="contained" onClick={() => setOpenModal(true)}>
+            + Add Department
+          </Button>
+        )}
       </Box>
 
       {/* Table */}
@@ -84,7 +91,7 @@ const DepartmentsPage = () => {
                 <TableRow>
                   <TableCell>#</TableCell>
                   <TableCell>Name</TableCell>
-                  <TableCell>Actions</TableCell>
+                  {isSuperAdmin && <TableCell>Actions</TableCell>}
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -92,12 +99,13 @@ const DepartmentsPage = () => {
                   <TableRow key={dept.id}>
                     <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
                     <TableCell>{dept.name}</TableCell>
-                    <TableCell>
+                    {isSuperAdmin && (<TableCell>
                       <ActionButtons
                         onEdit={() => handleEdit(dept)}
                         onDelete={() => handleDelete(dept.id)}
                       />
                     </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>

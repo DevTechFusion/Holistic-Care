@@ -16,6 +16,7 @@ import ManagerList from "./pages/usersList/ManagerList";
 import ProceduresPage from "./pages/proceduresList/ProceduresList";
 import DoctorsList from "./pages/doctorsList/DoctorsList";
 import ReportsPage from "./pages/reportsList/ReportsList";
+import PharmacyList from "./pages/pharmacyList/PharmacyList";
 import AppointmentsList from "./pages/appointmentList/AppointmentList";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import AuthLayout from "./layouts/AuthLayout";
@@ -75,6 +76,11 @@ const routes = [
     element: <ComplaintList />,
     role: "super_admin",
   },
+  {
+    path: "/pharmacy",
+    element: <PharmacyList />,
+    role: "super_admin",
+  },
 
   // Agent Routes
 
@@ -108,6 +114,11 @@ const routes = [
     element: <ProceduresPage />,
     role: "agent",
   },
+  {
+    path: "/agent/departments",
+    element: <DepartmentsPage />,
+    role: "agent",
+  },
 
   // Manager Routes
 
@@ -137,10 +148,10 @@ const routes = [
     role: "managerly",
   },
   {
-    path: "/manager/agents",
+    path: "/agents",
     element: <AgentList />,
     role: "managerly",
-  },
+  }
 ];
 // Protected Route Component
 const ProtectedRoute = () => {
@@ -149,7 +160,6 @@ const ProtectedRoute = () => {
   const role = user?.roles[0].name ?? null;
 
   if (isAuthenticated) {
-    console.log(user);
     if (loading || !user) {
       <Box
         display="flex"

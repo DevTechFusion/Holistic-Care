@@ -52,6 +52,11 @@ const SidebarConfig = {
           icon: ProcedureIcon,
           path: "/procedures",
         },
+        {
+          title: "Pharmacy List",
+          icon: ProcedureIcon,
+          path: "/pharmacy",
+        }
       ],
     },
     {
@@ -64,6 +69,7 @@ const SidebarConfig = {
       icon: ComplaintIcon,
       path: "/complaints",
     },
+   
   ],
   agent: [
     {
@@ -101,12 +107,7 @@ const SidebarConfig = {
       title: "Reports",
       icon: ReportIcon,
       path: "/agent/reports",
-    },
-    {
-      title: "Complaints",
-      icon: ComplaintIcon,
-      path: "/agent/complaints",
-    },
+    }
   ],
    managerly: [
     {
@@ -126,7 +127,7 @@ const SidebarConfig = {
         {
           title: "Agent List",
           icon: AgentIcon,
-          path: "/manager/agents",
+          path: "/agents",
         },
         {
           title: "Doctor List",

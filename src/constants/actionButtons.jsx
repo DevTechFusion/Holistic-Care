@@ -35,7 +35,7 @@ const ActionButtons = ({ onEdit, onDelete, onAdd }) => {
 
       {onAdd && (
         <Tooltip title="Add Complaint">
-          <IconButton color="secondary" size="small" onClick={onAdd}>
+          <IconButton color="darkblack" size="small" onClick={onAdd}>
             <AddIcon fontSize="small" />
           </IconButton>
         </Tooltip>

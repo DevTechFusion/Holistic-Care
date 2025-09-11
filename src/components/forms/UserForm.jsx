@@ -92,7 +92,7 @@ const CreateUserModal = ({ open, onClose, isEditing, data }) => {
       onChange: (e) => setFormData((p) => ({ ...p, role: e.target.value })),
       options: [
         { value: "agent", label: "Agent" },
-        { value: "manager", label: "Manager" },
+        { value: "managerly", label: "Manager" },
       ],
     },
   ];

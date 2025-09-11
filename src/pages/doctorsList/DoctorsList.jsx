@@ -17,6 +17,7 @@ import { getDoctors, deleteDoctor } from "../../DAL/doctors";
 import CreateDoctorModal from "../../components/forms/DoctorForm";
 import { useSnackbar } from "notistack";
 import ActionButtons from "../../constants/actionButtons";
+import { useAuth } from "../../contexts/AuthContext";
 
 const DoctorsPage = () => {
   const [doctors, setDoctors] = useState([]);
@@ -27,6 +28,10 @@ const DoctorsPage = () => {
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [total, setTotal] = useState(0);
   const [targetItem, setTargetItem] = useState(null);
+
+  const { user } = useAuth();
+  const role = user?.roles?.[0]?.name ?? null;
+  const isSuperAdmin = role === "super_admin";
 
   const fetchDoctors = async () => {
     setLoading(true);
@@ -72,9 +77,11 @@ const DoctorsPage = () => {
         mb={2}
       >
         <Typography variant="h5">Doctors</Typography>
-        <Button variant="contained" onClick={() => setOpenModal(true)}>
-          + Add Doctor
-        </Button>
+        {isSuperAdmin && (
+          <Button variant="contained" onClick={() => setOpenModal(true)}>
+            + Add Doctor
+          </Button>
+        )}
       </Box>
 
       {/* Table */}
@@ -94,7 +101,7 @@ const DoctorsPage = () => {
                   <TableCell>Department</TableCell>
                   <TableCell>Procedures</TableCell>
                   <TableCell>Availability</TableCell>
-                  <TableCell>Actions</TableCell>
+                  {isSuperAdmin && <TableCell>Actions</TableCell>}
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -111,7 +118,6 @@ const DoctorsPage = () => {
                       {doctor.availability &&
                         Object.entries(doctor.availability).map(([day, a]) => (
                           <Box key={day}>
-                            {" "}
                             <strong>
                               {day.charAt(0).toUpperCase() + day.slice(1)}
                             </strong>
@@ -126,12 +132,14 @@ const DoctorsPage = () => {
                           </Box>
                         ))}
                     </TableCell>
-                    <TableCell>
-                      <ActionButtons
-                        onEdit={() => handleEdit(doctor)}
-                        onDelete={() => handleDelete(doctor.id)}
-                      />
-                    </TableCell>
+                    {isSuperAdmin && (
+                      <TableCell>
+                        <ActionButtons
+                          onEdit={() => handleEdit(doctor)}
+                          onDelete={() => handleDelete(doctor.id)}
+                        />
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
@@ -145,7 +153,7 @@ const DoctorsPage = () => {
               onPageChange={(e, newPage) => setPage(newPage)}
               rowsPerPage={rowsPerPage}
               onRowsPerPageChange={(e) => {
-                setRowsPerPage(parseInt(e.target.value));
+                setRowsPerPage(parseInt(e.target.value, 10));
                 setPage(0);
               }}
               rowsPerPageOptions={[15, 25, 50, 100]}
@@ -155,16 +163,18 @@ const DoctorsPage = () => {
       </Paper>
 
       {/* Modal */}
-      <CreateDoctorModal
-        isEditing={!!targetItem}
-        data={targetItem}
-        open={openModal}
-        onClose={() => {
-          setOpenModal(false);
-          fetchDoctors();
-          setTargetItem(null);
-        }}
-      />
+      {isSuperAdmin && (
+        <CreateDoctorModal
+          isEditing={!!targetItem}
+          data={targetItem}
+          open={openModal}
+          onClose={() => {
+            setOpenModal(false);
+            fetchDoctors();
+            setTargetItem(null);
+          }}
+        />
+      )}
     </Box>
   );
 };

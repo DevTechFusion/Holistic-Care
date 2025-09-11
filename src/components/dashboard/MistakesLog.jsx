@@ -12,14 +12,14 @@ import {
 } from "@mui/material";
 import { getManagerDashboard } from "../../DAL/dashboard";
 
-export default function MistakeLogTable() {
+export default function MistakeLogTable({ filter }) {
   const [logs, setLogs] = useState([]);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const res = await getManagerDashboard("weekly");
+        const res = await getManagerDashboard(filter);
         if (res?.data?.detailed_log?.data) {
           setLogs(res.data.detailed_log.data);
         }
@@ -30,7 +30,7 @@ export default function MistakeLogTable() {
     };
 
     fetchLogs();
-  }, []);
+  }, [filter]);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -59,6 +59,7 @@ export default function MistakeLogTable() {
               <TableCell>Date</TableCell>
               <TableCell>Day</TableCell>
               <TableCell>Agent</TableCell>
+              <TableCell>Doctor</TableCell>
               <TableCell>Type</TableCell>
               <TableCell>Description</TableCell>
               <TableCell>Status</TableCell>
@@ -70,6 +71,7 @@ export default function MistakeLogTable() {
                 <TableCell>{formatDate(log.occurred_at)}</TableCell>
                 <TableCell>{formatDay(log.occurred_at)}</TableCell>
                 <TableCell>{log.agent?.name}</TableCell>
+                <TableCell>{log.doctor?.name}</TableCell>
                 <TableCell sx={{ color: "red" }}>
                   {log.complaint_type?.name}
                 </TableCell>

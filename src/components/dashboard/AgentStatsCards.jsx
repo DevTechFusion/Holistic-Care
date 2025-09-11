@@ -35,7 +35,7 @@ const AgentStatsCards = ({ filter }) => {
       color: "#23C7B7",
     },
     {
-      title: "Arrived Today",
+      title: "Arrived ",
       icon: Person,
       value: cards.arrived,
       color: "#23C7B7",
@@ -62,7 +62,8 @@ const AgentStatsCards = ({ filter }) => {
           <Grid item xs={12} sm={6} md={3} key={index}>
             <Card
               sx={{
-                height: "150px",
+                height: "100%",
+                width: "150px",
                 borderRadius: 3,
                 boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                 "&:hover": {
@@ -72,19 +73,19 @@ const AgentStatsCards = ({ filter }) => {
                 },
               }}
             >
-              <CardContent sx={{ p: 2, position: "relative" }}>
+              <CardContent sx={{ p: 4, position: "relative" }}>
                 {/* Icon */}
-                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
                   <IconComponent sx={{ color: stat.color, fontSize: 32 }} />
                 </Box>
 
                 {/* Value */}
                 <Typography
-                  variant="h4"
+                  variant="h3"
                   sx={{
                     fontWeight: "bold",
                     color: stat.color,
-                    mb: 1,
+                    
                   }}
                 >
                   {stat.value}
@@ -95,7 +96,7 @@ const AgentStatsCards = ({ filter }) => {
                   variant="body2"
                   sx={{
                     color: "text.secondary",
-                    mb: 2,
+                    
                   }}
                 >
                   {stat.title}

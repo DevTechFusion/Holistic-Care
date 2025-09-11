@@ -11,14 +11,14 @@ import {
 } from "@mui/material";
 import { getManagerDashboard } from "../../DAL/dashboard";
 
-export default function MistakesCount() {
+export default function MistakesCount({filter}) {
   const [count, setCount] = useState([]);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchCount = async () => {
       try {
-        const res = await getManagerDashboard("weekly");
+        const res = await getManagerDashboard(filter);
         if (res?.data?.mistake_count_by_agent) {
           setCount(res.data.mistake_count_by_agent);
         }
@@ -29,7 +29,7 @@ export default function MistakesCount() {
     };
 
     fetchCount();
-  }, []);
+  }, [filter]);
 
   return (
     <TableContainer component={Paper} sx={{ mt: 3 }}>

@@ -17,6 +17,7 @@ import { useSnackbar } from "notistack";
 import { getProcedures, deleteProcedure } from "../../DAL/procedure";
 import CreateProcedureModal from "../../components/forms/ProcedureForm";
 import ActionButtons from "../../constants/actionButtons";
+import { useAuth } from "../../contexts/AuthContext";
 
 const ProceduresPage = () => {
   const [procedures, setProcedures] = useState([]);
@@ -27,6 +28,10 @@ const ProceduresPage = () => {
   const [total, setTotal] = useState(0);
   const { enqueueSnackbar } = useSnackbar();
   const [targetItem, setTargetItem] = useState(null);
+
+  const { user } = useAuth();
+  const role = user?.roles?.[0]?.name ?? null;
+  const isSuperAdmin = role === "super_admin";
 
   const fetchProcedures = async () => {
     setLoading(true);
@@ -72,9 +77,12 @@ const ProceduresPage = () => {
         mb={2}
       >
         <Typography variant="h5">Procedures</Typography>
-        <Button variant="contained" onClick={() => setOpenModal(true)}>
+        {isSuperAdmin && (
+           <Button variant="contained" onClick={() => setOpenModal(true)}>
           + Add Procedure
         </Button>
+        )}
+       
       </Box>
 
       {/* Table */}
@@ -90,7 +98,8 @@ const ProceduresPage = () => {
                 <TableRow>
                   <TableCell>Sr#</TableCell>
                   <TableCell>Procedure Name</TableCell>
-                  <TableCell>Actions</TableCell>
+                  {isSuperAdmin && <TableCell>Actions</TableCell>}
+              
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -99,12 +108,15 @@ const ProceduresPage = () => {
                     <TableRow key={proc.id || idx}>
                       <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
                       <TableCell>{proc.name}</TableCell>
-                      <TableCell>
+                      {isSuperAdmin && (
+                        <TableCell>
                         <ActionButtons
                           onEdit={() => handleUpdateProcedure(proc)}
                           onDelete={() => handleDeleteProcedure(proc.id)}
                         />
                       </TableCell>
+                      )}
+                      
                     </TableRow>
                   ))
                 ) : (
