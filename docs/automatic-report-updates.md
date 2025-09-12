@@ -39,7 +39,7 @@ If you want to update an appointment without updating the associated reports, yo
 PUT /api/appointments/{id}
 {
     "patient_name": "Updated Patient Name",
-    "update_reports": false
+    "update_reports": true
 }
 ```
 
