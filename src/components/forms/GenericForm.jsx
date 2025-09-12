@@ -10,9 +10,11 @@ import {
   TextField,
   MenuItem,
   Typography,
+  Grid,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import TimePicker from "react-time-picker";
+import { useMemo } from "react";
 
 const GenericFormModal = ({
   open,
@@ -25,8 +27,86 @@ const GenericFormModal = ({
 }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (onSubmit) onSubmit();
+    onSubmit?.();
   };
+
+  const renderField = (field, key) => {
+    const commonProps = {
+      key,
+      fullWidth: false,
+      label: field.label,
+      value: field.value ?? "",
+      onChange: field.onChange,
+      required: field.required,
+      disabled: field.disabled,
+      margin: "normal",
+      variant: "outlined",
+    };
+
+    switch (field.type) {
+      case "timepicker":
+        return (
+          <Box key={key} sx={{ width: "100%", mt: 2 }}>
+            <Typography variant="body2" sx={{ mb: 1, color: "text.secondary" }}>
+              {field.label}
+            </Typography>
+            <TimePicker
+              onChange={field.onChange}
+              value={field.value}
+              disableClock
+              format="hh:mm a"
+              clearIcon={null}
+              className="MuiTimePicker"
+            />
+          </Box>
+        );
+
+      case "select":
+      case "multiselect":
+        return (
+          <TextField
+            {...commonProps}
+            select
+            value={field.value ?? (field.type === "multiselect" ? [] : "")}
+            SelectProps={field.type === "multiselect" ? { multiple: true } : {}}
+          >
+            {(field.options ?? []).map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </TextField>
+        );
+
+      case "textarea":
+        return (
+          <TextField
+            {...commonProps}
+            multiline
+            rows={field.rows || 4}
+            sx={{ gridColumn: "span 2" }}
+          />
+        );
+
+      default:
+        return <TextField {...commonProps} type={field.type || "text"} />;
+    }
+  };
+
+  const renderedFields = useMemo(
+    () =>
+      fields.map((field, idx) => (
+        <Grid
+          item
+          xs={12}
+          md={field.type === "textarea" ? 12 : 6}
+          key={field.name || idx}
+        >
+          {renderField(field, field.name || idx)}
+        </Grid>
+      )),
+    [fields]
+  );
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -35,7 +115,12 @@ const GenericFormModal = ({
         <IconButton
           aria-label="close"
           onClick={onClose}
-          sx={{ position: "absolute", right: 8, top: 8 }}
+          sx={{
+            position: "absolute",
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[500],
+          }}
         >
           <CloseIcon />
         </IconButton>
@@ -43,92 +128,23 @@ const GenericFormModal = ({
 
       <form onSubmit={handleSubmit}>
         <DialogContent dividers>
-          <Box display="flex" flexDirection="column" gap={2}>
-            {fields.map((field, idx) => {
-              if (!field) return null;
-              const key = field.name || idx;
-
-              // TimePicker
-              if (field.type === "timepicker") {
-                return (
-                  <Box key={key}>
-                    <Typography variant="body2" gutterBottom>
-                      {field.label}
-                    </Typography>
-                    <TimePicker
-                      onChange={field.onChange}
-                      value={field.value}
-                      disableClock
-                      format="hh:mm a"
-                      clearIcon={null}
-                      className="w-full"
-                    />
-                  </Box>
-                );
-              }
-
-              // Select & MultiSelect
-              if (field.type === "select" || field.type === "multiselect") {
-                return (
-                  <TextField
-                    key={key}
-                    select
-                    fullWidth
-                    label={field.label}
-                    value={field.value ?? (field.type === "multiselect" ? [] : "")}
-                    onChange={field.onChange}
-                    required={field.required}
-                    disabled={field.disabled}
-                    SelectProps={field.type === "multiselect" ? { multiple: true } : {}}
-                  >
-                    {(field.options ?? []).map((option) => (
-                      <MenuItem key={option.value} value={option.value}>
-                        {option.label}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                );
-              }
-
-              // TextArea
-              if (field.type === "textarea") {
-                return (
-                  <TextField
-                    key={key}
-                    label={field.label}
-                    value={field.value ?? ""}
-                    onChange={field.onChange}
-                    fullWidth
-                    required={field.required}
-                    disabled={field.disabled}
-                    multiline
-                    rows={field.rows || 4}
-                  />
-                );
-              }
-
-              // Default TextField
-              return (
-                <TextField
-                  key={key}
-                  label={field.label}
-                  type={field.type || "text"}
-                  value={field.value ?? ""}
-                  onChange={field.onChange}
-                  fullWidth
-                  required={field.required}
-                  disabled={field.disabled}
-                />
-              );
-            })}
-
-            {children}
-          </Box>
+          <Grid container spacing={3}>
+            {renderedFields}
+            {children && <Grid item xs={12}>{children}</Grid>}
+          </Grid>
         </DialogContent>
 
-        <DialogActions>
-          <Button onClick={onClose}>Cancel</Button>
-          <Button type="submit" disabled={isSubmitting} variant="contained">
+        <DialogActions sx={{ p: 2, pr: 3 }}>
+          <Button onClick={onClose} aria-label="cancel" color="inherit">
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            variant="contained"
+            color="primary"
+            aria-label="save"
+          >
             {isSubmitting ? "Saving..." : "Save"}
           </Button>
         </DialogActions>

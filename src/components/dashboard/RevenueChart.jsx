@@ -16,7 +16,7 @@ const RevenueChart = ({ data, loading }) => {
 
   const chartColors = ["#1a73e8", "#4285f4", "#fbbc05", "#34a853", "#ea4335", "#c5d0e6", "#5f6368"];
 
-  // Helper function to generate chart options and reduce code duplication
+  
   const generateChartOptions = (key, title, unit) => {
     const dataPoints = data.map((row) => ({
       name: row.agent?.name || "Unknown",
