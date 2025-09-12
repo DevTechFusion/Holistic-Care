@@ -15,13 +15,15 @@ return [
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie', 'login', 'logout', 'register'],
+    'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
     'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 
     'allowed_origins' => [
       env('FRONTEND_URL', 'http://crm.holisticare.pk'),
       env('FRONTEND_URL_SECURE', 'https://crm.holisticare.pk'),
+      'http://127.0.0.1:8000',
+      'http://localhost:8000',
     ],
 
     'allowed_origins_patterns' => [],

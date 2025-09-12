@@ -163,14 +163,18 @@ class ComplaintService extends CrudeService
 
     /**
      * Count mistakes in a datetime range using occurred_at if present, else created_at.
+     * Only counts complaints that have an appointment_id present.
      */
     public function countInRange(string $startDateTime, string $endDateTime): int
     {
-        return $this->buildDateRangeQuery($this->model, $startDateTime, $endDateTime)->count();
+        return $this->buildDateRangeQuery($this->model, $startDateTime, $endDateTime)
+            ->whereNull('appointment_id')
+            ->count();
     }
 
     /**
      * Most frequent mistake type in range.
+     * Only counts complaints that have an appointment_id present.
      */
     public function mostFrequentType(string $startDateTime, string $endDateTime)
     {
@@ -179,6 +183,7 @@ class ComplaintService extends CrudeService
             $startDateTime,
             $endDateTime
         )
+        ->whereNull('appointment_id')
         ->groupBy('complaint_type_id')
         ->orderByDesc('count')
         ->with('complaintType')
@@ -473,15 +478,19 @@ class ComplaintService extends CrudeService
 
     /**
      * Count mistakes in a datetime range with filters
+     * Only counts complaints that have an appointment_id present.
      */
     public function countInRangeWithFilters(string $startDateTime, string $endDateTime, ?int $agentId = null, ?int $complaintTypeId = null, ?string $platform = null): int
     {
         $query = $this->buildDateRangeQuery($this->model, $startDateTime, $endDateTime);
-        return $this->buildFilteredQuery($query, $agentId, $complaintTypeId, $platform)->count();
+        return $this->buildFilteredQuery($query, $agentId, $complaintTypeId, $platform)
+            ->whereNull('appointment_id')
+            ->count();
     }
 
     /**
      * Most frequent mistake type in range with filters
+     * Only counts complaints that have an appointment_id present.
      */
     public function mostFrequentTypeWithFilters(string $startDateTime, string $endDateTime, ?int $agentId = null, ?int $complaintTypeId = null, ?string $platform = null)
     {
@@ -492,6 +501,7 @@ class ComplaintService extends CrudeService
         );
         
         return $this->buildFilteredQuery($query, $agentId, $complaintTypeId, $platform)
+            ->whereNull('appointment_id')
             ->groupBy('complaint_type_id')
             ->orderByDesc('count')
             ->with('complaintType')
