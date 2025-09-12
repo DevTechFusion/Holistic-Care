@@ -1,5 +1,4 @@
-// src/pages/dashboard/adminDashboard/Dashboard.jsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Divider,
   Menu,
@@ -12,6 +11,7 @@ import {
   Stack,
   Select,
 } from "@mui/material";
+import { getAdminDashboard } from "../../../DAL/dashboard";
 import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 import MedicalServicesIcon from "@mui/icons-material/MedicalServices";
 import BusinessIcon from "@mui/icons-material/Business";
@@ -26,13 +26,8 @@ import CreateAppointmentModal from "../../../components/forms/AppointmentForm";
 import AgentWiseBookings from "../../../components/dashboard/AgentWiseBooking";
 import SourceWiseBookings from "../../../components/dashboard/SourceWiseBooking";
 import DoctorWiseBooking from "../../../components/dashboard/DoctorWiseBooking";
-import {
-  DoctorLeaderboard,
-  RevenueSection,
-  StatsCards,
-  WelcomeSection,
-} from "../../../components/dashboard";
-
+import RevenueChart from "../../../components/dashboard/RevenueChart";
+import { DoctorLeaderboard, RevenueSection, StatsCards, WelcomeSection } from "../../../components/dashboard";
 import { useSnackbar } from "notistack";
 
 const Dashboard = () => {
@@ -41,10 +36,31 @@ const Dashboard = () => {
   const { enqueueSnackbar } = useSnackbar();
   const [filter, setFilter] = useState("weekly");
 
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
+  // NEW: Revenue state moved here
+  const [revenueData, setRevenueData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchRevenueData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await getAdminDashboard(filter);
+      const payload = response?.data?.data ?? response?.data ?? {};
+      setRevenueData(payload?.revenue?.rows || []);
+    } catch (err) {
+      setError(err?.message ?? "Failed to fetch revenue data");
+      setRevenueData([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  useEffect(() => {
+    fetchRevenueData();
+  }, [filter]);
+
+  const handleClick = (event) => setAnchorEl(event.currentTarget);
   const handleClose = (type = null) => {
     setAnchorEl(null);
     if (type) setOpenModal(type);
@@ -58,16 +74,14 @@ const Dashboard = () => {
         autoHideDuration: 3000,
       });
     } else if (message) {
-      enqueueSnackbar(message, {
-        variant: "error",
-        autoHideDuration: 3000,
-      });
+      enqueueSnackbar(message, { variant: "error", autoHideDuration: 3000 });
     }
   };
 
   return (
     <Box sx={{ bgcolor: "#f9f9f9", minHeight: "100vh", p: 3 }}>
       {/* Dropdown Menu */}
+       {/* Dropdown Menu */}
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -116,7 +130,9 @@ const Dashboard = () => {
       {/* Modals */}
       <CreateUserModal
         open={openModal === "user"}
-        onClose={(success, message) => handleModalClose(success, message, "User")}
+        onClose={(success, message) =>
+          handleModalClose(success, message, "User")
+        }
       />
       <CreateProcedureModal
         open={openModal === "procedure"}
@@ -132,7 +148,9 @@ const Dashboard = () => {
       />
       <CreateDoctorModal
         open={openModal === "doctor"}
-        onClose={(success, message) => handleModalClose(success, message, "Doctor")}
+        onClose={(success, message) =>
+          handleModalClose(success, message, "Doctor")
+        }
       />
       <CreateAppointmentModal
         open={openModal === "appointment"}
@@ -184,29 +202,23 @@ const Dashboard = () => {
         </Stack>
       </Stack>
 
-       
-          <StatsCards filter={filter} />
-        
-        
-          <DoctorLeaderboard filter={filter} />
-     
+      {/* Stats + Leaderboard */}
+      <StatsCards filter={filter} />
+      <DoctorLeaderboard filter={filter} />
 
-        
-        
-          <RevenueSection filter={filter} />
-        
+      {/* Revenue Table */}
+      <RevenueSection revenueData={revenueData} loading={loading} error={error} />
 
-          <Grid container spacing={2}>
-        {/* Bottom 3 Tables */}
-        <Grid item xs={12} md={4}>
-          <AgentWiseBookings filter={filter} />
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <SourceWiseBookings filter={filter} />
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <DoctorWiseBooking filter={filter} />
-        </Grid>
+      {/* Revenue Chart - NOW SEPARATE */}
+      <Box sx={{ mt: 3 }}>
+        <RevenueChart data={revenueData} loading={loading} />
+      </Box>
+
+      {/* Bottom 3 Tables */}
+      <Grid container spacing={2} mt={2}>
+        <Grid item xs={12} md={4}><AgentWiseBookings filter={filter} /></Grid>
+        <Grid item xs={12} md={4}><SourceWiseBookings filter={filter} /></Grid>
+        <Grid item xs={12} md={4}><DoctorWiseBooking filter={filter} /></Grid>
       </Grid>
     </Box>
   );

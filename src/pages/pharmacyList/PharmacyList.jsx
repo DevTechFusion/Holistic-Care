@@ -21,6 +21,7 @@ import {
   TextField,
   MenuItem,
   Stack,
+  Tab,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
@@ -186,41 +187,49 @@ const PharmacyList = () => {
           <Table>
             <TableHead>
               <TableRow>
+                <TableCell>Sr#</TableCell>
+                <TableCell>Date</TableCell>
                 <TableCell>Patient</TableCell>
                 <TableCell>Phone</TableCell>
                 <TableCell>MR Number</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Amount</TableCell>
                 <TableCell>Agent</TableCell>
+                <TableCell>Description</TableCell>
+                <TableCell>Amount</TableCell>
+                <TableCell>Status</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {data.length > 0 ? (
-                data.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell>{item.patient_name}</TableCell>
-                    <TableCell>{item.phone_number}</TableCell>
-                    <TableCell>{item.pharmacy_mr_number}</TableCell>
-                    <TableCell>{item.status}</TableCell>
-                    <TableCell>{item.amount}</TableCell>
-                    <TableCell>{item.agent_id}</TableCell>
-                    <TableCell>
-                      <ActionButtons
-                        handleEdit={() => handleEdit(item)}
-                        handleDelete={() => handleDelete(item.id)}
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={7} align="center">
-                    No pharmacy records found
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
+  {data.length > 0 ? (
+    data.map((item, idx) => (
+      <TableRow key={item.id}>
+        <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
+        <TableCell>{dayjs(item.created_at).format("DD-MM-YYYY")}</TableCell>
+        <TableCell>{item.patient_name}</TableCell>
+        <TableCell>{item.phone_number}</TableCell>
+        <TableCell>{item.pharmacy_mr_number}</TableCell>
+        <TableCell>{item.agent?.name || "—"}</TableCell> {/* ✅ FIXED */}
+        <TableCell>{item.description}</TableCell>
+        <TableCell>{item.amount}</TableCell>
+        <TableCell>{item.status}</TableCell>
+
+        <TableCell>
+          <ActionButtons
+            onEdit={() => handleEdit(item)}
+            onDelete={() => handleDelete(item.id)}
+          />
+        </TableCell>
+      </TableRow>
+    ))
+  ) : (
+    <TableRow>
+      <TableCell colSpan={10} align="center">
+        No pharmacy records found
+      </TableCell>
+    </TableRow>
+  )}
+</TableBody>
+
           </Table>
         )}
       </Paper>
