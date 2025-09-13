@@ -1,4 +1,3 @@
-// src/components/forms/GenericForm.jsx
 import {
   Dialog,
   DialogTitle,
@@ -33,7 +32,7 @@ const GenericFormModal = ({
   const renderField = (field, key) => {
     const commonProps = {
       key,
-      fullWidth: false,
+      fullWidth: true, // ✅ make every field full width
       label: field.label,
       value: field.value ?? "",
       onChange: field.onChange,
@@ -79,14 +78,7 @@ const GenericFormModal = ({
         );
 
       case "textarea":
-        return (
-          <TextField
-            {...commonProps}
-            multiline
-            rows={field.rows || 4}
-            sx={{ gridColumn: "span 2" }}
-          />
-        );
+        return <TextField {...commonProps} multiline rows={field.rows || 4} />;
 
       default:
         return <TextField {...commonProps} type={field.type || "text"} />;
@@ -96,12 +88,7 @@ const GenericFormModal = ({
   const renderedFields = useMemo(
     () =>
       fields.map((field, idx) => (
-        <Grid
-          item
-          xs={12}
-          md={field.type === "textarea" ? 12 : 6}
-          key={field.name || idx}
-        >
+        <Grid item xs={12} key={field.name || idx}>
           {renderField(field, field.name || idx)}
         </Grid>
       )),
@@ -109,7 +96,7 @@ const GenericFormModal = ({
   );
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>
         {title}
         <IconButton
@@ -128,7 +115,7 @@ const GenericFormModal = ({
 
       <form onSubmit={handleSubmit}>
         <DialogContent dividers>
-          <Grid container spacing={3}>
+          <Grid container spacing={2}>
             {renderedFields}
             {children && <Grid item xs={12}>{children}</Grid>}
           </Grid>
