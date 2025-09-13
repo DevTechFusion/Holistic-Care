@@ -14,7 +14,7 @@ const RevenueChart = ({ data, loading }) => {
       maximumFractionDigits: 0,
     }).format(Number(amount || 0));
 
-  const chartColors = ["#1a73e8", "#4285f4", "#fbbc05", "#34a853", "#ea4335", "#c5d0e6", "#5f6368"];
+  const chartColors = ["#1a73e8", "#f442c7ff", "#fbbc05", "#34a853", "#ea4335", "#c5d0e6", "#5f6368"];
 
   const generateChartOptions = (key, title, unit) => {
     const dataPoints = data.map((row, i) => ({
