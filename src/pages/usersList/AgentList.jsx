@@ -1,5 +1,5 @@
 // src/pages/users/UsersPage.jsx
-import { use, useEffect, useState } from "react";
+import {  useCallback, useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -30,10 +30,10 @@ const UsersPage = () => {
   const {pathname} = useLocation();
 
   // Fetch Users
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await getUsers(page + 1, rowsPerPage, pathname==="/agents"?"agent":"managerly" );
+      const res = await getUsers(page + 1, rowsPerPage, pathname === "/agents" ? "agent" : "managerly");
       setUsers(res?.data?.data || []);
       setTotal(res?.data?.total || 0);
     } catch (err) {
@@ -41,11 +41,11 @@ const UsersPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, rowsPerPage, pathname]);
 
   useEffect(() => {
     fetchUsers();
-  }, [page, rowsPerPage]);
+  }, [fetchUsers]);
 
   const handleDeleteUser = async (id) => {
     try {
@@ -85,10 +85,10 @@ const UsersPage = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>#</TableCell>
+                  <TableCell>Sr#</TableCell>
                   <TableCell>Name</TableCell>
                   <TableCell>Email</TableCell>
-                  <TableCell>Role</TableCell>
+                  <TableCell>Agent ID</TableCell>
                   <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
@@ -98,9 +98,7 @@ const UsersPage = () => {
                     <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
                     <TableCell>{user.name}</TableCell>
                     <TableCell>{user.email}</TableCell>
-                    <TableCell>
-                      {user.roles.map((role) => role.name).join(", ")}
-                    </TableCell>
+                    <TableCell>{user.id}</TableCell>
                     <TableCell>
                       <ActionButtons
                         onEdit={() => handleEditUser(user)}
