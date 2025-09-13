@@ -12,3 +12,4 @@ export { default as DoctorsAvailabilityCard } from './DoctorsAvailabilityCard';
 export { default as ManagerStatsCards } from './ManagerStatsCards';
 export { default as MistakesLog } from './MistakesLog';
 export { default as MistakesCount } from './MistakesCount';
+export { default as RevenueChart } from './RevenueChart';

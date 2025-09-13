@@ -30,7 +30,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
     time ? time.split(":").slice(0, 2).join(":") : "";
   const normalizeTime = (time) => (time ? `${time}:00` : "");
 
-  // 🔹 Helper to add minutes to a time string
+
   const addMinutes = (time, minsToAdd) => {
     if (!time) return "";
     const [hours, minutes] = time.split(":").map(Number);
@@ -197,7 +197,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
       type: "time",
       required: true,
       value: formData.end_time,
-      disabled: true, // 🔒 readonly
+      disabled: true, 
     },
     {
       name: "patient_name",

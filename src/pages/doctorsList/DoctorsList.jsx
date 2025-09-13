@@ -13,6 +13,7 @@ import {
   TableBody,
   TablePagination,
 } from "@mui/material";
+  import { useCallback } from "react";
 import { getDoctors, deleteDoctor } from "../../DAL/doctors";
 import CreateDoctorModal from "../../components/forms/DoctorForm";
 import { useSnackbar } from "notistack";
@@ -33,7 +34,7 @@ const DoctorsPage = () => {
   const role = user?.roles?.[0]?.name ?? null;
   const isSuperAdmin = role === "super_admin";
 
-  const fetchDoctors = async () => {
+  const fetchDoctors = useCallback(async () => {
     setLoading(true);
     try {
       const res = await getDoctors(page + 1, rowsPerPage);
@@ -44,11 +45,11 @@ const DoctorsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, rowsPerPage]);
 
   useEffect(() => {
     fetchDoctors();
-  }, [page, rowsPerPage]);
+  }, [fetchDoctors]);
 
   const handleDelete = async (id) => {
     try {
@@ -95,7 +96,7 @@ const DoctorsPage = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>#</TableCell>
+                  <TableCell>Sr#</TableCell>
                   <TableCell>Name</TableCell>
                   <TableCell>Phone</TableCell>
                   <TableCell>Department</TableCell>
