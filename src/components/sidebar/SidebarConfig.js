@@ -9,6 +9,7 @@ import {
   ComplaintIcon,
   ProcedureIcon,
   DepartmentIcon,
+  PharmacyIcon
 } from "../../assets/icons/sidebar";
 
 const SidebarConfig = {
@@ -54,7 +55,7 @@ const SidebarConfig = {
         },
         {
           title: "Pharmacy List",
-          icon: ProcedureIcon,
+          icon: PharmacyIcon,
           path: "/pharmacy",
         }
       ],
