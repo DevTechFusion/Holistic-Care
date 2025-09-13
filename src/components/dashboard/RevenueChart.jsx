@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Box, Typography, CircularProgress, Card, CardContent, Fade, Grid } from "@mui/material";
-import CanvasJSReact from "@canvasjs/react-charts";
 import InsertChartOutlinedIcon from "@mui/icons-material/InsertChartOutlined";
+import CanvasJSReact from "@canvasjs/react-charts";
 
 const CanvasJSChart = CanvasJSReact.CanvasJSChart;
 
@@ -16,12 +16,13 @@ const RevenueChart = ({ data, loading }) => {
 
   const chartColors = ["#1a73e8", "#4285f4", "#fbbc05", "#34a853", "#ea4335", "#c5d0e6", "#5f6368"];
 
-  
   const generateChartOptions = (key, title, unit) => {
-    const dataPoints = data.map((row) => ({
+    const dataPoints = data.map((row, i) => ({
       name: row.agent?.name || "Unknown",
       y: Number(row[key]) || 0,
+      color: chartColors[i % chartColors.length], // ✅ assign color per agent
     }));
+
     const total = data.reduce((sum, r) => sum + (Number(r[key]) || 0), 0);
 
     return {
@@ -30,11 +31,16 @@ const RevenueChart = ({ data, loading }) => {
       height: 300,
       toolTip: {
         fontSize: 14,
-        content: `<b>{name}</b><br/>{y}${unit === "currency" ? " PKR" : " bookings"}<br/>(#percent%)`,
+        content: `<b>{name}</b><br/>${
+          unit === "currency" ? formatCurrency("{y}") : "{y} bookings"
+        }<br/>(#percent%)`,
       },
       subtitles: [
         {
-          text: `Total: ${unit === "currency" ? formatCurrency(total) : `${total} bookings`}`,
+          text:
+            unit === "currency"
+              ? `Total: ${formatCurrency(total)}`
+              : `Total: ${total} bookings`,
           verticalAlign: "center",
           fontSize: 16,
           fontColor: "#475569",
@@ -51,7 +57,6 @@ const RevenueChart = ({ data, loading }) => {
           indexLabelFontSize: 12,
           yValueFormatString: unit === "currency" ? "₨#,###" : "#,### bookings",
           dataPoints,
-          colors: chartColors,
         },
       ],
     };
@@ -114,6 +119,7 @@ const RevenueChart = ({ data, loading }) => {
             p: 2,
             height: "100%",
             backgroundColor: "#f9fafb",
+            minHeight: 400,
             "&:hover": {
               transform: "translateY(-4px)",
               boxShadow: "0 16px 32px rgba(0,0,0,0.1)",
@@ -140,6 +146,7 @@ const RevenueChart = ({ data, loading }) => {
             p: 2,
             height: "100%",
             backgroundColor: "#f9fafb",
+            minHeight: 400,
             "&:hover": {
               transform: "translateY(-4px)",
               boxShadow: "0 16px 32px rgba(0,0,0,0.1)",
