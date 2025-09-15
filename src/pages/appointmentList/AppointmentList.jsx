@@ -11,7 +11,7 @@ import {
   TableCell,
   TableBody,
   TablePagination,
-  IconButton,
+  TableContainer,
 } from "@mui/material";
 import { getAppointments, deleteAppointment } from "../../DAL/appointments";
 import CreateAppointmentModal from "../../components/forms/AppointmentForm";
@@ -30,7 +30,6 @@ const AppointmentsPage = () => {
   const { enqueueSnackbar } = useSnackbar();
   const [complaintModalOpen, setComplaintModalOpen] = useState(false);
 
-  // Fetch Appointments
   const fetchAppointments = async () => {
     setLoading(true);
     try {
@@ -77,6 +76,7 @@ const AppointmentsPage = () => {
     setTargetItem(appointment);
     setComplaintModalOpen(true);
   };
+
   const handleCloseComplaint = () => {
     setTargetItem();
     setComplaintModalOpen(false);
@@ -84,12 +84,7 @@ const AppointmentsPage = () => {
 
   return (
     <Box p={3}>
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={2}
-      >
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography variant="h5">Appointments</Typography>
         <Button variant="contained" onClick={handleCreateAppointment}>
           + Add Appointment
@@ -103,54 +98,76 @@ const AppointmentsPage = () => {
           </Box>
         ) : (
           <>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Sr#</TableCell>
-                  <TableCell>Date</TableCell>
-                  <TableCell>Start Time</TableCell>
-                  <TableCell>End Time</TableCell>
-                  <TableCell>Appt. ID</TableCell>
-                  <TableCell>Duration</TableCell>
-                  <TableCell>Patient</TableCell>
-                  <TableCell>Contact</TableCell>
-                  <TableCell>Doctor</TableCell>
-                  <TableCell>Agent</TableCell>
-                  <TableCell>Procedure</TableCell>
-                  <TableCell>Department</TableCell>
-                  <TableCell>Source</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {appointments.map((appt, idx) => (
-                  <TableRow key={appt.id}>
-                    <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
-                    <TableCell>{appt.date}</TableCell>
-                    <TableCell>{appt.start_time}</TableCell>
-                    <TableCell>{appt.end_time}</TableCell>
-                    <TableCell>{appt.id}</TableCell>
-                    <TableCell>{appt.duration}</TableCell>
-                    <TableCell>{appt.patient_name}</TableCell>
-                    <TableCell>{appt.contact_number}</TableCell>
-                    <TableCell>{appt.doctor?.name}</TableCell>
-                    <TableCell>{appt.agent?.name}</TableCell>
-                    <TableCell>{appt.procedure?.name}</TableCell>
-                    <TableCell>{appt.department?.name}</TableCell>
-                    <TableCell>{appt.source?.name}</TableCell>
-                    <TableCell>
-                      <ActionButtons
-                        onEdit={() => handleUpdateAppointment(appt)}
-                        onDelete={() => handleDeleteAppointment(appt.id)}
-                        onAdd={() => handleAddComplaint(appt)}
-                      />
+            {/* ✅ Horizontal scroll + sticky Sr# column */}
+            <TableContainer sx={{ maxHeight: 700 }}>
+              <Table stickyHeader>
+                <TableHead>
+                  <TableRow>
+                    <TableCell
+                      sx={{
+                        position: "sticky",
+                        left: 0,
+                        zIndex: 2,
+                        backgroundColor: "#fff",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      Sr#
                     </TableCell>
+                    <TableCell>Date</TableCell>
+                    <TableCell>Start Time</TableCell>
+                    <TableCell>End Time</TableCell>
+                    <TableCell>Appt. ID</TableCell>
+                    <TableCell>Duration</TableCell>
+                    <TableCell>Patient</TableCell>
+                    <TableCell>Contact</TableCell>
+                    <TableCell>Doctor</TableCell>
+                    <TableCell>Agent</TableCell>
+                    <TableCell>Procedure</TableCell>
+                    <TableCell>Department</TableCell>
+                    <TableCell>Source</TableCell>
+                    <TableCell>Actions</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHead>
+                <TableBody>
+                  {appointments.map((appt, idx) => (
+                    <TableRow key={appt.id}>
+                      <TableCell
+                        sx={{
+                          position: "sticky",
+                          left: 0,
+                          zIndex: 1,
+                          backgroundColor: "#fff",
+                          fontWeight: 500,
+                        }}
+                      >
+                        {page * rowsPerPage + idx + 1}
+                      </TableCell>
+                      <TableCell>{appt.date}</TableCell>
+                      <TableCell>{appt.start_time}</TableCell>
+                      <TableCell>{appt.end_time}</TableCell>
+                      <TableCell>{appt.id}</TableCell>
+                      <TableCell>{appt.duration}</TableCell>
+                      <TableCell>{appt.patient_name}</TableCell>
+                      <TableCell>{appt.contact_number}</TableCell>
+                      <TableCell>{appt.doctor?.name}</TableCell>
+                      <TableCell>{appt.agent?.name}</TableCell>
+                      <TableCell>{appt.procedure?.name}</TableCell>
+                      <TableCell>{appt.department?.name}</TableCell>
+                      <TableCell>{appt.source?.name}</TableCell>
+                      <TableCell>
+                        <ActionButtons
+                          onEdit={() => handleUpdateAppointment(appt)}
+                          onDelete={() => handleDeleteAppointment(appt.id)}
+                          onAdd={() => handleAddComplaint(appt)}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
 
-            {/* Pagination */}
             <TablePagination
               component="div"
               count={total}
@@ -167,7 +184,7 @@ const AppointmentsPage = () => {
         )}
       </Paper>
 
-      {/* Create/Edit Appointment Modal */}
+      {/* Modals */}
       <CreateAppointmentModal
         isEditing={!!targetItem}
         data={targetItem}

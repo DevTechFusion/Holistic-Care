@@ -32,7 +32,7 @@ const GenericFormModal = ({
   const renderField = (field, key) => {
     const commonProps = {
       key,
-      fullWidth: true, // ✅ make every field full width
+      fullWidth: true,
       label: field.label,
       value: field.value ?? "",
       onChange: field.onChange,
@@ -40,6 +40,10 @@ const GenericFormModal = ({
       disabled: field.disabled,
       margin: "normal",
       variant: "outlined",
+
+      // ✅ Add error + helper text support
+      error: Boolean(field.error),
+      helperText: field.error || "",
     };
 
     switch (field.type) {
@@ -57,6 +61,11 @@ const GenericFormModal = ({
               clearIcon={null}
               className="MuiTimePicker"
             />
+            {field.error && (
+              <Typography color="error" variant="caption">
+                {field.error}
+              </Typography>
+            )}
           </Box>
         );
 

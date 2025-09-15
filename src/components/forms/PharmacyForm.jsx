@@ -39,7 +39,9 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
   const [rolesError, setRolesError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Reset form when modal opens
+  // ✅ Validation state
+  const [amountError, setAmountError] = useState("");
+
   useEffect(() => {
     if (open) {
       setFormData(
@@ -47,11 +49,23 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
           ? { ...data, date: data.date ? dayjs(data.date) : null }
           : defaultFormData
       );
+      setAmountError(""); // reset validation
     }
   }, [open, isEditing, data]);
 
   const handleChange = useCallback((field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+
+    // ✅ Live validation for amount
+    if (field === "amount") {
+      if (value === "" || value === null) {
+        setAmountError("Amount is required");
+      } else if (Number(value) < 0) {
+        setAmountError("Amount must be a positive number");
+      } else {
+        setAmountError("");
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -71,6 +85,13 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
   }, []);
 
   const handleSubmit = async () => {
+    // ✅ Final validation before submit
+    if (isEditing && (formData.amount === "" || Number(formData.amount) < 0)) {
+      setAmountError("Please enter a valid positive amount");
+      enqueueSnackbar("Fix validation errors before submitting", { variant: "error" });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const payload = {
@@ -82,9 +103,6 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
         ? await updatePharmacy(data?.id, payload)
         : await createPharmacy(payload);
 
-      console.log("Pharmacy API response:", res);
-
-      // ✅ Robust success check
       const success =
         (res?.status && res.status >= 200 && res.status < 300) ||
         String(res?.data?.status || "").toLowerCase() === "success" ||
@@ -99,7 +117,7 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
           { variant: "success" }
         );
         setFormData(defaultFormData);
-        onClose(); // ✅ Close modal after success
+        onClose();
       } else {
         enqueueSnackbar(
           res?.data?.message || res?.message || "Failed to save pharmacy record",
@@ -119,10 +137,10 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
 
   const handleClose = () => {
     setFormData(defaultFormData);
+    setAmountError("");
     onClose();
   };
 
-  // Memoized dropdown options
   const roleOptions = useMemo(
     () =>
       roles.map((role) => (
@@ -215,30 +233,35 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
           </Select>
         </FormControl>
 
-        <TextField
-          label="Amount"
-          type="number"
-          fullWidth
-          value={formData.amount}
-          onChange={(e) => handleChange("amount", e.target.value)}
-        />
+        {isEditing && (
+          <>
+            <TextField
+              label="Amount"
+              type="number"
+              fullWidth
+              value={formData.amount}
+              onChange={(e) => handleChange("amount", e.target.value)}
+              error={!!amountError}
+              helperText={amountError}
+            />
 
-        <FormControl fullWidth variant="outlined">
-  <InputLabel id="payment-mode-label">Payment Mode</InputLabel>
-  <Select
-    labelId="payment-mode-label"
-    value={formData.payment_mode}
-    onChange={(e) => handleChange("payment_mode", e.target.value)}
-    label="Payment Mode" // ✅ Required for proper floating label
-  >
-    {paymentOptions.map((mode) => (
-      <MenuItem key={mode} value={mode}>
-        {mode.charAt(0).toUpperCase() + mode.slice(1)}
-      </MenuItem>
-    ))}
-  </Select>
-</FormControl>
-
+            <FormControl fullWidth variant="outlined">
+              <InputLabel id="payment-mode-label">Payment Mode</InputLabel>
+              <Select
+                labelId="payment-mode-label"
+                value={formData.payment_mode}
+                onChange={(e) => handleChange("payment_mode", e.target.value)}
+                label="Payment Mode"
+              >
+                {paymentOptions.map((mode) => (
+                  <MenuItem key={mode} value={mode}>
+                    {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </>
+        )}
       </Stack>
     </GenericFormModal>
   );

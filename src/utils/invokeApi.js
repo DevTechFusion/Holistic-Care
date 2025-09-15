@@ -41,15 +41,17 @@ export async function invokeApi({
 
     return results.data;
   } catch (error) {
-    console.log("<===Api-Error===>", error);
+  console.log("<===Api-Error===>", error.response?.data);
 
-    if (error.response.status === 401) {
-      localStorage.clear();
-      window.location.reload();
-    }
-    return {
-      code: error.response.status,
-      message: error.response.data.message ? error.response.data.message : "",
-    };
+  if (error.response?.status === 401) {
+    localStorage.clear();
+    window.location.reload();
   }
+
+  return {
+    code: error.response?.status,
+    message: error.response?.data?.message || "Something went wrong",
+    errors: error.response?.data?.errors || {}, 
+  };
+}
 }

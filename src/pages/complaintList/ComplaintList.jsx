@@ -11,28 +11,38 @@ import {
   TableBody,
   TablePagination,
   Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  IconButton,
 } from "@mui/material";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { useSnackbar } from "notistack";
 import ActionButtons from "../../constants/actionButtons";
 import { getAllMistakes } from "../../DAL/mistakes";
 import ComplaintForm from "../../components/forms/ComplaintForm";
 
-
 const ComplaintList = () => {
   const { enqueueSnackbar } = useSnackbar();
   const [complaints, setComplaints] = useState([]);
-  const [page, setPage] = useState(0); 
+  const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
   const [targetItem, setTargetItem] = useState(null);
   const [complaintModalOpen, setComplaintModalOpen] = useState(false);
 
+  
+  const [selectedDescription, setSelectedDescription] = useState("");
+  const [descriptionModalOpen, setDescriptionModalOpen] = useState(false);
+
   const fetchComplaints = async () => {
     setLoading(true);
     try {
-      const res = await getAllMistakes(page + 1, rowsPerPage); 
-      setComplaints(res?.data?.data || []); 
+      const res = await getAllMistakes(page + 1, rowsPerPage);
+      setComplaints(res?.data?.data || []);
       setTotal(res?.data?.total || 0);
     } catch (err) {
       console.error("Failed to fetch complaints", err);
@@ -49,6 +59,25 @@ const ComplaintList = () => {
   const handleUpdateComplaint = (complaint) => {
     setTargetItem(complaint);
     setComplaintModalOpen(true);
+  };
+
+  const handleOpenDescription = (desc) => {
+    setSelectedDescription(desc);
+    setDescriptionModalOpen(true);
+  };
+
+  const handleCloseDescription = () => {
+    setSelectedDescription("");
+    setDescriptionModalOpen(false);
+  };
+
+  const handleCopyDescription = async () => {
+    try {
+      await navigator.clipboard.writeText(selectedDescription);
+      enqueueSnackbar("Description copied to clipboard!", { variant: "success" });
+    } catch (err) {
+      enqueueSnackbar("Failed to copy description", { variant: "error" });
+    }
   };
 
   return (
@@ -82,12 +111,26 @@ const ComplaintList = () => {
               <TableBody>
                 {complaints.map((complaint, idx) => (
                   <TableRow key={complaint.id || idx}>
-                    {/* Sr# calculation */}
                     <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
-
                     <TableCell>{complaint.appointment_id || "-"}</TableCell>
                     <TableCell>{complaint.complaint_type?.name || "-"}</TableCell>
-                    <TableCell>{complaint.description}</TableCell>
+
+                    {/* ✅ Description cell with truncation + click to expand */}
+                    <TableCell
+                      sx={{
+                        maxWidth: 250,
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        cursor: "pointer",
+                        color: "primary.main",
+                      }}
+                      onClick={() => handleOpenDescription(complaint.description)}
+                      title="Click to view full description"
+                    >
+                      {complaint.description}
+                    </TableCell>
+
                     <TableCell>{complaint.doctor?.name || "-"}</TableCell>
                     <TableCell>{complaint.agent?.name || "-"}</TableCell>
                     <TableCell>
@@ -98,9 +141,7 @@ const ComplaintList = () => {
                       )}
                     </TableCell>
                     <TableCell>
-                      <ActionButtons
-                        onEdit={() => handleUpdateComplaint(complaint)}
-                      />
+                      <ActionButtons onEdit={() => handleUpdateComplaint(complaint)} />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -123,16 +164,38 @@ const ComplaintList = () => {
           </>
         )}
       </Paper>
+
+      {/* Complaint Modal (Edit Form) */}
       <ComplaintForm
-      isEditing={!!targetItem}
-      data={targetItem}
-      open={complaintModalOpen}
-      onClose={() => {
-        setComplaintModalOpen(false);
-        setTargetItem(null);
-        fetchComplaints();
-      }}
+        isEditing={!!targetItem}
+        data={targetItem}
+        open={complaintModalOpen}
+        onClose={() => {
+          setComplaintModalOpen(false);
+          setTargetItem(null);
+          fetchComplaints();
+        }}
       />
+
+      {/* ✅ Description Modal */}
+      <Dialog open={descriptionModalOpen} onClose={handleCloseDescription} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          Complaint Description
+          <IconButton onClick={handleCopyDescription} size="small" sx={{ ml: 1 }}>
+            <ContentCopyIcon fontSize="small" />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          <Typography variant="body1" sx={{ whiteSpace: "pre-wrap" }}>
+            {selectedDescription}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDescription} variant="contained">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

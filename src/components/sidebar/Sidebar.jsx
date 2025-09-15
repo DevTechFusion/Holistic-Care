@@ -21,9 +21,7 @@ import { useAuth } from "../../contexts/AuthContext";
 
 const Sidebar = () => {
   const [openDropdowns, setOpenDropdowns] = useState({});
-
   const { user } = useAuth();
-
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -50,11 +48,8 @@ const Sidebar = () => {
   return (
     <Box
       sx={{
-        width: {
-          xs: "0%", // small screens
-          md: "20%", // medium and up
-        },
-        minHeight: "100vh",
+        width: { xs: "0%", md: "20%" },
+        height: "100vh",
         background: "white",
         display: "flex",
         flexDirection: "column",
@@ -67,7 +62,7 @@ const Sidebar = () => {
       {/* Logo Section */}
       <Box
         sx={{
-          height: "100%",
+          flexShrink: 0,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -82,17 +77,22 @@ const Sidebar = () => {
         />
       </Box>
 
-      {/* Scrollable Menu */}
+      {/* Scrollable Menu Area */}
       <Box
         sx={{
           flex: 1,
           overflowY: "auto",
           display: "flex",
           flexDirection: "column",
-          justifyContent: "space-between",
+          // Optional: smooth scroll bar styling
+          "&::-webkit-scrollbar": { width: "6px" },
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: "rgba(0,0,0,0.2)",
+            borderRadius: "4px",
+          },
         }}
       >
-        <List>
+        <List sx={{ flexGrow: 1 }}>
           {(SidebarConfig[user?.roles[0]?.name] || []).map((item) => {
             const parentActive =
               isActive(item.path) ||
@@ -123,9 +123,7 @@ const Sidebar = () => {
                           ? "primary.main"
                           : "primary.dark",
                         color: "white",
-                        "& .MuiListItemIcon-root": {
-                          color: "white",
-                        },
+                        "& .MuiListItemIcon-root": { color: "white" },
                       },
                     }}
                   >
@@ -212,7 +210,9 @@ const Sidebar = () => {
             );
           })}
         </List>
-        <List>
+
+        {/* Logout Section - stays at bottom */}
+        <List sx={{ flexShrink: 0 }}>
           <ListItem disablePadding>
             <ListItemButton
               onClick={handleLogout}

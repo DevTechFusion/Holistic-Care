@@ -21,8 +21,14 @@ import {
   TextField,
   MenuItem,
   Stack,
-  Tab,
+  Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
 } from "@mui/material";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 import PharmacyForm from "../../components/forms/PharmacyForm";
@@ -35,32 +41,55 @@ const PharmacyList = () => {
   const [selectedPharmacy, setSelectedPharmacy] = useState(null);
   const [openModal, setOpenModal] = useState(false);
 
-  // 🔹 Pagination
+  const [totalIncentive, setTotalIncentive] = useState(0);
+
+  // Pagination
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [total, setTotal] = useState(0);
 
-  // 🔹 Filters
+  // Filters
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
   const [agentId, setAgentId] = useState("");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
 
-  // 🔹 Debounced search
+  // ✅ State for description modal
+  const [selectedDescription, setSelectedDescription] = useState("");
+  const [descriptionModalOpen, setDescriptionModalOpen] = useState(false);
+
+  const handleOpenDescription = (desc) => {
+    setSelectedDescription(desc || "");
+    setDescriptionModalOpen(true);
+  };
+
+  const handleCloseDescription = () => {
+    setSelectedDescription("");
+    setDescriptionModalOpen(false);
+  };
+
+  const handleCopyDescription = async () => {
+    try {
+      await navigator.clipboard.writeText(selectedDescription);
+      enqueueSnackbar("Description copied to clipboard!", { variant: "success" });
+    } catch (err) {
+      enqueueSnackbar("Failed to copy description", { variant: "error" });
+    }
+  };
+
+  // Debounced search
   const [debouncedSearch, setDebouncedSearch] = useState("");
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearch(search), 500);
     return () => clearTimeout(handler);
   }, [search]);
 
-  // 🔹 Fetch Pharmacies
+  // Fetch Pharmacies
   const fetchPharmacies = useCallback(async () => {
     setLoading(true);
     try {
       let res;
-
-      // If date range or search → use getFilteredPharmacy
       if (startDate || endDate || debouncedSearch) {
         res = await getFilteredPharmacy(
           agentId || "",
@@ -68,14 +97,13 @@ const PharmacyList = () => {
           endDate ? dayjs(endDate).format("YYYY-MM-DD") : "",
           debouncedSearch || ""
         );
-        setData(res?.data?.data || []);
-        setTotal(res?.data?.total || (res?.data?.data?.length ?? 0));
       } else {
-        // Otherwise use getPharmacy (with pagination + status)
         res = await getPharmacy(page + 1, rowsPerPage, agentId || "", status || "");
-        setData(res?.data?.data || []);
-        setTotal(res?.data?.total || 0);
       }
+
+      setData(res?.data?.data || []);
+      setTotal(res?.data?.total || (res?.data?.data?.length ?? 0));
+      setTotalIncentive(res?.total_incentive || 0);
     } catch (err) {
       console.error("Failed to fetch pharmacies", err);
       enqueueSnackbar("Failed to fetch pharmacies", { variant: "error" });
@@ -88,14 +116,12 @@ const PharmacyList = () => {
     fetchPharmacies();
   }, [fetchPharmacies]);
 
-  // 🔹 Delete
+  // Delete
   const handleDelete = async (id) => {
     setLoading(true);
     try {
       await deletePharmacy(id);
-      enqueueSnackbar("Pharmacy record deleted successfully", {
-        variant: "success",
-      });
+      enqueueSnackbar("Pharmacy record deleted successfully", { variant: "success" });
       fetchPharmacies();
     } catch (err) {
       console.error("Failed to delete pharmacy record", err);
@@ -104,13 +130,13 @@ const PharmacyList = () => {
     }
   };
 
-  // 🔹 Edit
+  // Edit
   const handleEdit = (record) => {
     setSelectedPharmacy(record);
     setOpenModal(true);
   };
 
-  // 🔹 Close Modal
+  // Close Modal
   const handleCloseModal = () => {
     setOpenModal(false);
     setSelectedPharmacy(null);
@@ -124,9 +150,16 @@ const PharmacyList = () => {
         <Typography variant="h4" fontWeight={600}>
           Pharmacy List
         </Typography>
-        <Button variant="contained" onClick={() => setOpenModal(true)}>
-          + Add Pharmacy Record
-        </Button>
+
+        <Stack direction="row" spacing={2} alignItems="center">
+          <Button variant="contained" sx={{ fontWeight: "bold" }} disableElevation>
+            Total Incentive: {Number(totalIncentive).toFixed(2)}
+          </Button>
+
+          <Button variant="contained" onClick={() => setOpenModal(true)}>
+            + Add Pharmacy Record
+          </Button>
+        </Stack>
       </Box>
 
       {/* Filters */}
@@ -178,13 +211,13 @@ const PharmacyList = () => {
       </Stack>
 
       {/* Table */}
-      <Paper>
+      <Paper sx={{ width: "100%", overflowX: "auto" }}>
         {loading ? (
           <Box display="flex" justifyContent="center" alignItems="center" p={2}>
             <CircularProgress />
           </Box>
         ) : (
-          <Table>
+          <Table stickyHeader>
             <TableHead>
               <TableRow>
                 <TableCell>Sr#</TableCell>
@@ -193,6 +226,7 @@ const PharmacyList = () => {
                 <TableCell>Phone</TableCell>
                 <TableCell>MR Number</TableCell>
                 <TableCell>Agent</TableCell>
+                <TableCell>Agent ID</TableCell>
                 <TableCell>Description</TableCell>
                 <TableCell>Amount</TableCell>
                 <TableCell>Status</TableCell>
@@ -200,36 +234,51 @@ const PharmacyList = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-  {data.length > 0 ? (
-    data.map((item, idx) => (
-      <TableRow key={item.id}>
-        <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
-        <TableCell>{dayjs(item.created_at).format("DD-MM-YYYY")}</TableCell>
-        <TableCell>{item.patient_name}</TableCell>
-        <TableCell>{item.phone_number}</TableCell>
-        <TableCell>{item.pharmacy_mr_number}</TableCell>
-        <TableCell>{item.agent?.name || "—"}</TableCell> {/* ✅ FIXED */}
-        <TableCell>{item.description}</TableCell>
-        <TableCell>{item.amount}</TableCell>
-        <TableCell>{item.status}</TableCell>
+              {data.length > 0 ? (
+                data.map((item, idx) => (
+                  <TableRow key={item.id}>
+                    <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
+                    <TableCell>{dayjs(item.date).format("DD-MM-YYYY")}</TableCell>
+                    <TableCell>{item.patient_name}</TableCell>
+                    <TableCell>{item.phone_number}</TableCell>
+                    <TableCell>{item.pharmacy_mr_number}</TableCell>
+                    <TableCell>{item.agent?.name || "—"}</TableCell>
+                    <TableCell>{item.agent?.id || "—"}</TableCell>
 
-        <TableCell>
-          <ActionButtons
-            onEdit={() => handleEdit(item)}
-            onDelete={() => handleDelete(item.id)}
-          />
-        </TableCell>
-      </TableRow>
-    ))
-  ) : (
-    <TableRow>
-      <TableCell colSpan={10} align="center">
-        No pharmacy records found
-      </TableCell>
-    </TableRow>
-  )}
-</TableBody>
+                    {/* ✅ Description cell with modal trigger */}
+                    <TableCell
+                      sx={{
+                        maxWidth: 250,
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        cursor: "pointer",
+                        color: "primary.main",
+                      }}
+                      onClick={() => handleOpenDescription(item.description)}
+                      title="Click to view full description"
+                    >
+                      {item.description || "—"}
+                    </TableCell>
 
+                    <TableCell>{item.amount}</TableCell>
+                    <TableCell>{item.status}</TableCell>
+                    <TableCell>
+                      <ActionButtons
+                        onEdit={() => handleEdit(item)}
+                        onDelete={() => handleDelete(item.id)}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={11} align="center">
+                    No pharmacy records found
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
           </Table>
         )}
       </Paper>
@@ -255,6 +304,26 @@ const PharmacyList = () => {
         isEditing={!!selectedPharmacy}
         data={selectedPharmacy}
       />
+
+      {/* ✅ Description Modal */}
+      <Dialog open={descriptionModalOpen} onClose={handleCloseDescription} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          Pharmacy Description
+          <IconButton onClick={handleCopyDescription} size="small" sx={{ ml: 1 }}>
+            <ContentCopyIcon fontSize="small" />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          <Typography variant="body1" sx={{ whiteSpace: "pre-wrap" }}>
+            {selectedDescription}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDescription} variant="contained">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
