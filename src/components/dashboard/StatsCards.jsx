@@ -53,7 +53,7 @@ const StatsCards = ({ filter }) => {
   ];
 
   return (
-    <Grid container spacing={4}>
+    <Grid container spacing={3}>
       {stats.map((stat, index) => {
         const IconComponent = stat.icon;
         return (
@@ -61,7 +61,6 @@ const StatsCards = ({ filter }) => {
             <Card
               sx={{
                 height: "150px",
-
                 borderRadius: 3,
                 boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                 "&:hover": {
@@ -94,7 +93,7 @@ const StatsCards = ({ filter }) => {
                   variant="body2"
                   sx={{
                     color: "text.secondary",
-                    mb: 2,
+                    fontWeight: "medium",
                   }}
                 >
                   {stat.title}

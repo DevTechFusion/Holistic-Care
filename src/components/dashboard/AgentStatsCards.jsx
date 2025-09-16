@@ -55,15 +55,14 @@ const AgentStatsCards = ({ filter }) => {
   ];
 
   return (
-    <Grid container spacing={4}>
+    <Grid container spacing={3}>
       {stats.map((stat, index) => {
         const IconComponent = stat.icon;
         return (
           <Grid item xs={12} sm={6} md={3} key={index}>
             <Card
               sx={{
-                height: "100%",
-                width: "150px",
+                height: "150px",
                 borderRadius: 3,
                 boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                 "&:hover": {
@@ -73,19 +72,19 @@ const AgentStatsCards = ({ filter }) => {
                 },
               }}
             >
-              <CardContent sx={{ p: 4, position: "relative" }}>
+              <CardContent sx={{ p: 2, position: "relative" }}>
                 {/* Icon */}
-                <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                   <IconComponent sx={{ color: stat.color, fontSize: 32 }} />
                 </Box>
 
                 {/* Value */}
                 <Typography
-                  variant="h3"
+                  variant="h4"
                   sx={{
                     fontWeight: "bold",
                     color: stat.color,
-                    
+                    mb: 1,
                   }}
                 >
                   {stat.value}
@@ -96,7 +95,7 @@ const AgentStatsCards = ({ filter }) => {
                   variant="body2"
                   sx={{
                     color: "text.secondary",
-                    
+                    fontWeight: "medium",
                   }}
                 >
                   {stat.title}

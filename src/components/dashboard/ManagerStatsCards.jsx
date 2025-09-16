@@ -57,7 +57,7 @@ const StatsCards = ({ filter }) => {
   ];
 
   return (
-    <Grid container spacing={4}>
+    <Grid container spacing={3}>
       {stats.map((stat, index) => {
         const IconComponent = stat.icon;
         return (
@@ -80,31 +80,28 @@ const StatsCards = ({ filter }) => {
                   <IconComponent sx={{ color: stat.color, fontSize: 32 }} />
                 </Box>
 
-                 {/* Title */}
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontWeight: "bold",
-                    color: "text.secondary",
-                    mb: 2,
-                  }}
-                >
-                  {stat.title}
-                </Typography>
-
                 {/* Value */}
                 <Typography
                   variant="h4"
                   sx={{
                     fontWeight: "bold",
-                    color: "black",
+                    color: stat.color,
                     mb: 1,
                   }}
                 >
                   {stat.value}
                 </Typography>
 
-               
+                {/* Title */}
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: "text.secondary",
+                    fontWeight: "medium",
+                  }}
+                >
+                  {stat.title}
+                </Typography>
               </CardContent>
             </Card>
           </Grid>
