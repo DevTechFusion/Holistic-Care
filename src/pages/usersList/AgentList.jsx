@@ -1,5 +1,5 @@
 // src/pages/users/UsersPage.jsx
-import {  useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -27,13 +27,17 @@ const UsersPage = () => {
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [total, setTotal] = useState(0);
 
-  const {pathname} = useLocation();
+  const { pathname } = useLocation();
 
   // Fetch Users
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await getUsers(page + 1, rowsPerPage, pathname === "/agents" ? "agent" : "managerly");
+      const res = await getUsers(
+        page + 1,
+        rowsPerPage,
+        pathname === "/agents" ? "agent" : "managerly"
+      );
       setUsers(res?.data?.data || []);
       setTotal(res?.data?.total || 0);
     } catch (err) {
@@ -71,7 +75,7 @@ const UsersPage = () => {
       >
         <Typography variant="h5">Users</Typography>
         <Button variant="contained" onClick={() => setOpenModal(true)}>
-          + Add User
+          + Add Agent
         </Button>
       </Box>
 
@@ -130,6 +134,7 @@ const UsersPage = () => {
         isEditing={!!targetItem}
         data={targetItem}
         open={openModal}
+        defaultRole={pathname === "/managers" ? "managerly" : "agent"} // ✅ auto-select
         onClose={() => {
           setOpenModal(false);
           fetchUsers();

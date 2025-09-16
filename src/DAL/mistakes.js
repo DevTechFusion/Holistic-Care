@@ -9,9 +9,9 @@ export const createMistake = (data) => {
   return invokeApi(reqObj);
 };
 
-export const getAllMistakes = (page = 1, per_page = 15) => {
+export const getAllMistakes = (filter = "all", page = 1, per_page = 15) => {
   return invokeApi({
-    path: `api/mistakes?page=${page}&per_page=${per_page}`,
+    path: `api/mistakes?filters=${filter}&page=${page}&per_page=${per_page}`,
   });
 };
 

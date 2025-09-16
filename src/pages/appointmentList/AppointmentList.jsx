@@ -18,6 +18,8 @@ import CreateAppointmentModal from "../../components/forms/AppointmentForm";
 import ActionButtons from "../../constants/actionButtons";
 import { useSnackbar } from "notistack";
 import ComplaintForm from "../../components/forms/ComplaintForm";
+import dayjs from "dayjs";
+
 
 const AppointmentsPage = () => {
   const [appointments, setAppointments] = useState([]);
@@ -100,20 +102,10 @@ const AppointmentsPage = () => {
           <>
             {/* ✅ Horizontal scroll + sticky Sr# column */}
             <TableContainer sx={{ maxHeight: 700 }}>
-              <Table stickyHeader>
+              <Table fixedHeader>
                 <TableHead>
                   <TableRow>
-                    <TableCell
-                      sx={{
-                        position: "sticky",
-                        left: 0,
-                        zIndex: 2,
-                        backgroundColor: "#fff",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      Sr#
-                    </TableCell>
+                    <TableCell>Sr#</TableCell>
                     <TableCell>Date</TableCell>
                     <TableCell>Start Time</TableCell>
                     <TableCell>End Time</TableCell>
@@ -143,7 +135,7 @@ const AppointmentsPage = () => {
                       >
                         {page * rowsPerPage + idx + 1}
                       </TableCell>
-                      <TableCell>{appt.date}</TableCell>
+                      <TableCell>{dayjs(appt.date).format("DD-MM-YYYY")}</TableCell>
                       <TableCell>{appt.start_time}</TableCell>
                       <TableCell>{appt.end_time}</TableCell>
                       <TableCell>{appt.id}</TableCell>

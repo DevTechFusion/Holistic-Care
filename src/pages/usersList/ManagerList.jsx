@@ -27,13 +27,17 @@ const UsersPage = () => {
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [total, setTotal] = useState(0);
 
-  const {pathname} = useLocation();
+  const { pathname } = useLocation();
 
   // Fetch Users
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await getUsers(page + 1, rowsPerPage, pathname === "/managers" ? "managerly" : "agent");
+      const res = await getUsers(
+        page + 1,
+        rowsPerPage,
+        pathname === "/managers" ? "managerly" : "agent"
+      );
       setUsers(res?.data?.data || []);
       setTotal(res?.data?.total || 0);
     } catch (err) {
@@ -71,7 +75,7 @@ const UsersPage = () => {
       >
         <Typography variant="h5">Users</Typography>
         <Button variant="contained" onClick={() => setOpenModal(true)}>
-          + Add User
+          + Add Manager
         </Button>
       </Box>
 
@@ -99,7 +103,7 @@ const UsersPage = () => {
                     <TableCell>{user.name}</TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>{user.id}</TableCell>
-                  
+
                     <TableCell>
                       <ActionButtons
                         onEdit={() => handleEditUser(user)}
@@ -131,6 +135,7 @@ const UsersPage = () => {
         isEditing={!!targetItem}
         data={targetItem}
         open={openModal}
+        defaultRole={pathname === "/agent" ? "agent" : "managerly"} // ✅ auto-select
         onClose={() => {
           setOpenModal(false);
           fetchUsers();

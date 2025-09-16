@@ -64,13 +64,8 @@ const Dashboard = () => {
           sx: { borderRadius: 2, minWidth: 200, mt: 1 },
         }}
       >
-        <MenuItem onClick={() => handleClose("user")}>
-          <ListItemIcon>
-            <PersonAddAltIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText primary="User" />
-        </MenuItem>
-        <Divider />
+  
+      
         <MenuItem onClick={() => handleClose("procedure")}>
           <ListItemIcon>
             <MedicalServicesIcon fontSize="small" />
@@ -98,13 +93,12 @@ const Dashboard = () => {
           </ListItemIcon>
           <ListItemText primary="Appointment" />
         </MenuItem>
+    
       </Menu>
+      
 
       {/* Modals */}
-      <CreateUserModal
-        open={openModal === "user"}
-        onClose={(success, message) => handleModalClose(success, message, "User")}
-      />
+     
       <CreateProcedureModal
         open={openModal === "procedure"}
         onClose={(success, message) =>

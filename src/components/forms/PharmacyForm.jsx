@@ -88,7 +88,9 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
     // ✅ Final validation before submit
     if (isEditing && (formData.amount === "" || Number(formData.amount) < 0)) {
       setAmountError("Please enter a valid positive amount");
-      enqueueSnackbar("Fix validation errors before submitting", { variant: "error" });
+      enqueueSnackbar("Fix validation errors before submitting", {
+        variant: "error",
+      });
       return;
     }
 
@@ -120,14 +122,17 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
         onClose();
       } else {
         enqueueSnackbar(
-          res?.data?.message || res?.message || "Failed to save pharmacy record",
+          res?.data?.message ||
+            res?.message ||
+            "Failed to save pharmacy record",
           { variant: "error" }
         );
       }
     } catch (error) {
       console.error("Error saving pharmacy record:", error);
       enqueueSnackbar(
-        error?.response?.data?.message || "Something went wrong. Please try again.",
+        error?.response?.data?.message ||
+          "Something went wrong. Please try again.",
         { variant: "error" }
       );
     } finally {
@@ -182,12 +187,21 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
           value={formData.description}
           onChange={(e) => handleChange("description", e.target.value)}
         />
-
         <TextField
           label="Phone Number"
           fullWidth
+          type="tel" // ✅ 'tel' is better than 'phone' (HTML doesn't have type="phone")
           value={formData.phone_number}
-          onChange={(e) => handleChange("phone_number", e.target.value)}
+          onChange={(e) => {
+            const value = e.target.value;
+            // ✅ Allow only digits (remove everything else)
+            const numericValue = value.replace(/\D/g, "");
+            handleChange("phone_number", numericValue);
+          }}
+          inputProps={{
+            inputMode: "numeric", // ✅ shows numeric keypad on mobile
+            pattern: "[0-9]*", // ✅ hint for browsers
+          }}
         />
 
         <TextField
@@ -214,7 +228,11 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
               onChange={(e) => handleChange("agent_id", e.target.value)}
               label="Agent"
             >
-              {roles.length > 0 ? roleOptions : <MenuItem disabled>No agents available</MenuItem>}
+              {roles.length > 0 ? (
+                roleOptions
+              ) : (
+                <MenuItem disabled>No agents available</MenuItem>
+              )}
             </Select>
           )}
         </FormControl>

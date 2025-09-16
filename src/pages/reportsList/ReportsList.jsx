@@ -15,6 +15,7 @@ import {
 
 import { getAllReports } from "../../DAL/reports";
 import { useSnackbar } from "notistack";
+import dayjs from "dayjs";
 
 const statusColors = {
   "Already Taken": "#e7f2fe", 
@@ -71,20 +72,10 @@ const ReportsPage = () => {
         ) : (
           <>
             <TableContainer sx={{ maxHeight: 700 }}>
-              <Table stickyHeader>
+              <Table fixedHeader>
                 <TableHead>
                   <TableRow>
-                    <TableCell
-                      sx={{
-                        position: "sticky",
-                        left: 0,
-                        zIndex: 2,
-                        backgroundColor: "#fff",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      Sr#
-                    </TableCell>
+                    <TableCell>Sr#</TableCell>
                     <TableCell>Date</TableCell>
                     <TableCell>Duration</TableCell>
                     <TableCell>Patient</TableCell>
@@ -128,7 +119,7 @@ const ReportsPage = () => {
                         >
                           {page * rowsPerPage + idx + 1}
                         </TableCell>
-                        <TableCell>{rep.appointment?.date}</TableCell>
+                        <TableCell>{dayjs(rep.appointment?.date).format("DD-MM-YYYY")}</TableCell>
                         <TableCell>{rep.appointment?.duration}</TableCell>
                         <TableCell>{rep.appointment?.patient_name}</TableCell>
                         <TableCell>{rep.appointment?.contact_number}</TableCell>

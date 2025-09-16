@@ -17,6 +17,10 @@ import {
   DialogActions,
   Button,
   IconButton,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { useSnackbar } from "notistack";
@@ -34,14 +38,16 @@ const ComplaintList = () => {
   const [targetItem, setTargetItem] = useState(null);
   const [complaintModalOpen, setComplaintModalOpen] = useState(false);
 
-  
   const [selectedDescription, setSelectedDescription] = useState("");
   const [descriptionModalOpen, setDescriptionModalOpen] = useState(false);
+
+  const [filterType, setFilterType] = useState("all");
 
   const fetchComplaints = async () => {
     setLoading(true);
     try {
-      const res = await getAllMistakes(page + 1, rowsPerPage);
+      // ✅ Pass filterType as the first parameter to the API call
+      const res = await getAllMistakes(filterType, page + 1, rowsPerPage);
       setComplaints(res?.data?.data || []);
       setTotal(res?.data?.total || 0);
     } catch (err) {
@@ -52,9 +58,15 @@ const ComplaintList = () => {
     }
   };
 
+  // ✅ Reset page to 0 when filter changes
+  useEffect(() => {
+    setPage(0);
+  }, [filterType]);
+
+  // ✅ Include filterType in dependency array so it refetches when filter changes
   useEffect(() => {
     fetchComplaints();
-  }, [page, rowsPerPage]);
+  }, [filterType, page, rowsPerPage]);
 
   const handleUpdateComplaint = (complaint) => {
     setTargetItem(complaint);
@@ -80,12 +92,32 @@ const ComplaintList = () => {
     }
   };
 
+ 
+  const filteredComplaints = complaints.filter((complaint) => {
+    if (filterType === "doctor") return !!complaint.doctor;
+    if (filterType === "agent") return !!complaint.agent;
+    return true; // 'all'
+  });
+
   return (
     <Box p={3}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography variant="h5" fontWeight={600}>
           Complaints
         </Typography>
+
+        <FormControl size="small" sx={{ minWidth: 150 }}>
+          <InputLabel>Filter By</InputLabel>
+          <Select
+            value={filterType}
+            label="Filter By"
+            onChange={(e) => setFilterType(e.target.value)}
+          >
+            <MenuItem value="all">All</MenuItem>
+            <MenuItem value="doctor">Doctor</MenuItem>
+            <MenuItem value="agent">Agent</MenuItem>
+          </Select>
+        </FormControl>
       </Box>
 
       <Paper>
@@ -109,13 +141,11 @@ const ComplaintList = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {complaints.map((complaint, idx) => (
+                {filteredComplaints.map((complaint, idx) => (
                   <TableRow key={complaint.id || idx}>
                     <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
                     <TableCell>{complaint.appointment_id || "-"}</TableCell>
                     <TableCell>{complaint.complaint_type?.name || "-"}</TableCell>
-
-                    {/* ✅ Description cell with truncation + click to expand */}
                     <TableCell
                       sx={{
                         maxWidth: 250,
@@ -130,7 +160,6 @@ const ComplaintList = () => {
                     >
                       {complaint.description}
                     </TableCell>
-
                     <TableCell>{complaint.doctor?.name || "-"}</TableCell>
                     <TableCell>{complaint.agent?.name || "-"}</TableCell>
                     <TableCell>
@@ -148,7 +177,6 @@ const ComplaintList = () => {
               </TableBody>
             </Table>
 
-            {/* Pagination */}
             <TablePagination
               component="div"
               count={total}
@@ -165,7 +193,6 @@ const ComplaintList = () => {
         )}
       </Paper>
 
-      {/* Complaint Modal (Edit Form) */}
       <ComplaintForm
         isEditing={!!targetItem}
         data={targetItem}
@@ -177,7 +204,6 @@ const ComplaintList = () => {
         }}
       />
 
-      {/* ✅ Description Modal */}
       <Dialog open={descriptionModalOpen} onClose={handleCloseDescription} maxWidth="sm" fullWidth>
         <DialogTitle>
           Complaint Description

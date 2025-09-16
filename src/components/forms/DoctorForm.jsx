@@ -99,7 +99,7 @@ const CreateDoctorModal = ({ open, onClose, isEditing, data }) => {
     {
       name: "phone_number",
       label: "Phone Number",
-      type: "text",
+      type: "phone",
       required: true,
       value: formData.phone_number,
       onChange: (e) => setFormData((p) => ({ ...p, phone_number: e.target.value })),

@@ -105,20 +105,6 @@ const ComplaintForm = ({ open, onClose, isEditing, data }) => {
   };
 
   const fields = [
-   
-    {
-      name: "complaint_type_id",
-      label: "Complaint Type",
-      type: "select",
-      value: formData.complaint_type_id,
-      required: true,
-      options: complaints.map((complaint) => ({
-        value: complaint.id,
-        label: complaint.name,
-      })),
-      onChange: (e) =>
-        setFormData({ ...formData, complaint_type_id: e.target.value }),
-    },
     {
       name: "complaint_against",
       label: "Complaint Against",
@@ -132,6 +118,19 @@ const ComplaintForm = ({ open, onClose, isEditing, data }) => {
       onChange: (e) =>
         setFormData({ ...formData, complaint_against: e.target.value }),
     },
+    // Only show complaint type if complaint is NOT against doctor
+    ...(formData.complaint_against !== "doctor" ? [{
+      name: "complaint_type_id",
+      label: "Complaint Type",
+      type: "select",
+      value: formData.complaint_type_id,
+      options: complaints.map((complaint) => ({
+        value: complaint.id,
+        label: complaint.name,
+      })),
+      onChange: (e) =>
+        setFormData({ ...formData, complaint_type_id: e.target.value }),
+    }] : []),
     {
       name: "description",
       label: "Description",
@@ -141,7 +140,6 @@ const ComplaintForm = ({ open, onClose, isEditing, data }) => {
       onChange: (e) =>
         setFormData({ ...formData, description: e.target.value }),
     },
-    
     {
       name: "is_resolved",
       label: "Status",
