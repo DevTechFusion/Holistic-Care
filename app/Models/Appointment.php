@@ -117,6 +117,14 @@ class Appointment extends Model
     {
         return $this->belongsTo(Status::class);
     }
+
+    /**
+     * Check if the appointment status is "Arrived".
+     */
+    public function isStatusArrived()
+    {
+        return $this->status && $this->status->name === 'Arrived';
+    }
     /**
      * Get the reports for this appointment.
      */
@@ -272,7 +280,7 @@ class Appointment extends Model
 
         // Create incentive when appointment is created
         static::created(function ($appointment) {
-            if (!empty($appointment->amount) && !empty($appointment->agent_id)) {
+            if (!empty($appointment->amount) && !empty($appointment->agent_id) && $appointment->isStatusArrived()) {
                 $amount = (float) $appointment->amount;
                 $percentage = 1.00; // 1%
                 $incentiveAmount = round(($amount * $percentage) / 100, 2);
@@ -289,8 +297,8 @@ class Appointment extends Model
 
         // Update incentive when appointment is updated
         static::updated(function ($appointment) {
-            if ($appointment->wasChanged('amount') || $appointment->wasChanged('agent_id')) {
-                if (!empty($appointment->amount) && !empty($appointment->agent_id)) {
+            if ($appointment->wasChanged('amount') || $appointment->wasChanged('agent_id') || $appointment->wasChanged('status_id')) {
+                if (!empty($appointment->amount) && !empty($appointment->agent_id) && $appointment->isStatusArrived()) {
                     $amount = (float) $appointment->amount;
                     $percentage = 1.00; // 1%
                     $incentiveAmount = round(($amount * $percentage) / 100, 2);
@@ -304,6 +312,9 @@ class Appointment extends Model
                             'incentive_amount' => $incentiveAmount,
                         ]
                     );
+                } else {
+                    // If status is not "Arrived" or amount/agent_id is missing, delete the incentive
+                    \App\Models\Incentive::where('appointment_id', $appointment->id)->delete();
                 }
             }
         });

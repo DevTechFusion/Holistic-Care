@@ -679,11 +679,13 @@ class AppointmentService extends CrudeService
     }
 
     /**
-     * Create or update incentive (1%) for an appointment when amount is present.
+     * Create or update incentive (1%) for an appointment when amount is present and status is "Arrived".
      */
     protected function upsertIncentiveForAppointment(Appointment $appointment): void
     {
-        if (empty($appointment->amount) || empty($appointment->agent_id)) {
+        if (empty($appointment->amount) || empty($appointment->agent_id) || !$appointment->isStatusArrived()) {
+            // If conditions are not met, delete any existing incentive
+            Incentive::where('appointment_id', $appointment->id)->delete();
             return;
         }
 
@@ -884,7 +886,8 @@ class AppointmentService extends CrudeService
         try {
             \Log::info('Updating reports for appointment ID: ' . $appointment->id);
             $updatedReports = $this->reportService->updateReportFromAppointment($appointment->id);
-            \Log::info('Successfully updated ' . count($updatedReports) . ' reports for appointment ID: ' . $appointment->id);
+            $reportCount = is_array($updatedReports) ? count($updatedReports) : ($updatedReports ? 1 : 0);
+            \Log::info('Successfully updated ' . $reportCount . ' reports for appointment ID: ' . $appointment->id);
         } catch (\Exception $e) {
             // Log the error but don't fail the appointment update
             \Log::error('Failed to update reports for appointment ID ' . $appointment->id . ': ' . $e->getMessage());
