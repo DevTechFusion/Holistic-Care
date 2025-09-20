@@ -206,6 +206,22 @@ class Appointment extends Model
     }
 
     /**
+     * Scope to get appointments by procedure.
+     */
+    public function scopeByProcedure($query, $procedureId)
+    {
+        return $query->where('procedure_id', $procedureId);
+    }
+
+    /**
+     * Scope to get appointments by agent.
+     */
+    public function scopeByAgent($query, $agentId)
+    {
+        return $query->where('agent_id', $agentId);
+    }
+
+    /**
      * Get the formatted time slot (for backward compatibility).
      */
     public function getTimeSlotAttribute()

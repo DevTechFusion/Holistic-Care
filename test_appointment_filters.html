@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment Filters Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .filter-group { margin: 15px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .filter-group h3 { margin-top: 0; color: #333; }
+        .form-group { margin: 10px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 3px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .results { margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px; }
+        .appointment { margin: 10px 0; padding: 10px; background: white; border: 1px solid #ddd; border-radius: 3px; }
+        .error { color: red; margin: 10px 0; }
+        .success { color: green; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Appointment Filters Test</h1>
+        <p>Test the appointment filtering functionality integrated into the main appointments endpoint. Leave filters empty to get all appointments.</p>
+
+        <form id="filterForm">
+            <div class="filter-group">
+                <h3>Date Filters</h3>
+                <div class="form-group">
+                    <label for="start_date">Start Date:</label>
+                    <input type="date" id="start_date" name="start_date">
+                </div>
+                <div class="form-group">
+                    <label for="end_date">End Date:</label>
+                    <input type="date" id="end_date" name="end_date">
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <h3>Time Filters</h3>
+                <div class="form-group">
+                    <label for="start_time">Start Time:</label>
+                    <input type="time" id="start_time" name="start_time">
+                </div>
+                <div class="form-group">
+                    <label for="end_time">End Time:</label>
+                    <input type="time" id="end_time" name="end_time">
+                </div>
+                <div class="form-group">
+                    <label for="duration">Duration (minutes):</label>
+                    <input type="number" id="duration" name="duration" min="1">
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <h3>Entity Filters</h3>
+                <div class="form-group">
+                    <label for="doctor_id">Doctor ID:</label>
+                    <input type="number" id="doctor_id" name="doctor_id" min="1">
+                </div>
+                <div class="form-group">
+                    <label for="department_id">Department ID:</label>
+                    <input type="number" id="department_id" name="department_id" min="1">
+                </div>
+                <div class="form-group">
+                    <label for="procedure_id">Procedure ID:</label>
+                    <input type="number" id="procedure_id" name="procedure_id" min="1">
+                </div>
+                <div class="form-group">
+                    <label for="category_id">Category ID:</label>
+                    <input type="number" id="category_id" name="category_id" min="1">
+                </div>
+                <div class="form-group">
+                    <label for="source_id">Source ID:</label>
+                    <input type="number" id="source_id" name="source_id" min="1">
+                </div>
+                <div class="form-group">
+                    <label for="status_id">Status ID:</label>
+                    <input type="number" id="status_id" name="status_id" min="1">
+                </div>
+                <div class="form-group">
+                    <label for="agent_id">Agent ID:</label>
+                    <input type="number" id="agent_id" name="agent_id" min="1">
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <h3>Text Search Filters</h3>
+                <div class="form-group">
+                    <label for="patient_name">Patient Name:</label>
+                    <input type="text" id="patient_name" name="patient_name" placeholder="Search by patient name">
+                </div>
+                <div class="form-group">
+                    <label for="contact_number">Contact Number:</label>
+                    <input type="text" id="contact_number" name="contact_number" placeholder="Search by contact number">
+                </div>
+                <div class="form-group">
+                    <label for="mr_number">MR Number:</label>
+                    <input type="text" id="mr_number" name="mr_number" placeholder="Search by MR number">
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <h3>Pagination & Ordering</h3>
+                <div class="form-group">
+                    <label for="per_page">Per Page:</label>
+                    <select id="per_page" name="per_page">
+                        <option value="10">10</option>
+                        <option value="20" selected>20</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="page">Page:</label>
+                    <input type="number" id="page" name="page" min="1" value="1">
+                </div>
+                <div class="form-group">
+                    <label for="order_by">Order By:</label>
+                    <select id="order_by" name="order_by">
+                        <option value="date" selected>Date</option>
+                        <option value="start_time">Start Time</option>
+                        <option value="end_time">End Time</option>
+                        <option value="patient_name">Patient Name</option>
+                        <option value="created_at">Created At</option>
+                        <option value="updated_at">Updated At</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="order_direction">Order Direction:</label>
+                    <select id="order_direction" name="order_direction">
+                        <option value="desc" selected>Descending</option>
+                        <option value="asc">Ascending</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit">Filter Appointments</button>
+        </form>
+
+        <div id="results" class="results" style="display: none;">
+            <h3>Results</h3>
+            <div id="resultContent"></div>
+        </div>
+
+        <div id="error" class="error" style="display: none;"></div>
+        <div id="success" class="success" style="display: none;"></div>
+    </div>
+
+    <script>
+        document.getElementById('filterForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const params = new URLSearchParams();
+            
+            // Only add non-empty values to the query string
+            for (let [key, value] of formData.entries()) {
+                if (value.trim() !== '') {
+                    params.append(key, value);
+                }
+            }
+            
+            const queryString = params.toString();
+            const url = `/api/appointments${queryString ? '?' + queryString : ''}`;
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': 'Bearer ' + getAuthToken() // You'll need to implement this
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayResults(data);
+                    showSuccess(`Found ${data.data.total} appointments`);
+                } else {
+                    showError(data.message || 'Failed to fetch appointments');
+                }
+            } catch (error) {
+                showError('Network error: ' + error.message);
+            }
+        });
+        
+        function displayResults(data) {
+            const resultsDiv = document.getElementById('results');
+            const contentDiv = document.getElementById('resultContent');
+            
+            let html = `
+                <p><strong>Total:</strong> ${data.data.total} appointments</p>
+                <p><strong>Page:</strong> ${data.data.current_page} of ${data.data.last_page}</p>
+                <p><strong>Filters Applied:</strong> ${JSON.stringify(data.filters_applied, null, 2)}</p>
+                <hr>
+            `;
+            
+            if (data.data.data && data.data.data.length > 0) {
+                data.data.data.forEach(appointment => {
+                    html += `
+                        <div class="appointment">
+                            <h4>Appointment #${appointment.id}</h4>
+                            <p><strong>Patient:</strong> ${appointment.patient_name}</p>
+                            <p><strong>Date:</strong> ${appointment.date}</p>
+                            <p><strong>Time:</strong> ${appointment.start_time} - ${appointment.end_time}</p>
+                            <p><strong>Doctor:</strong> ${appointment.doctor ? appointment.doctor.name : 'N/A'}</p>
+                            <p><strong>Department:</strong> ${appointment.department ? appointment.department.name : 'N/A'}</p>
+                            <p><strong>Procedure:</strong> ${appointment.procedure ? appointment.procedure.name : 'N/A'}</p>
+                            <p><strong>Status:</strong> ${appointment.status ? appointment.status.name : 'N/A'}</p>
+                            <p><strong>Contact:</strong> ${appointment.contact_number}</p>
+                        </div>
+                    `;
+                });
+            } else {
+                html += '<p>No appointments found matching the criteria.</p>';
+            }
+            
+            contentDiv.innerHTML = html;
+            resultsDiv.style.display = 'block';
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('success').style.display = 'none';
+            document.getElementById('results').style.display = 'none';
+        }
+        
+        function showSuccess(message) {
+            const successDiv = document.getElementById('success');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+        }
+        
+        function getAuthToken() {
+            // This is a placeholder - you'll need to implement proper token retrieval
+            // For testing, you might want to prompt for a token or store it in localStorage
+            return prompt('Enter your Bearer token:') || '';
+        }
+    </script>
+</body>
+</html>

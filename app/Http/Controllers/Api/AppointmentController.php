@@ -16,19 +16,80 @@ class AppointmentController extends Controller
     }
 
     /**
-     * Display a listing of appointments (not reports)
+     * Display a listing of appointments with optional filtering
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $perPage = request()->get('per_page', 20);
-            $page = request()->get('page', 1);
-            $appointments = $this->appointmentService->getAllAppointments($perPage, $page);
+            // Validate filter parameters
+            $request->validate([
+                // Date filters
+                'start_date' => 'nullable|date',
+                'end_date' => 'nullable|date|after_or_equal:start_date',
+                
+                // Time filters
+                'start_time' => 'nullable|date_format:H:i:s',
+                'end_time' => 'nullable|date_format:H:i:s|after:start_time',
+                'duration' => 'nullable|integer|min:1',
+                
+                // Entity filters
+                'doctor_id' => 'nullable|exists:doctors,id',
+                'department_id' => 'nullable|exists:departments,id',
+                'procedure_id' => 'nullable|exists:procedures,id',
+                'category_id' => 'nullable|exists:categories,id',
+                'source_id' => 'nullable|exists:sources,id',
+                'status_id' => 'nullable|exists:statuses,id',
+                'agent_id' => 'nullable|exists:users,id',
+                
+                // Text search filters
+                'patient_name' => 'nullable|string|max:255',
+                'contact_number' => 'nullable|string|max:255',
+                'mr_number' => 'nullable|string|max:255',
+                
+                // Pagination and ordering
+                'per_page' => 'nullable|integer|min:1|max:100',
+                'page' => 'nullable|integer|min:1',
+                'order_by' => 'nullable|string|in:date,start_time,end_time,patient_name,created_at,updated_at',
+                'order_direction' => 'nullable|string|in:asc,desc',
+            ]);
 
-            return response()->json([
-                'status' => 'success',
-                'data' => $appointments
-            ], 200);
+            // Extract filters from request
+            $filters = $request->only([
+                'start_date', 'end_date', 'start_time', 'end_time', 'duration',
+                'doctor_id', 'department_id', 'procedure_id', 'category_id', 
+                'source_id', 'status_id', 'agent_id', 'patient_name', 
+                'contact_number', 'mr_number'
+            ]);
+
+            // Remove empty filters
+            $filters = array_filter($filters, function($value) {
+                return $value !== null && $value !== '';
+            });
+
+            $perPage = $request->get('per_page', 20);
+            $page = $request->get('page', 1);
+            $orderBy = $request->get('order_by', 'date');
+            $orderDirection = $request->get('order_direction', 'desc');
+
+            // Use filtered appointments if any filters are provided, otherwise use regular method
+            if (!empty($filters)) {
+                $appointments = $this->appointmentService->getFilteredAppointments(
+                    $filters, $perPage, $page, $orderBy, $orderDirection
+                );
+                
+                return response()->json([
+                    'status' => 'success',
+                    'data' => $appointments,
+                    'filters_applied' => $filters
+                ], 200);
+            } else {
+                $appointments = $this->appointmentService->getAllAppointments($perPage, $page);
+                
+                return response()->json([
+                    'status' => 'success',
+                    'data' => $appointments
+                ], 200);
+            }
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
@@ -406,4 +467,5 @@ class AppointmentController extends Controller
             ], 500);
         }
     }
+
 }
