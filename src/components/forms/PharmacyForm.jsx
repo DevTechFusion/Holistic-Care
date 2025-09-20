@@ -16,7 +16,10 @@ import { getRoles } from "../../DAL/modelRoles";
 import dayjs from "dayjs";
 import GenericFormModal from "./GenericForm";
 
-const defaultFormData = {
+// Constants moved outside component for better performance
+const STATUS_OPTIONS = ["pending", "completed", "cancelled"];
+const PAYMENT_OPTIONS = ["cash", "card", "online"];
+const DEFAULT_FORM_DATA = {
   patient_name: "",
   date: null,
   description: "",
@@ -28,73 +31,178 @@ const defaultFormData = {
   payment_mode: "",
 };
 
-const statusOptions = ["pending", "completed", "cancelled"];
-const paymentOptions = ["cash", "card", "online"];
+// Validation rules
+const VALIDATION_RULES = {
+  PHONE_MAX_LENGTH: 15,
+  PHONE_MIN_LENGTH: 10,
+  AMOUNT_MIN: 0,
+  REQUIRED_FIELDS: ['patient_name', 'date', 'phone_number'],
+  REQUIRED_FIELDS_EDIT: ['patient_name', 'date', 'phone_number', 'amount', 'payment_mode']
+};
 
 const PharmacyForm = ({ open, onClose, isEditing, data }) => {
   const { enqueueSnackbar } = useSnackbar();
-  const [formData, setFormData] = useState(defaultFormData);
+  const [formData, setFormData] = useState(DEFAULT_FORM_DATA);
   const [roles, setRoles] = useState([]);
   const [rolesLoading, setRolesLoading] = useState(false);
   const [rolesError, setRolesError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
 
-  // ✅ Validation state
-  const [amountError, setAmountError] = useState("");
+  // Memoized options to prevent unnecessary re-renders
+  const formOptions = useMemo(() => ({
+    statusOptions: STATUS_OPTIONS.map(status => ({
+      value: status,
+      label: status.charAt(0).toUpperCase() + status.slice(1)
+    })),
+    paymentOptions: PAYMENT_OPTIONS.map(mode => ({
+      value: mode,
+      label: mode.charAt(0).toUpperCase() + mode.slice(1)
+    }))
+  }), []);
 
+  // Validation function
+  const validateField = useCallback((field, value) => {
+    switch (field) {
+      case 'patient_name':
+        return !value?.trim() ? "Patient name is required" : "";
+      
+      case 'date':
+        return !value ? "Date is required" : "";
+      
+      case 'phone_number':
+        if (!value) return "Phone number is required";
+        if (value.length < VALIDATION_RULES.PHONE_MIN_LENGTH) {
+          return `Phone number must be at least ${VALIDATION_RULES.PHONE_MIN_LENGTH} digits`;
+        }
+        return "";
+      
+      case 'amount':
+        if (isEditing) {
+          if (!value && value !== 0) return "Amount is required";
+          if (Number(value) < VALIDATION_RULES.AMOUNT_MIN) {
+            return "Amount must be a positive number";
+          }
+        }
+        return "";
+      
+      case 'payment_mode':
+        return isEditing && !value ? "Payment mode is required" : "";
+      
+      default:
+        return "";
+    }
+  }, [isEditing]);
+
+  // Validate entire form
+  const validateForm = useCallback(() => {
+    const requiredFields = isEditing 
+      ? VALIDATION_RULES.REQUIRED_FIELDS_EDIT 
+      : VALIDATION_RULES.REQUIRED_FIELDS;
+    
+    const newErrors = {};
+    
+    requiredFields.forEach(field => {
+      const error = validateField(field, formData[field]);
+      if (error) newErrors[field] = error;
+    });
+
+    return newErrors;
+  }, [formData, isEditing, validateField]);
+
+  // Reset form function
+  const resetForm = useCallback(() => {
+    setFormData(DEFAULT_FORM_DATA);
+    setErrors({});
+  }, []);
+
+  // Handle form field changes with validation
+  const handleChange = useCallback((field, value) => {
+    // Special handling for phone number
+    if (field === 'phone_number') {
+      const numericValue = value.replace(/\D/g, '');
+      if (numericValue.length <= VALIDATION_RULES.PHONE_MAX_LENGTH) {
+        setFormData(prev => ({ ...prev, [field]: numericValue }));
+        
+        // Clear error and validate
+        const error = validateField(field, numericValue);
+        setErrors(prev => ({ ...prev, [field]: error }));
+      }
+      return;
+    }
+
+    // Update form data
+    setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Live validation - clear error when user starts typing and validate
+    const error = validateField(field, value);
+    setErrors(prev => ({ ...prev, [field]: error }));
+  }, [validateField]);
+
+  // Initialize form data
   useEffect(() => {
     if (open) {
-      setFormData(
-        isEditing && data
-          ? { ...data, date: data.date ? dayjs(data.date) : null }
-          : defaultFormData
-      );
-      setAmountError(""); // reset validation
-    }
-  }, [open, isEditing, data]);
-
-  const handleChange = useCallback((field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-
-    // ✅ Live validation for amount
-    if (field === "amount") {
-      if (value === "" || value === null) {
-        setAmountError("Amount is required");
-      } else if (Number(value) < 0) {
-        setAmountError("Amount must be a positive number");
+      if (isEditing && data) {
+        setFormData({
+          ...data,
+          date: data.date ? dayjs(data.date) : null
+        });
       } else {
-        setAmountError("");
+        resetForm();
       }
     }
-  }, []);
+  }, [open, isEditing, data, resetForm]);
 
+  // Fetch roles with better error handling
   useEffect(() => {
+    let isMounted = true;
+    
     const fetchRoles = async () => {
+      if (rolesLoading) return; // Prevent multiple simultaneous requests
+      
       setRolesLoading(true);
+      setRolesError(null);
+      
       try {
         const res = await getRoles();
-        setRoles(res?.data?.data || []);
+        if (isMounted) {
+          setRoles(res?.data?.data || []);
+        }
       } catch (err) {
         console.error("Error fetching roles:", err);
-        setRolesError("Failed to load agents");
+        if (isMounted) {
+          setRolesError("Failed to load agents. Please refresh and try again.");
+        }
       } finally {
-        setRolesLoading(false);
+        if (isMounted) {
+          setRolesLoading(false);
+        }
       }
     };
-    fetchRoles();
-  }, []);
 
+    if (open) {
+      fetchRoles();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [open]); // Remove rolesLoading dependency to prevent loops
+
+  // Handle form submission
   const handleSubmit = async () => {
-    // ✅ Final validation before submit
-    if (isEditing && (formData.amount === "" || Number(formData.amount) < 0)) {
-      setAmountError("Please enter a valid positive amount");
-      enqueueSnackbar("Fix validation errors before submitting", {
+    const validationErrors = validateForm();
+    
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      enqueueSnackbar("Please fix validation errors before submitting", {
         variant: "error",
       });
       return;
     }
 
     setIsSubmitting(true);
+    
     try {
       const payload = {
         ...formData,
@@ -105,34 +213,43 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
         ? await updatePharmacy(data?.id, payload)
         : await createPharmacy(payload);
 
-      const success =
-        (res?.status && res.status >= 200 && res.status < 300) ||
-        String(res?.data?.status || "").toLowerCase() === "success" ||
-        res?.data?.success === true ||
-        (!!res?.data && typeof res?.data === "object");
-
-      if (success) {
-        enqueueSnackbar(
-          isEditing
-            ? "Pharmacy record updated successfully!"
-            : "Pharmacy record created successfully!",
-          { variant: "success" }
-        );
-        setFormData(defaultFormData);
-        onClose();
-      } else {
-        enqueueSnackbar(
-          res?.data?.message ||
-            res?.message ||
-            "Failed to save pharmacy record",
-          { variant: "error" }
-        );
+      // Handle your invokeApi response structure
+      if (res?.code && res.code !== 200 && res.code !== 201) {
+        // Handle API error responses from your invokeApi
+        if (res.errors && Object.keys(res.errors).length > 0) {
+          // Set field-specific errors from API
+          setErrors(res.errors);
+        }
+        
+        // Show appropriate error message
+        let errorMessage = res.message || "Something went wrong";
+        
+        // Customize messages based on error codes
+        if (res.code === 422) {
+          errorMessage = "Please check the form data and try again";
+        } else if (res.code === 409) {
+          errorMessage = "A record with this information already exists";
+        } else if (res.code === 403) {
+          errorMessage = "You don't have permission to perform this action";
+        }
+        
+        enqueueSnackbar(errorMessage, { variant: "error" });
+        return;
       }
+
+      // Success case - your invokeApi returns data directly on success
+      enqueueSnackbar(
+        `Pharmacy record ${isEditing ? 'updated' : 'created'} successfully!`,
+        { variant: "success" }
+      );
+      resetForm();
+      onClose();
+      
     } catch (error) {
+      // Handle network/unexpected errors
       console.error("Error saving pharmacy record:", error);
       enqueueSnackbar(
-        error?.response?.data?.message ||
-          "Something went wrong. Please try again.",
+        "Network error. Please check your connection and try again.",
         { variant: "error" }
       );
     } finally {
@@ -140,19 +257,19 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
     }
   };
 
+  // Handle modal close
   const handleClose = () => {
-    setFormData(defaultFormData);
-    setAmountError("");
+    resetForm();
     onClose();
   };
 
+  // Memoized role options
   const roleOptions = useMemo(
-    () =>
-      roles.map((role) => (
-        <MenuItem key={role.id} value={role.id}>
-          {role.name}
-        </MenuItem>
-      )),
+    () => roles.map((role) => (
+      <MenuItem key={role.id} value={role.id}>
+        {role.name}
+      </MenuItem>
+    )),
     [roles]
   );
 
@@ -162,123 +279,189 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
       onClose={handleClose}
       onSubmit={handleSubmit}
       isSubmitting={isSubmitting}
-      title={isEditing ? "Update Pharmacy Record" : "Create Pharmacy Record"}
+      title={`${isEditing ? 'Update' : 'Create'} Pharmacy Record`}
     >
-      <Stack spacing={2}>
-        <TextField
-          label="Patient Name"
-          fullWidth
-          value={formData.patient_name}
-          onChange={(e) => handleChange("patient_name", e.target.value)}
-        />
-
-        <DatePicker
-          label="Date"
-          value={formData.date}
-          onChange={(newValue) => handleChange("date", newValue)}
-          slotProps={{ textField: { fullWidth: true } }}
-        />
-
-        <TextField
-          label="Description"
-          fullWidth
-          multiline
-          rows={3}
-          value={formData.description}
-          onChange={(e) => handleChange("description", e.target.value)}
-        />
-        <TextField
-          label="Phone Number"
-          fullWidth
-          type="tel" // ✅ 'tel' is better than 'phone' (HTML doesn't have type="phone")
-          value={formData.phone_number}
-          onChange={(e) => {
-            const value = e.target.value;
-            // ✅ Allow only digits (remove everything else)
-            const numericValue = value.replace(/\D/g, "");
-            handleChange("phone_number", numericValue);
-          }}
-          inputProps={{
-            inputMode: "numeric", // ✅ shows numeric keypad on mobile
-            pattern: "[0-9]*", // ✅ hint for browsers
-          }}
-        />
-
-        <TextField
-          label="Pharmacy MR Number"
-          fullWidth
-          value={formData.pharmacy_mr_number}
-          onChange={(e) => handleChange("pharmacy_mr_number", e.target.value)}
-        />
-
-        <FormControl fullWidth>
-          <InputLabel>Agent</InputLabel>
-          {rolesLoading ? (
-            <Stack direction="row" alignItems="center" spacing={1} p={2}>
-              <CircularProgress size={20} />
-              <Typography variant="body2">Loading agents...</Typography>
-            </Stack>
-          ) : rolesError ? (
-            <Typography color="error" variant="body2" p={2}>
-              {rolesError}
-            </Typography>
-          ) : (
-            <Select
-              value={formData.agent_id}
-              onChange={(e) => handleChange("agent_id", e.target.value)}
-              label="Agent"
-            >
-              {roles.length > 0 ? (
-                roleOptions
-              ) : (
-                <MenuItem disabled>No agents available</MenuItem>
-              )}
-            </Select>
-          )}
-        </FormControl>
-
-        <FormControl fullWidth>
-          <InputLabel>Status</InputLabel>
-          <Select
-            value={formData.status}
-            onChange={(e) => handleChange("status", e.target.value)}
-          >
-            {statusOptions.map((status) => (
-              <MenuItem key={status} value={status}>
-                {status.charAt(0).toUpperCase() + status.slice(1)}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        {isEditing && (
-          <>
+      <Stack spacing={3}>
+        {/* Patient Information Section */}
+        <Stack spacing={2}>
+          <Typography variant="h6" color="primary" sx={{ fontWeight: 600, mb: 1 }}>
+            Patient Information
+          </Typography>
+          
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <TextField
-              label="Amount"
-              type="number"
+              label="Patient Name *"
               fullWidth
-              value={formData.amount}
-              onChange={(e) => handleChange("amount", e.target.value)}
-              error={!!amountError}
-              helperText={amountError}
+              value={formData.patient_name}
+              onChange={(e) => handleChange("patient_name", e.target.value)}
+              error={!!errors.patient_name}
+              helperText={errors.patient_name}
+              placeholder="Enter patient's full name"
             />
+            
+            <TextField
+              label="Phone Number *"
+              fullWidth
+              type="tel"
+              value={formData.phone_number}
+              onChange={(e) => handleChange("phone_number", e.target.value)}
+              error={!!errors.phone_number}
+              helperText={errors.phone_number || `${formData.phone_number.length}/${VALIDATION_RULES.PHONE_MAX_LENGTH} digits`}
+              placeholder="1234567890"
+              inputProps={{
+                inputMode: "numeric",
+                pattern: "[0-9]*",
+              }}
+            />
+          </Stack>
+        </Stack>
 
-            <FormControl fullWidth variant="outlined">
-              <InputLabel id="payment-mode-label">Payment Mode</InputLabel>
+        {/* Prescription Details Section */}
+        <Stack spacing={2}>
+          <Typography variant="h6" color="primary" sx={{ fontWeight: 600, mb: 1 }}>
+            Prescription Details
+          </Typography>
+          
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+            <DatePicker
+              label="Date *"
+              value={formData.date}
+              onChange={(newValue) => handleChange("date", newValue)}
+              slotProps={{
+                textField: {
+                  fullWidth: true,
+                  error: !!errors.date,
+                  helperText: errors.date
+                }
+              }}
+            />
+            
+            <TextField
+              label="Pharmacy MR Number"
+              fullWidth
+              value={formData.pharmacy_mr_number}
+              onChange={(e) => handleChange("pharmacy_mr_number", e.target.value)}
+              placeholder="MR-001234"
+            />
+          </Stack>
+
+          <TextField
+            label="Description"
+            fullWidth
+            multiline
+            rows={3}
+            value={formData.description}
+            onChange={(e) => handleChange("description", e.target.value)}
+            placeholder="Enter prescription details, medications, or special instructions..."
+          />
+        </Stack>
+
+        {/* Assignment & Status Section */}
+        <Stack spacing={2}>
+          <Typography variant="h6" color="primary" sx={{ fontWeight: 600, mb: 1 }}>
+            Assignment & Status
+          </Typography>
+          
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+            <FormControl fullWidth>
+              <InputLabel>Agent</InputLabel>
+              {rolesLoading ? (
+                <Stack direction="row" alignItems="center" spacing={1} p={2}>
+                  <CircularProgress size={20} />
+                  <Typography variant="body2">Loading agents...</Typography>
+                </Stack>
+              ) : rolesError ? (
+                <Typography color="error" variant="body2" p={2}>
+                  {rolesError}
+                </Typography>
+              ) : (
+                <Select
+                  value={formData.agent_id}
+                  onChange={(e) => handleChange("agent_id", e.target.value)}
+                  label="Agent"
+                >
+                  <MenuItem value="">
+                    <em>Select an agent</em>
+                  </MenuItem>
+                  {roles.length > 0 ? (
+                    roleOptions
+                  ) : (
+                    <MenuItem disabled>No agents available</MenuItem>
+                  )}
+                </Select>
+              )}
+            </FormControl>
+
+            <FormControl fullWidth>
+              <InputLabel>Status</InputLabel>
               <Select
-                labelId="payment-mode-label"
-                value={formData.payment_mode}
-                onChange={(e) => handleChange("payment_mode", e.target.value)}
-                label="Payment Mode"
+                value={formData.status}
+                onChange={(e) => handleChange("status", e.target.value)}
+                label="Status"
               >
-                {paymentOptions.map((mode) => (
-                  <MenuItem key={mode} value={mode}>
-                    {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                <MenuItem value="">
+                  <em>Select status</em>
+                </MenuItem>
+                {formOptions.statusOptions.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
-          </>
+          </Stack>
+        </Stack>
+
+        {/* Payment Information Section - Only for editing */}
+        {isEditing && (
+          <Stack spacing={2}>
+            <Typography variant="h6" color="primary" sx={{ fontWeight: 600, mb: 1 }}>
+              Payment Information
+            </Typography>
+            
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+              <TextField
+                label="Amount *"
+                type="number"
+                fullWidth
+                value={formData.amount}
+                onChange={(e) => handleChange("amount", e.target.value)}
+                error={!!errors.amount}
+                helperText={errors.amount}
+                placeholder="0.00"
+                InputProps={{
+                  startAdornment: <Typography sx={{ mr: 1, color: 'text.secondary' }}>PKR</Typography>
+                }}
+                inputProps={{
+                  min: 0,
+                  step: "0.01"
+                }}
+              />
+
+              <FormControl fullWidth error={!!errors.payment_mode}>
+                <InputLabel>Payment Mode *</InputLabel>
+                <Select
+                  value={formData.payment_mode}
+                  onChange={(e) => handleChange("payment_mode", e.target.value)}
+                  label="Payment Mode *"
+                >
+                  <MenuItem value="">
+                    <em>Select payment mode</em>
+                  </MenuItem>
+                  {formOptions.paymentOptions.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {errors.payment_mode && (
+                  <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 2 }}>
+                    {errors.payment_mode}
+                  </Typography>
+                )}
+              </FormControl>
+            </Stack>
+          </Stack>
         )}
       </Stack>
     </GenericFormModal>

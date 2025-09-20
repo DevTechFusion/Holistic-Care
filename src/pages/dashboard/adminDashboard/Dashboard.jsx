@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Divider,
   Menu,
@@ -10,16 +10,15 @@ import {
   Button,
   Stack,
   Select,
-  Typography,
   useTheme,
-  alpha
+  alpha,
 } from "@mui/material";
-import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
+
 import MedicalServicesIcon from "@mui/icons-material/MedicalServices";
 import BusinessIcon from "@mui/icons-material/Business";
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 import AddIcon from "@mui/icons-material/Add";
-import FilterListIcon from "@mui/icons-material/FilterList";
+
 
 import CreateUserModal from "../../../components/forms/UserForm";
 import CreateProcedureModal from "../../../components/forms/ProcedureForm";
@@ -30,7 +29,12 @@ import CreateAppointmentModal from "../../../components/forms/AppointmentForm";
 import AgentWiseBookings from "../../../components/dashboard/AgentWiseBooking";
 import SourceWiseBookings from "../../../components/dashboard/SourceWiseBooking";
 import DoctorWiseBooking from "../../../components/dashboard/DoctorWiseBooking";
-import { DoctorLeaderboard, StatsCards, WelcomeSection, RevenueSection } from "../../../components/dashboard";
+import {
+  DoctorLeaderboard,
+  StatsCards,
+  WelcomeSection,
+  RevenueSection,
+} from "../../../components/dashboard";
 import { useSnackbar } from "notistack";
 
 const Dashboard = () => {
@@ -67,36 +71,29 @@ const Dashboard = () => {
         onClose={() => handleClose()}
         PaperProps={{
           elevation: 4,
-          sx: { 
-            borderRadius: 2, 
-            minWidth: 220, 
+          sx: {
+            borderRadius: 2,
+            minWidth: 220,
             mt: 1,
-            overflow: 'visible',
-            filter: 'drop-shadow(0px 4px 12px rgba(0,0,0,0.1))',
-            '&:before': {
+            overflow: "visible",
+            filter: "drop-shadow(0px 4px 12px rgba(0,0,0,0.1))",
+            "&:before": {
               content: '""',
-              display: 'block',
-              position: 'absolute',
+              display: "block",
+              position: "absolute",
               top: 0,
               right: 14,
               width: 10,
               height: 10,
-              bgcolor: 'background.paper',
-              transform: 'translateY(-50%) rotate(45deg)',
+              bgcolor: "background.paper",
+              transform: "translateY(-50%) rotate(45deg)",
               zIndex: 0,
-            }
+            },
           },
         }}
-        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        transformOrigin={{ horizontal: "right", vertical: "top" }}
+        anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
       >
-        <MenuItem onClick={() => handleClose("user")}>
-          <ListItemIcon>
-            <PersonAddAltIcon fontSize="small" color="primary" />
-          </ListItemIcon>
-          <ListItemText primary="User" />
-        </MenuItem>
-        <Divider />
         <MenuItem onClick={() => handleClose("procedure")}>
           <ListItemIcon>
             <MedicalServicesIcon fontSize="small" color="primary" />
@@ -127,12 +124,7 @@ const Dashboard = () => {
       </Menu>
 
       {/* Modals */}
-      <CreateUserModal
-        open={openModal === "user"}
-        onClose={(success, message) =>
-          handleModalClose(success, message, "User")
-        }
-      />
+
       <CreateProcedureModal
         open={openModal === "procedure"}
         onClose={(success, message) =>
@@ -167,10 +159,13 @@ const Dashboard = () => {
         sx={{ mb: 4 }}
       >
         <WelcomeSection />
-        
-        <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="center">
+
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={2}
+          alignItems="center"
+        >
           <Stack direction="row" alignItems="center" spacing={1}>
-            <FilterListIcon fontSize="small" sx={{ color: "text.secondary" }} />
             <Select
               size="small"
               value={filter}
@@ -181,12 +176,12 @@ const Dashboard = () => {
                 fontWeight: "medium",
                 bgcolor: "background.paper",
                 boxShadow: theme.shadows[1],
-                '& .MuiOutlinedInput-notchedOutline': {
-                  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`
+                "& .MuiOutlinedInput-notchedOutline": {
+                  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
                 },
-                '&:hover': {
+                "&:hover": {
                   bgcolor: alpha(theme.palette.primary.main, 0.03),
-                }
+                },
               }}
             >
               <MenuItem value="daily">Daily</MenuItem>
@@ -194,7 +189,7 @@ const Dashboard = () => {
               <MenuItem value="monthly">Monthly</MenuItem>
             </Select>
           </Stack>
-          
+
           <Button
             variant="contained"
             onClick={handleClick}
@@ -206,9 +201,9 @@ const Dashboard = () => {
               px: 3,
               py: 1,
               boxShadow: theme.shadows[2],
-              '&:hover': {
+              "&:hover": {
                 boxShadow: theme.shadows[4],
-              }
+              },
             }}
           >
             Create New
@@ -221,20 +216,20 @@ const Dashboard = () => {
         <StatsCards filter={filter} />
       </Box>
 
-      {/* Revenue Section - Placed right after stats cards as shown in the image */}
+     
       <Box sx={{ mb: 4 }}>
         <RevenueSection filter={filter} />
       </Box>
 
-      {/* Main Content Area - Two columns as shown in the image */}
+      
       <Grid container spacing={3}>
-        {/* Left Column - Doctor Leaderboard and Analytics Tables */}
+        
         <Grid item xs={12} lg={8}>
           <Box sx={{ mb: 4 }}>
             <DoctorLeaderboard filter={filter} />
           </Box>
+
           
-          {/* Analytics Tables - 3 in a row as shown in the image */}
           <Grid container spacing={3}>
             <Grid item xs={12} md={4}>
               <AgentWiseBookings filter={filter} />

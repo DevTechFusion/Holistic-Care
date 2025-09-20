@@ -21,14 +21,20 @@ const NoAuthLayout = () => {
         <CircularProgress />
       </div>
     );
+
+    console.log(user, loading, isAuthenticated);
+
   } else if (isAuthenticated && user) {
     if (user.roles[0].name === "super_admin") {
       return <Navigate to="/dashboard" replace />;
+      console.log(user, loading, isAuthenticated);
     } else if (user.roles[0].name === "managerly") {
       return <Navigate to="/manager/dashboard" replace />;
     } else if (user.roles[0].name === "agent") {
       return <Navigate to="/agent/dashboard" replace />;
     }
+
+    console.log(user, loading, isAuthenticated);
 
     return <Navigate to="/login" replace />;
   }

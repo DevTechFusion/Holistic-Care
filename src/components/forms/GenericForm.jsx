@@ -1,4 +1,3 @@
-// GenericFormModal.jsx
 import React from "react";
 import {
   Dialog,
@@ -7,10 +6,17 @@ import {
   DialogActions,
   Button,
   IconButton,
-  Box,
+  Grid,
   TextField,
+  Select,
   MenuItem,
+  FormControl,
+  InputLabel,
+  FormHelperText,
   Typography,
+  Stack,
+  Divider,
+  Box,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import TimePicker from "react-time-picker";
@@ -24,15 +30,330 @@ const GenericFormModal = ({
   isSubmitting = false,
   submitButtonText = "Save",
   cancelButtonText = "Cancel",
-  maxWidth = "sm",
+  maxWidth = "md", // Changed default to 'md' for better form layouts
   disableEscapeKeyDown = false,
   disableBackdropClick = false,
   children,
+  // New props for enhanced functionality
+  sections = [], // For sectioned forms like pharmacy form
+  showDividers = false, // Visual separation between sections
+  formSpacing = 3, // Spacing between sections
+  fieldSpacing = 2, // Spacing between fields
+  customHeader = null, // Custom header content
+  footerActions = null, // Custom footer actions
 }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit?.();
   };
+
+  const renderField = (field, idx) => {
+    const valueForField =
+      field.type === "multiselect"
+        ? Array.isArray(field.value)
+          ? field.value
+          : []
+        : field.value ?? "";
+
+    const error = Boolean(field.error);
+    const helperText = field.error ? field.error : field.helperText ?? "";
+
+    const commonProps = {
+      key: field.name ?? idx,
+      fullWidth: true,
+      required: field.required,
+      disabled: field.disabled ?? isSubmitting,
+      error: error,
+      autoFocus: field.autoFocus ?? false,
+      name: field.name,
+    };
+
+    switch (field.type) {
+      case "timepicker":
+        return (
+          <Stack spacing={1} sx={{ width: '100%' }}>
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                color: error ? 'error.main' : 'text.secondary',
+                fontWeight: field.required ? 600 : 400
+              }}
+            >
+              {field.label}{field.required && ' *'}
+            </Typography>
+            <TimePicker
+              name={field.name}
+              onChange={(val) =>
+                field.onChange?.({ target: { name: field.name, value: val } })
+              }
+              value={field.value}
+              disableClock
+              clearIcon={null}
+              disabled={commonProps.disabled}
+            />
+            {helperText && (
+              <Typography 
+                color={error ? "error" : "text.secondary"} 
+                variant="caption"
+                sx={{ ml: 2 }}
+              >
+                {helperText}
+              </Typography>
+            )}
+          </Stack>
+        );
+
+      case "select":
+      case "multiselect":
+        return (
+          <FormControl {...commonProps}>
+            <InputLabel>{field.label}</InputLabel>
+            <Select
+              multiple={field.type === "multiselect"}
+              value={valueForField}
+              label={field.label}
+              onChange={field.onChange}
+              placeholder={field.placeholder}
+              renderValue={
+                field.type === "multiselect"
+                  ? (selected) =>
+                      selected
+                        .map(
+                          (val) =>
+                            field.options?.find((o) => o.value === val)?.label ?? val
+                        )
+                        .join(", ")
+                  : undefined
+              }
+            >
+              {field.emptyOption !== false && (
+                <MenuItem value="">
+                  <em>{field.emptyOptionText || `Select ${field.label?.toLowerCase() || 'option'}`}</em>
+                </MenuItem>
+              )}
+              {(field.options ?? []).map((opt) => (
+                <MenuItem key={opt.value} value={opt.value} disabled={opt.disabled}>
+                  {opt.label}
+                </MenuItem>
+              ))}
+            </Select>
+            {helperText && (
+              <FormHelperText error={error}>{helperText}</FormHelperText>
+            )}
+          </FormControl>
+        );
+
+      case "textarea":
+        return (
+          <TextField
+            {...commonProps}
+            label={field.label}
+            multiline
+            rows={field.rows || 3}
+            value={valueForField}
+            onChange={field.onChange}
+            helperText={helperText}
+            placeholder={field.placeholder}
+            variant="outlined"
+            InputProps={field.InputProps}
+            inputProps={{
+              maxLength: field.maxLength,
+              ...field.inputProps,
+            }}
+          />
+        );
+
+      case "number":
+        return (
+          <TextField
+            {...commonProps}
+            label={field.label}
+            type="number"
+            value={valueForField}
+            onChange={(e) => {
+              const value = e.target.value;
+              // Allow empty, decimal numbers, and negative numbers if allowed
+              const pattern = field.allowNegative !== false ? /^-?\d*\.?\d*$/ : /^\d*\.?\d*$/;
+              if (value === "" || pattern.test(value)) {
+                field.onChange?.({ target: { name: field.name, value } });
+              }
+            }}
+            helperText={helperText}
+            placeholder={field.placeholder}
+            variant="outlined"
+            InputProps={field.InputProps}
+            inputProps={{
+              step: field.step || (field.allowDecimals !== false ? "0.01" : "1"),
+              min: field.min,
+              max: field.max,
+              inputMode: "decimal",
+              ...field.inputProps,
+            }}
+          />
+        );
+
+      case "phone":
+        return (
+          <TextField
+            {...commonProps}
+            label={field.label}
+            type="tel"
+            value={valueForField}
+            onChange={(e) => {
+              let cleaned = e.target.value.replace(/\D/g, "");
+              if (field.maxLength && cleaned.length > field.maxLength) {
+                cleaned = cleaned.substring(0, field.maxLength);
+              }
+              field.onChange?.({ target: { name: field.name, value: cleaned } });
+            }}
+            helperText={helperText || (field.showCounter ? `${valueForField.length}/${field.maxLength || 15} digits` : "")}
+            placeholder={field.placeholder}
+            variant="outlined"
+            inputProps={{
+              inputMode: "numeric",
+              pattern: "[0-9]*",
+              maxLength: field.maxLength || 15,
+              ...field.inputProps,
+            }}
+            InputProps={field.InputProps}
+          />
+        );
+
+      case "email":
+        return (
+          <TextField
+            {...commonProps}
+            label={field.label}
+            type="email"
+            value={valueForField}
+            onChange={field.onChange}
+            helperText={helperText}
+            placeholder={field.placeholder || "example@domain.com"}
+            variant="outlined"
+            InputProps={field.InputProps}
+            inputProps={{
+              inputMode: "email",
+              ...field.inputProps,
+            }}
+          />
+        );
+
+      case "password":
+        return (
+          <TextField
+            {...commonProps}
+            label={field.label}
+            type="password"
+            value={valueForField}
+            onChange={field.onChange}
+            helperText={helperText}
+            placeholder={field.placeholder}
+            variant="outlined"
+            InputProps={field.InputProps}
+            inputProps={field.inputProps}
+          />
+        );
+
+      case "currency":
+        return (
+          <TextField
+            {...commonProps}
+            label={field.label}
+            type="number"
+            value={valueForField}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === "" || /^\d*\.?\d{0,2}/.test(value)) {
+                field.onChange?.({ target: { name: field.name, value } });
+              }
+            }}
+            helperText={helperText}
+            placeholder={field.placeholder || "0.00"}
+            variant="outlined"
+            InputProps={{
+              startAdornment: (
+                <Typography sx={{ mr: 1, color: 'text.secondary' }}>
+                  {field.currency || 'PKR'}
+                </Typography>
+              ),
+              ...field.InputProps,
+            }}
+            inputProps={{
+              step: "0.01",
+              min: field.min || 0,
+              inputMode: "decimal",
+              ...field.inputProps,
+            }}
+          />
+        );
+
+      default:
+        return (
+          <TextField
+            {...commonProps}
+            label={field.label}
+            type={field.type || "text"}
+            value={valueForField}
+            onChange={field.onChange}
+            helperText={helperText}
+            placeholder={field.placeholder}
+            variant="outlined"
+            InputProps={field.InputProps}
+            inputProps={{
+              maxLength: field.maxLength,
+              ...field.inputProps,
+            }}
+          />
+        );
+    }
+  };
+
+  const renderSection = (section, sectionIdx) => (
+    <Stack key={section.id || sectionIdx} spacing={fieldSpacing}>
+      {section.title && (
+        <Typography 
+          variant="h6" 
+          color="primary" 
+          sx={{ fontWeight: 600, mb: 1 }}
+        >
+          {section.title}
+        </Typography>
+      )}
+      
+      {section.description && (
+        <Typography 
+          variant="body2" 
+          color="text.secondary" 
+          sx={{ mb: 2 }}
+        >
+          {section.description}
+        </Typography>
+      )}
+
+      {section.fields?.map((field, fieldIdx) => {
+        // Handle responsive layout based on field configuration
+        const gridSize = field.gridSize || { xs: 12, sm: field.halfWidth ? 6 : 12 };
+        
+        return (
+          <Box key={field.name || fieldIdx}>
+            {field.fullWidth ? (
+              renderField(field, fieldIdx)
+            ) : (
+              <Grid container spacing={2}>
+                <Grid item {...gridSize}>
+                  {renderField(field, fieldIdx)}
+                </Grid>
+              </Grid>
+            )}
+          </Box>
+        );
+      })}
+
+      {section.customContent && (
+        <Box>{section.customContent}</Box>
+      )}
+    </Stack>
+  );
 
   return (
     <Dialog
@@ -41,189 +362,130 @@ const GenericFormModal = ({
       maxWidth={maxWidth}
       fullWidth
       disableEscapeKeyDown={disableEscapeKeyDown}
+      PaperProps={{
+        sx: {
+          borderRadius: 2,
+          maxHeight: '90vh',
+        }
+      }}
     >
-      {title && (
-        <DialogTitle>
+      <DialogTitle 
+        sx={{ 
+          m: 0, 
+          p: 2, 
+          backgroundColor: "grey.50",
+          borderBottom: 1,
+          borderColor: 'divider'
+        }}
+      >
+        <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
           {title}
-          <IconButton
-            aria-label="close"
-            onClick={onClose}
-            sx={{
-              position: "absolute",
-              right: 8,
-              top: 8,
-              color: (theme) => theme.palette.grey[500],
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-      )}
+        </Typography>
+        
+        {customHeader && (
+          <Box sx={{ mt: 1 }}>
+            {customHeader}
+          </Box>
+        )}
+
+        <IconButton
+          aria-label="close"
+          onClick={onClose}
+          disabled={isSubmitting}
+          sx={{
+            position: "absolute",
+            right: 8,
+            top: 8,
+            color: 'text.secondary',
+            '&:hover': {
+              backgroundColor: 'action.hover',
+            }
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
 
       <form onSubmit={handleSubmit}>
-        <DialogContent dividers>
-          <Box display="flex" flexDirection="column">
-            {fields.map((field, idx) => {
-              const valueForField =
-                field.type === "multiselect"
-                  ? Array.isArray(field.value)
-                    ? field.value
-                    : []
-                  : field.value ?? "";
+        <DialogContent 
+          dividers 
+          sx={{ 
+            p: 3,
+            '&.MuiDialogContent-dividers': {
+              borderTop: 'none'
+            }
+          }}
+        >
+          {/* Render sections if provided (like pharmacy form) */}
+          {sections.length > 0 ? (
+            <Stack spacing={formSpacing}>
+              {sections.map((section, idx) => (
+                <Box key={section.id || idx}>
+                  {renderSection(section, idx)}
+                  {showDividers && idx < sections.length - 1 && (
+                    <Divider sx={{ my: formSpacing }} />
+                  )}
+                </Box>
+              ))}
+            </Stack>
+          ) : (
+            /* Legacy field-based rendering */
+            <Grid container spacing={fieldSpacing}>
+              {fields.map((field, idx) => {
+                const gridSize = field.gridSize || { 
+                  xs: 12, 
+                  sm: field.halfWidth ? 6 : 12 
+                };
+                
+                return (
+                  <Grid item {...gridSize} key={field.name ?? idx}>
+                    {renderField(field, idx)}
+                  </Grid>
+                );
+              })}
+            </Grid>
+          )}
 
-              const commonProps = {
-                key: field.name ?? idx,
-                name: field.name,
-                label: field.label,
-                fullWidth: true,
-                required: field.required,
-                disabled: field.disabled ?? isSubmitting,
-                margin: "normal",
-                variant: "outlined",
-                value: valueForField,
-                error: Boolean(field.error),
-                helperText: field.error ? field.error : field.helperText ?? "",
-                autoFocus: field.autoFocus ?? false,
-                InputProps: field.InputProps ?? undefined,
-                inputProps: field.inputProps ?? (field.maxLength ? { maxLength: field.maxLength } : undefined),
-              };
-
-              switch (field.type) {
-                case "timepicker":
-                  return (
-                    <Box key={commonProps.key} sx={{ width: "100%", mt: 2 }}>
-                      <Typography variant="body2" sx={{ mb: 1, color: "text.secondary" }}>
-                        {field.label}
-                      </Typography>
-                      <TimePicker
-                        onChange={(val) =>
-                          field.onChange?.({ target: { name: field.name, value: val } })
-                        }
-                        value={field.value}
-                        disableClock
-                        clearIcon={null}
-                      />
-                      {field.error && (
-                        <Typography color="error" variant="caption">
-                          {field.error}
-                        </Typography>
-                      )}
-                    </Box>
-                  );
-
-                case "select":
-                  return (
-                    <TextField
-                      {...commonProps}
-                      select
-                      onChange={(e) => field.onChange?.(e)}
-                    >
-                      {(field.options ?? []).map((opt) => (
-                        <MenuItem key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  );
-
-                case "multiselect":
-                  return (
-                    <TextField
-                      {...commonProps}
-                      select
-                      SelectProps={{
-                        multiple: true,
-                        value: Array.isArray(valueForField) ? valueForField : [],
-                        onChange: (e) => {
-                          const selected = Array.isArray(e.target.value)
-                            ? e.target.value
-                            : [e.target.value];
-                          field.onChange?.({ target: { name: field.name, value: selected } });
-                        },
-                        renderValue: (selected) =>
-                          (selected || [])
-                            .map((val) => field.options?.find((o) => o.value === val)?.label ?? val)
-                            .join(", "),
-                      }}
-                    >
-                      {(field.options ?? []).map((opt) => (
-                        <MenuItem key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  );
-
-                case "textarea":
-                  return (
-                    <TextField
-                      {...commonProps}
-                      multiline
-                      rows={field.rows || 4}
-                      onChange={(e) => field.onChange?.(e)}
-                    />
-                  );
-
-                case "number":
-                  return (
-                    <TextField
-                      {...commonProps}
-                      type="number"
-                      onChange={(e) => {
-                        const cleaned = e.target.value === "" ? "" : e.target.value.replace(/[^0-9-]/g, "");
-                        field.onChange?.({ target: { name: field.name, value: cleaned } });
-                      }}
-                      inputProps={{
-                        inputMode: "numeric",
-                        pattern: "[0-9]*",
-                        step: 1,
-                        min: field.min ?? undefined,
-                        max: field.max ?? undefined,
-                        ...(field.inputProps ?? {}),
-                      }}
-                    />
-                  );
-
-                case "phone":
-                  return (
-                    <TextField
-                      {...commonProps}
-                      type="tel"
-                      onChange={(e) => {
-                        let cleaned = e.target.value.replace(/[^0-9+]/g, ""); // allow digits + "+"
-                        // prevent multiple "+" or "+" not at start
-                        if (cleaned.includes("+") && cleaned.indexOf("+") > 0) {
-                          cleaned = cleaned.replace(/\+/g, "");
-                        }
-                        field.onChange?.({ target: { name: field.name, value: cleaned } });
-                      }}
-                      inputProps={{
-                        inputMode: "tel",
-                        maxLength: field.maxLength ?? 15, // default max length
-                        ...(field.inputProps ?? {}),
-                      }}
-                    />
-                  );
-
-                default:
-                  return (
-                    <TextField
-                      {...commonProps}
-                      type={field.type || "text"}
-                      onChange={(e) => field.onChange?.(e)}
-                    />
-                  );
-              }
-            })}
-            {children}
-          </Box>
+          {/* Custom children content */}
+          {children && (
+            <Box sx={{ mt: sections.length > 0 || fields.length > 0 ? 3 : 0 }}>
+              {children}
+            </Box>
+          )}
         </DialogContent>
 
-        <DialogActions sx={{ p: 2, pr: 3 }}>
-          <Button onClick={onClose} aria-label="cancel" color="inherit" disabled={isSubmitting}>
+        <DialogActions 
+          sx={{ 
+            p: 2.5, 
+            backgroundColor: 'grey.50',
+            borderTop: 1,
+            borderColor: 'divider',
+            gap: 1
+          }}
+        >
+          {footerActions && (
+            <Box sx={{ mr: 'auto' }}>
+              {footerActions}
+            </Box>
+          )}
+          
+          <Button
+            onClick={onClose}
+            disabled={isSubmitting}
+            color="inherit"
+            size="large"
+          >
             {cancelButtonText}
           </Button>
-          <Button type="submit" disabled={isSubmitting} variant="contained" color="primary" aria-label="save">
+          
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            variant="contained"
+            color="primary"
+            size="large"
+            sx={{ minWidth: 100 }}
+          >
             {isSubmitting ? "Saving..." : submitButtonText}
           </Button>
         </DialogActions>

@@ -27,8 +27,7 @@ export async function invokeApi({
   }
 
   if (isAuth) {
-    reqObj.headers.Authorization = `Bearer ${localStorage.getItem
-      ("token")}`;
+    reqObj.headers.Authorization = `Bearer ${localStorage.getItem("token")}`;
   }
 
   let results;
@@ -41,17 +40,17 @@ export async function invokeApi({
 
     return results.data;
   } catch (error) {
-  console.log("<===Api-Error===>", error.response?.data);
+    console.log("<===Api-Error===>", error.response?.data);
 
-  if (error.response?.status === 401) {
-    localStorage.clear();
-    window.location.reload();
+    if (error.response?.status === 401) {
+      localStorage.clear();
+      window.location.reload("/login");
+    }
+
+    return {
+      code: error.response?.status,
+      message: error.response?.data?.message || "Something went wrong",
+      errors: error.response?.data?.errors || {},
+    };
   }
-
-  return {
-    code: error.response?.status,
-    message: error.response?.data?.message || "Something went wrong",
-    errors: error.response?.data?.errors || {}, 
-  };
-}
 }

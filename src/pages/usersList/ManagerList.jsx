@@ -135,7 +135,7 @@ const UsersPage = () => {
         isEditing={!!targetItem}
         data={targetItem}
         open={openModal}
-        defaultRole={pathname === "/agent" ? "agent" : "managerly"} // ✅ auto-select
+        defaultRole="managerly" // Auto-select manager role when opened from manager list
         onClose={() => {
           setOpenModal(false);
           fetchUsers();
