@@ -7,7 +7,6 @@ import {
   InputLabel,
   Stack,
   Typography,
-  Box,
   CircularProgress,
   FormControlLabel,
   Switch,

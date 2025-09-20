@@ -28,8 +28,8 @@ const DEFAULT_FORM_DATA = {
 
 // Validation rules
 const VALIDATION_RULES = {
-  PHONE_MAX_LENGTH: 15,
-  PHONE_MIN_LENGTH: 10,
+  PHONE_MAX_LENGTH: 11,
+  PHONE_MIN_LENGTH: 11,
   NAME_MIN_LENGTH: 2,
   NAME_MAX_LENGTH: 100,
   REQUIRED_FIELDS: ['name', 'phone_number', 'department_id', 'procedures']

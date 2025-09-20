@@ -212,7 +212,7 @@ const ComplaintList = () => {
           </IconButton>
         </DialogTitle>
         <DialogContent dividers>
-          <Typography variant="body1" sx={{ whiteSpace: "pre-wrap" }}>
+          <Typography variant="body1" sx={{ whiteSpace: "pre-wrap", paddingBottom: 2 }}>
             {selectedDescription}
           </Typography>
         </DialogContent>

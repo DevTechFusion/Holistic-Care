@@ -263,7 +263,7 @@ const GenericFormModal = ({
             value={valueForField}
             onChange={(e) => {
               const value = e.target.value;
-              if (value === "" || /^\d*\.?\d{0,2}/.test(value)) {
+              if (value === "" || /^\d*\.?\d{0,2}$/.test(value)) {
                 field.onChange?.({ target: { name: field.name, value } });
               }
             }}
@@ -273,7 +273,7 @@ const GenericFormModal = ({
             InputProps={{
               startAdornment: (
                 <Typography sx={{ mr: 1, color: 'text.secondary' }}>
-                  {field.currency || 'PKR'}
+                  {field.currency || '$'}
                 </Typography>
               ),
               ...field.InputProps,
@@ -364,18 +364,25 @@ const GenericFormModal = ({
       disableEscapeKeyDown={disableEscapeKeyDown}
       PaperProps={{
         sx: {
-          borderRadius: 2,
+          borderRadius: 4,
           maxHeight: '90vh',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
         }
       }}
     >
+      {/* Fixed Header */}
       <DialogTitle 
         sx={{ 
           m: 0, 
           p: 2, 
           backgroundColor: "grey.50",
           borderBottom: 1,
-          borderColor: 'divider'
+          borderColor: 'divider',
+          flexShrink: 0,
+          borderTopLeftRadius: 4,
+          borderTopRightRadius: 4,
         }}
       >
         <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
@@ -406,14 +413,15 @@ const GenericFormModal = ({
         </IconButton>
       </DialogTitle>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+        {/* Scrollable Content Only */}
         <DialogContent 
-          dividers 
           sx={{ 
             p: 3,
-            '&.MuiDialogContent-dividers': {
-              borderTop: 'none'
-            }
+            flex: 1,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            minHeight: 0,
           }}
         >
           {/* Render sections if provided (like pharmacy form) */}
@@ -454,13 +462,17 @@ const GenericFormModal = ({
           )}
         </DialogContent>
 
+        {/* Fixed Footer */}
         <DialogActions 
           sx={{ 
             p: 2.5, 
             backgroundColor: 'grey.50',
             borderTop: 1,
             borderColor: 'divider',
-            gap: 1
+            gap: 1,
+            flexShrink: 0,
+            borderBottomLeftRadius: 4,
+            borderBottomRightRadius: 4,
           }}
         >
           {footerActions && (
