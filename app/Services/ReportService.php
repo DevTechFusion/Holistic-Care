@@ -24,6 +24,170 @@ class ReportService extends CrudeService
     }
 
     /**
+     * Get filtered reports with multiple filter options
+     */
+    public function getFilteredReports($filters = [], $perPage = 20, $page = 1, $orderBy = 'generated_at', $orderDirection = 'desc')
+    {
+        $query = $this->model->query();
+
+        // Apply filters only if they are provided and not empty
+        if (!empty($filters['start_date']) || !empty($filters['end_date'])) {
+            $query->whereHas('appointment', function($q) use ($filters) {
+                if (!empty($filters['start_date']) && !empty($filters['end_date'])) {
+                    // Both start and end date provided - use between
+                    $q->whereBetween('date', [$filters['start_date'], $filters['end_date']]);
+                } elseif (!empty($filters['start_date'])) {
+                    // Only start date provided - appointments from this date
+                    $q->where('date', '>=', $filters['start_date']);
+                } elseif (!empty($filters['end_date'])) {
+                    // Only end date provided - appointments until this date
+                    $q->where('date', '<=', $filters['end_date']);
+                }
+            });
+        }
+
+        if (!empty($filters['report_type'])) {
+            $query->byType($filters['report_type']);
+        }
+
+        if (!empty($filters['generated_by_id'])) {
+            $query->byGeneratedBy($filters['generated_by_id']);
+        }
+
+        if (!empty($filters['appointment_id'])) {
+            $query->where('appointment_id', $filters['appointment_id']);
+        }
+
+        if (!empty($filters['status_id'])) {
+            $query->where('status_id', $filters['status_id']);
+        }
+
+        if (!empty($filters['remarks_1_id'])) {
+            $query->where('remarks_1_id', $filters['remarks_1_id']);
+        }
+
+        if (!empty($filters['remarks_2_id'])) {
+            $query->where('remarks_2_id', $filters['remarks_2_id']);
+        }
+
+        if (!empty($filters['amount_min'])) {
+            $query->where('amount', '>=', $filters['amount_min']);
+        }
+
+        if (!empty($filters['amount_max'])) {
+            $query->where('amount', '<=', $filters['amount_max']);
+        }
+
+        if (!empty($filters['payment_method'])) {
+            $query->where('payment_method', 'like', '%' . $filters['payment_method'] . '%');
+        }
+
+        // Appointment-related filters
+        if (!empty($filters['doctor_id'])) {
+            $query->whereHas('appointment', function($q) use ($filters) {
+                $q->where('doctor_id', $filters['doctor_id']);
+            });
+        }
+
+        if (!empty($filters['department_id'])) {
+            $query->whereHas('appointment', function($q) use ($filters) {
+                $q->where('department_id', $filters['department_id']);
+            });
+        }
+
+        if (!empty($filters['procedure_id'])) {
+            $query->whereHas('appointment', function($q) use ($filters) {
+                $q->where('procedure_id', $filters['procedure_id']);
+            });
+        }
+
+        if (!empty($filters['category_id'])) {
+            $query->whereHas('appointment', function($q) use ($filters) {
+                $q->where('category_id', $filters['category_id']);
+            });
+        }
+
+        if (!empty($filters['source_id'])) {
+            $query->whereHas('appointment', function($q) use ($filters) {
+                $q->where('source_id', $filters['source_id']);
+            });
+        }
+
+        if (!empty($filters['agent_id'])) {
+            $query->whereHas('appointment', function($q) use ($filters) {
+                $q->where('agent_id', $filters['agent_id']);
+            });
+        }
+
+        // Text search filters
+        if (!empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function($q) use ($search) {
+                $q->where('report_type', 'like', "%{$search}%")
+                  ->orWhere('notes', 'like', "%{$search}%")
+                  ->orWhereHas('generatedBy', function($userQuery) use ($search) {
+                      $userQuery->where('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('appointment', function($appointmentQuery) use ($search) {
+                      $appointmentQuery->where('patient_name', 'like', "%{$search}%")
+                                      ->orWhere('contact_number', 'like', "%{$search}%")
+                                      ->orWhere('mr_number', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        if (!empty($filters['patient_name'])) {
+            $query->whereHas('appointment', function($q) use ($filters) {
+                $q->where('patient_name', 'like', '%' . $filters['patient_name'] . '%');
+            });
+        }
+
+        if (!empty($filters['contact_number'])) {
+            $query->whereHas('appointment', function($q) use ($filters) {
+                $q->where('contact_number', 'like', '%' . $filters['contact_number'] . '%');
+            });
+        }
+
+        if (!empty($filters['mr_number'])) {
+            $query->whereHas('appointment', function($q) use ($filters) {
+                $q->where('mr_number', 'like', '%' . $filters['mr_number'] . '%');
+            });
+        }
+
+        // Time filters for appointment times
+        if (!empty($filters['start_time']) || !empty($filters['end_time'])) {
+            $query->whereHas('appointment', function($q) use ($filters) {
+                if (!empty($filters['start_time']) && !empty($filters['end_time'])) {
+                    // Both start and end time provided - use between
+                    $q->whereBetween('start_time', [$filters['start_time'], $filters['end_time']]);
+                } elseif (!empty($filters['start_time'])) {
+                    // Only start time provided - appointments starting from this time
+                    $q->where('start_time', '>=', $filters['start_time']);
+                } elseif (!empty($filters['end_time'])) {
+                    // Only end time provided - appointments starting before this time
+                    $q->where('start_time', '<=', $filters['end_time']);
+                }
+            });
+        }
+
+        if (!empty($filters['duration'])) {
+            $query->whereHas('appointment', function($q) use ($filters) {
+                $q->where('duration', $filters['duration']);
+            });
+        }
+
+        // Apply ordering
+        $query->orderBy($orderBy, $orderDirection);
+
+        // Load relationships and paginate
+        return $query->with([
+            'appointment.doctor', 'appointment.procedure', 'appointment.category',
+            'appointment.department', 'appointment.source', 'appointment.agent', 
+            'remarks1', 'remarks2', 'status', 'generatedBy'
+        ])->paginate($perPage, ['*'], 'page', $page);
+    }
+
+    /**
      * Get report by ID
      */
     public function getReportById($id)

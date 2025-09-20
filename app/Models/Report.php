@@ -104,6 +104,46 @@ class Report extends Model
     }
 
     /**
+     * Scope to get reports by status.
+     */
+    public function scopeByStatus($query, $statusId)
+    {
+        return $query->where('status_id', $statusId);
+    }
+
+    /**
+     * Scope to get reports by remarks1.
+     */
+    public function scopeByRemarks1($query, $remarks1Id)
+    {
+        return $query->where('remarks_1_id', $remarks1Id);
+    }
+
+    /**
+     * Scope to get reports by remarks2.
+     */
+    public function scopeByRemarks2($query, $remarks2Id)
+    {
+        return $query->where('remarks_2_id', $remarks2Id);
+    }
+
+    /**
+     * Scope to get reports by amount range.
+     */
+    public function scopeByAmountRange($query, $minAmount, $maxAmount)
+    {
+        return $query->whereBetween('amount', [$minAmount, $maxAmount]);
+    }
+
+    /**
+     * Scope to get reports by payment method.
+     */
+    public function scopeByPaymentMethod($query, $paymentMethod)
+    {
+        return $query->where('payment_method', 'like', '%' . $paymentMethod . '%');
+    }
+
+    /**
      * Get the appointment data with all relationships.
      */
     public function getAppointmentWithRelations()

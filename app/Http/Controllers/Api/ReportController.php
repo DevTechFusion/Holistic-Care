@@ -16,19 +16,94 @@ class ReportController extends Controller
     }
 
     /**
-     * Display a listing of reports
+     * Display a listing of reports with optional filtering
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $perPage = request()->get('per_page', 20);
-            $page = request()->get('page', 1);
-            $reports = $this->reportService->getAllReports($perPage, $page);
+            // Validate filter parameters
+            $request->validate([
+                // Date filters
+                'start_date' => 'nullable|date',
+                'end_date' => 'nullable|date|after_or_equal:start_date',
+                
+                // Report filters
+                'report_type' => 'nullable|string|max:255',
+                'generated_by_id' => 'nullable|exists:users,id',
+                'appointment_id' => 'nullable|exists:appointments,id',
+                'status_id' => 'nullable|exists:statuses,id',
+                'remarks_1_id' => 'nullable|exists:remarks_1,id',
+                'remarks_2_id' => 'nullable|exists:remarks_2,id',
+                
+                // Amount filters
+                'amount_min' => 'nullable|numeric|min:0',
+                'amount_max' => 'nullable|numeric|min:0|gte:amount_min',
+                'payment_method' => 'nullable|string|max:255',
+                
+                // Appointment-related filters
+                'doctor_id' => 'nullable|exists:doctors,id',
+                'department_id' => 'nullable|exists:departments,id',
+                'procedure_id' => 'nullable|exists:procedures,id',
+                'category_id' => 'nullable|exists:categories,id',
+                'source_id' => 'nullable|exists:sources,id',
+                'agent_id' => 'nullable|exists:users,id',
+                
+                // Text search filters
+                'search' => 'nullable|string|max:255',
+                'patient_name' => 'nullable|string|max:255',
+                'contact_number' => 'nullable|string|max:255',
+                'mr_number' => 'nullable|string|max:255',
+                
+                // Time filters (for appointment times)
+                'start_time' => 'nullable|date_format:H:i:s',
+                'end_time' => 'nullable|date_format:H:i:s|after:start_time',
+                'duration' => 'nullable|integer|min:1',
+                
+                // Pagination and ordering
+                'per_page' => 'nullable|integer|min:1|max:100',
+                'page' => 'nullable|integer|min:1',
+                'order_by' => 'nullable|string|in:generated_at,report_type,amount,created_at,updated_at',
+                'order_direction' => 'nullable|string|in:asc,desc',
+            ]);
 
-            return response()->json([
-                'status' => 'success',
-                'data' => $reports
-            ], 200);
+            // Extract filters from request
+            $filters = $request->only([
+                'start_date', 'end_date', 'report_type', 'generated_by_id', 'appointment_id',
+                'status_id', 'remarks_1_id', 'remarks_2_id', 'amount_min', 'amount_max',
+                'payment_method', 'doctor_id', 'department_id', 'procedure_id', 'category_id',
+                'source_id', 'agent_id', 'search', 'patient_name', 'contact_number', 'mr_number',
+                'start_time', 'end_time', 'duration'
+            ]);
+
+            // Remove empty filters
+            $filters = array_filter($filters, function($value) {
+                return $value !== null && $value !== '';
+            });
+
+            $perPage = $request->get('per_page', 20);
+            $page = $request->get('page', 1);
+            $orderBy = $request->get('order_by', 'generated_at');
+            $orderDirection = $request->get('order_direction', 'desc');
+
+            // Use filtered reports if any filters are provided, otherwise use regular method
+            if (!empty($filters)) {
+                $reports = $this->reportService->getFilteredReports(
+                    $filters, $perPage, $page, $orderBy, $orderDirection
+                );
+                
+                return response()->json([
+                    'status' => 'success',
+                    'data' => $reports,
+                    'filters_applied' => $filters
+                ], 200);
+            } else {
+                $reports = $this->reportService->getAllReports($perPage, $page);
+                
+                return response()->json([
+                    'status' => 'success',
+                    'data' => $reports
+                ], 200);
+            }
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
