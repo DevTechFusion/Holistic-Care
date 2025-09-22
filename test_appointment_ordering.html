@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Appointment Ordering</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .test-button { padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        .test-button:hover { background: #0056b3; }
+        .result { margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 3px; white-space: pre-wrap; }
+        .error { background: #f8d7da; color: #721c24; }
+        .success { background: #d4edda; color: #155724; }
+    </style>
+</head>
+<body>
+    <h1>Appointment Ordering Test</h1>
+    
+    <div class="test-section">
+        <h3>Test 1: Order by Date (Default)</h3>
+        <button class="test-button" onclick="testOrdering('date', 'desc')">Order by Date DESC</button>
+        <button class="test-button" onclick="testOrdering('date', 'asc')">Order by Date ASC</button>
+        <div id="result1" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 2: Order by Patient Name</h3>
+        <button class="test-button" onclick="testOrdering('patient_name', 'asc')">Order by Patient Name ASC</button>
+        <button class="test-button" onclick="testOrdering('patient_name', 'desc')">Order by Patient Name DESC</button>
+        <div id="result2" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 3: Order by Start Time</h3>
+        <button class="test-button" onclick="testOrdering('start_time', 'asc')">Order by Start Time ASC</button>
+        <button class="test-button" onclick="testOrdering('start_time', 'desc')">Order by Start Time DESC</button>
+        <div id="result3" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 4: Order by Amount</h3>
+        <button class="test-button" onclick="testOrdering('amount', 'asc')">Order by Amount ASC</button>
+        <button class="test-button" onclick="testOrdering('amount', 'desc')">Order by Amount DESC</button>
+        <div id="result4" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 5: Order by Created At</h3>
+        <button class="test-button" onclick="testOrdering('created_at', 'asc')">Order by Created At ASC</button>
+        <button class="test-button" onclick="testOrdering('created_at', 'desc')">Order by Created At DESC</button>
+        <div id="result5" class="result"></div>
+    </div>
+
+    <script>
+        const baseUrl = 'http://localhost:8000/api/appointments';
+        
+        async function testOrdering(orderBy, orderDirection) {
+            const resultId = getResultId(orderBy);
+            const resultDiv = document.getElementById(resultId);
+            
+            resultDiv.textContent = 'Loading...';
+            resultDiv.className = 'result';
+            
+            try {
+                const url = `${baseUrl}?order_by=${orderBy}&order_direction=${orderDirection}&per_page=5`;
+                console.log('Testing URL:', url);
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        // Add your authentication headers here if needed
+                        // 'Authorization': 'Bearer YOUR_TOKEN'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    const appointments = data.data.data || data.data;
+                    const summary = `✅ SUCCESS: Order by ${orderBy} ${orderDirection.toUpperCase()}\n\n`;
+                    const details = appointments.map((apt, index) => 
+                        `${index + 1}. ${apt.patient_name || 'N/A'} - ${apt.date || 'N/A'} - ${apt.start_time || 'N/A'} - Amount: ${apt.amount || 'N/A'}`
+                    ).join('\n');
+                    
+                    resultDiv.textContent = summary + details;
+                    resultDiv.className = 'result success';
+                } else {
+                    throw new Error(data.message || 'Unknown error');
+                }
+                
+            } catch (error) {
+                resultDiv.textContent = `❌ ERROR: ${error.message}`;
+                resultDiv.className = 'result error';
+                console.error('Error:', error);
+            }
+        }
+        
+        function getResultId(orderBy) {
+            const mapping = {
+                'date': 'result1',
+                'patient_name': 'result2', 
+                'start_time': 'result3',
+                'amount': 'result4',
+                'created_at': 'result5'
+            };
+            return mapping[orderBy] || 'result1';
+        }
+    </script>
+</body>
+</html>

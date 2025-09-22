@@ -26,11 +26,17 @@ class AppointmentService extends CrudeService
     /**
      * Get all appointments with pagination
      */
-    public function getAllAppointments($perPage = 20, $page = 1, $orderBy = 'date', $format = 'desc')
+    public function getAllAppointments($perPage = 20, $page = 1, $orderBy = 'date', $orderDirection = 'desc')
     {
-        return $this->_paginate($perPage, $page, [], [
+        $query = $this->model->query();
+        
+        // Apply ordering
+        $query->orderBy($orderBy, $orderDirection);
+        
+        // Load relationships and paginate
+        return $query->with([
             'doctor', 'procedure', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
-        ]);
+        ])->paginate($perPage, ['*'], 'page', $page);
     }
 
     /**
@@ -38,7 +44,6 @@ class AppointmentService extends CrudeService
      */
     public function getFilteredAppointments($filters = [], $perPage = 20, $page = 1, $orderBy = 'date', $orderDirection = 'desc')
     {
-        // dd($filters);
         $query = $this->model->query();
 
         // Apply filters only if they are provided and not empty

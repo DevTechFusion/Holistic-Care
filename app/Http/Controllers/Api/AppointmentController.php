@@ -49,7 +49,7 @@ class AppointmentController extends Controller
                 // Pagination and ordering
                 'per_page' => 'nullable|integer|min:1|max:100',
                 'page' => 'nullable|integer|min:1',
-                'order_by' => 'nullable|string|in:date,start_time,end_time,patient_name,created_at,updated_at',
+                'order_by' => 'nullable|string|in:date,start_time,end_time,patient_name,created_at,updated_at,duration,amount,contact_number,mr_number',
                 'order_direction' => 'nullable|string|in:asc,desc',
             ]);
 
@@ -83,7 +83,7 @@ class AppointmentController extends Controller
                     'filters_applied' => $filters
                 ], 200);
             } else {
-                $appointments = $this->appointmentService->getAllAppointments($perPage, $page);
+                $appointments = $this->appointmentService->getAllAppointments($perPage, $page, $orderBy, $orderDirection);
                 
                 return response()->json([
                     'status' => 'success',
