@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time & Procedure Filters Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background: #fafafa; }
+        .section h3 { margin-top: 0; color: #333; border-bottom: 2px solid #007bff; padding-bottom: 5px; }
+        .form-group { margin: 10px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 3px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 3px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        .example-btn { background: #28a745; }
+        .example-btn:hover { background: #1e7e34; }
+        .results { margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px; }
+        .appointment { margin: 10px 0; padding: 15px; background: white; border: 1px solid #ddd; border-radius: 5px; }
+        .error { color: red; margin: 10px 0; padding: 10px; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 3px; }
+        .success { color: green; margin: 10px 0; padding: 10px; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 3px; }
+        .url-display { background: #e9ecef; padding: 10px; border-radius: 3px; font-family: monospace; margin: 10px 0; word-break: break-all; }
+        .filter-info { background: #fff3cd; border: 1px solid #ffeaa7; padding: 10px; border-radius: 3px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⏰ Time & 🏥 Procedure Filters Test</h1>
+        <p>Test the time and procedure filtering functionality for appointments.</p>
+
+        <div class="filter-info">
+            <strong>Available Filters:</strong><br>
+            <strong>Time:</strong> start_time, end_time, duration<br>
+            <strong>Procedure:</strong> procedure_id<br>
+            <strong>Other:</strong> doctor_id, department_id, date range, etc.
+        </div>
+
+        <form id="filterForm">
+            <div class="section">
+                <h3>⏰ Time Filters</h3>
+                <div class="form-group">
+                    <label for="start_time">Start Time (HH:MM:SS):</label>
+                    <input type="time" id="start_time" name="start_time" step="1">
+                </div>
+                <div class="form-group">
+                    <label for="end_time">End Time (HH:MM:SS):</label>
+                    <input type="time" id="end_time" name="end_time" step="1">
+                </div>
+                <div class="form-group">
+                    <label for="duration">Duration (minutes):</label>
+                    <input type="number" id="duration" name="duration" min="1" placeholder="e.g., 60">
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>🏥 Procedure & Entity Filters</h3>
+                <div class="form-group">
+                    <label for="procedure_id">Procedure ID:</label>
+                    <input type="number" id="procedure_id" name="procedure_id" min="1" placeholder="e.g., 5">
+                </div>
+                <div class="form-group">
+                    <label for="doctor_id">Doctor ID:</label>
+                    <input type="number" id="doctor_id" name="doctor_id" min="1" placeholder="e.g., 3">
+                </div>
+                <div class="form-group">
+                    <label for="department_id">Department ID:</label>
+                    <input type="number" id="department_id" name="department_id" min="1" placeholder="e.g., 1">
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>📅 Date Filters</h3>
+                <div class="form-group">
+                    <label for="start_date">Start Date:</label>
+                    <input type="date" id="start_date" name="start_date">
+                </div>
+                <div class="form-group">
+                    <label for="end_date">End Date:</label>
+                    <input type="date" id="end_date" name="end_date">
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>📄 Pagination & Ordering</h3>
+                <div class="form-group">
+                    <label for="per_page">Per Page:</label>
+                    <select id="per_page" name="per_page">
+                        <option value="5">5</option>
+                        <option value="10">10</option>
+                        <option value="20" selected>20</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="order_by">Order By:</label>
+                    <select id="order_by" name="order_by">
+                        <option value="date" selected>Date</option>
+                        <option value="start_time">Start Time</option>
+                        <option value="end_time">End Time</option>
+                        <option value="patient_name">Patient Name</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="order_direction">Order Direction:</label>
+                    <select id="order_direction" name="order_direction">
+                        <option value="desc" selected>Descending</option>
+                        <option value="asc">Ascending</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit">🔍 Filter Appointments</button>
+            <button type="button" class="example-btn" onclick="loadExample('morning')">🌅 Morning Appointments (9-12)</button>
+            <button type="button" class="example-btn" onclick="loadExample('afternoon')">🌞 Afternoon Appointments (12-17)</button>
+            <button type="button" class="example-btn" onclick="loadExample('procedure')">🏥 Specific Procedure</button>
+            <button type="button" class="example-btn" onclick="loadExample('duration')">⏱️ 60-minute Appointments</button>
+            <button type="button" class="example-btn" onclick="clearFilters()">🗑️ Clear All</button>
+        </form>
+
+        <div id="urlDisplay" class="url-display" style="display: none;"></div>
+
+        <div id="results" class="results" style="display: none;">
+            <h3>📋 Results</h3>
+            <div id="resultContent"></div>
+        </div>
+
+        <div id="error" class="error" style="display: none;"></div>
+        <div id="success" class="success" style="display: none;"></div>
+    </div>
+
+    <script>
+        function loadExample(type) {
+            clearFilters();
+            
+            switch(type) {
+                case 'morning':
+                    document.getElementById('start_time').value = '09:00:00';
+                    document.getElementById('end_time').value = '12:00:00';
+                    break;
+                case 'afternoon':
+                    document.getElementById('start_time').value = '12:00:00';
+                    document.getElementById('end_time').value = '17:00:00';
+                    break;
+                case 'procedure':
+                    document.getElementById('procedure_id').value = '5';
+                    break;
+                case 'duration':
+                    document.getElementById('duration').value = '60';
+                    break;
+            }
+        }
+        
+        function clearFilters() {
+            document.getElementById('filterForm').reset();
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('success').style.display = 'none';
+            document.getElementById('urlDisplay').style.display = 'none';
+        }
+
+        document.getElementById('filterForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const params = new URLSearchParams();
+            
+            // Only add non-empty values to the query string
+            for (let [key, value] of formData.entries()) {
+                if (value.trim() !== '') {
+                    params.append(key, value);
+                }
+            }
+            
+            const queryString = params.toString();
+            const url = `/api/appointments${queryString ? '?' + queryString : ''}`;
+            
+            // Display the URL being called
+            document.getElementById('urlDisplay').textContent = `GET ${url}`;
+            document.getElementById('urlDisplay').style.display = 'block';
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': 'Bearer ' + getAuthToken()
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayResults(data);
+                    showSuccess(`Found ${data.data.total} appointments`);
+                } else {
+                    showError(data.message || 'Failed to fetch appointments');
+                }
+            } catch (error) {
+                showError('Network error: ' + error.message);
+            }
+        });
+        
+        function displayResults(data) {
+            const resultsDiv = document.getElementById('results');
+            const contentDiv = document.getElementById('resultContent');
+            
+            let html = `
+                <div style="background: #e3f2fd; padding: 10px; border-radius: 3px; margin-bottom: 15px;">
+                    <strong>📊 Summary:</strong> ${data.data.total} total appointments | 
+                    Page ${data.data.current_page} of ${data.data.last_page} | 
+                    ${data.data.per_page} per page
+                </div>
+            `;
+            
+            if (data.filters_applied && Object.keys(data.filters_applied).length > 0) {
+                html += `
+                    <div style="background: #f3e5f5; padding: 10px; border-radius: 3px; margin-bottom: 15px;">
+                        <strong>🔍 Filters Applied:</strong><br>
+                        ${Object.entries(data.filters_applied).map(([key, value]) => 
+                            `<span style="background: #fff; padding: 2px 6px; margin: 2px; border-radius: 3px; display: inline-block;">${key}: ${value}</span>`
+                        ).join('')}
+                    </div>
+                `;
+            }
+            
+            if (data.data.data && data.data.data.length > 0) {
+                data.data.data.forEach(appointment => {
+                    const startTime = appointment.start_time || 'N/A';
+                    const endTime = appointment.end_time || 'N/A';
+                    const duration = appointment.duration ? `${appointment.duration} min` : 'N/A';
+                    
+                    html += `
+                        <div class="appointment">
+                            <h4>📅 Appointment #${appointment.id}</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <div>
+                                    <strong>👤 Patient:</strong> ${appointment.patient_name || 'N/A'}<br>
+                                    <strong>📅 Date:</strong> ${appointment.date || 'N/A'}<br>
+                                    <strong>⏰ Time:</strong> ${startTime} - ${endTime}<br>
+                                    <strong>⏱️ Duration:</strong> ${duration}
+                                </div>
+                                <div>
+                                    <strong>👨‍⚕️ Doctor:</strong> ${appointment.doctor ? appointment.doctor.name : 'N/A'}<br>
+                                    <strong>🏥 Department:</strong> ${appointment.department ? appointment.department.name : 'N/A'}<br>
+                                    <strong>🔬 Procedure:</strong> ${appointment.procedure ? appointment.procedure.name : 'N/A'}<br>
+                                    <strong>📋 Status:</strong> ${appointment.status ? appointment.status.name : 'N/A'}
+                                </div>
+                            </div>
+                            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee;">
+                                <strong>📞 Contact:</strong> ${appointment.contact_number || 'N/A'} | 
+                                <strong>🏷️ MR#:</strong> ${appointment.mr_number || 'N/A'}
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                html += '<div style="text-align: center; padding: 20px; color: #666;">No appointments found matching the criteria.</div>';
+            }
+            
+            contentDiv.innerHTML = html;
+            resultsDiv.style.display = 'block';
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('success').style.display = 'none';
+            document.getElementById('results').style.display = 'none';
+        }
+        
+        function showSuccess(message) {
+            const successDiv = document.getElementById('success');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+        }
+        
+        function getAuthToken() {
+            // This is a placeholder - you'll need to implement proper token retrieval
+            return prompt('Enter your Bearer token:') || '';
+        }
+    </script>
+</body>
+</html>

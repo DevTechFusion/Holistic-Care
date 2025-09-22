@@ -596,29 +596,32 @@ class AgentDashboardTest extends TestCase
         $user = $this->authenticate();
         $testData = $this->createTestData($user);
 
-        // Create appointments with amounts for different dates
+        // Create appointments with amounts for different dates (using "Arrived" status for incentives)
         $this->createAppointment($user, [
             'date' => now()->toDateString(),
             'start_time' => '09:00:00',
             'end_time' => '10:00:00',
             'duration' => 60,
             'amount' => 1000.00, // 1% incentive = 10.00
+            'status_id' => $testData['arrivedStatus']->id,
         ], $testData);
 
         $this->createAppointment($user, [
-            'date' => now()->addDays(3)->toDateString(), // Within same week
+            'date' => now()->addDays(2)->toDateString(), // Within same week (2 days from now)
             'start_time' => '10:00:00',
             'end_time' => '11:00:00',
             'duration' => 60,
             'amount' => 2000.00, // 1% incentive = 20.00
+            'status_id' => $testData['arrivedStatus']->id,
         ], $testData);
 
         $this->createAppointment($user, [
-            'date' => now()->addDays(15)->toDateString(), // Within same month
+            'date' => now()->addDays(10)->toDateString(), // Within same month (10 days from now)
             'start_time' => '11:00:00',
             'end_time' => '12:00:00',
             'duration' => 60,
             'amount' => 3000.00, // 1% incentive = 30.00
+            'status_id' => $testData['arrivedStatus']->id,
         ], $testData);
 
         // Test daily range (should only show today's incentive)

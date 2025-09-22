@@ -34,6 +34,76 @@ class AppointmentService extends CrudeService
     }
 
     /**
+     * Get filtered appointments with multiple filter options
+     */
+    public function getFilteredAppointments($filters = [], $perPage = 20, $page = 1, $orderBy = 'date', $orderDirection = 'desc')
+    {
+        // dd($filters);
+        $query = $this->model->query();
+
+        // Apply filters only if they are provided and not empty
+        if (!empty($filters['start_date']) && !empty($filters['end_date'])) {
+            $query->byDateRange($filters['start_date'], $filters['end_date']);
+        }
+
+        if (!empty($filters['doctor_id'])) {
+            $query->byDoctor($filters['doctor_id']);
+        }
+
+        if (!empty($filters['department_id'])) {
+            $query->byDepartment($filters['department_id']);
+        }
+
+        if (!empty($filters['procedure_id'])) {
+            $query->byProcedure($filters['procedure_id']);
+        }
+
+        if (!empty($filters['category_id'])) {
+            $query->byCategory($filters['category_id']);
+        }
+
+        if (!empty($filters['source_id'])) {
+            $query->bySource($filters['source_id']);
+        }
+
+        if (!empty($filters['status_id'])) {
+            $query->byStatus($filters['status_id']);
+        }
+
+        if (!empty($filters['agent_id'])) {
+            $query->byAgent($filters['agent_id']);
+        }
+
+        if (!empty($filters['start_time']) && !empty($filters['end_time'])) {
+            $query->byTimeRange($filters['start_time'], $filters['end_time']);
+        }
+
+        if (!empty($filters['duration'])) {
+            $query->byDuration($filters['duration']);
+        }
+
+        if (!empty($filters['patient_name'])) {
+            $query->where('patient_name', 'like', '%' . $filters['patient_name'] . '%');
+        }
+
+        if (!empty($filters['contact_number'])) {
+            $query->where('contact_number', 'like', '%' . $filters['contact_number'] . '%');
+        }
+
+        if (!empty($filters['mr_number'])) {
+            $query->where('mr_number', 'like', '%' . $filters['mr_number'] . '%');
+        }
+
+        // Apply ordering
+        $query->orderBy($orderBy, $orderDirection);
+
+        // Load relationships and paginate
+        return $query->with([
+            'doctor', 'procedure', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
+        ])->paginate($perPage, ['*'], 'page', $page);
+    }
+
+    /**
      * Get appointment by ID
      */
     public function getAppointmentById($id)
@@ -679,11 +749,13 @@ class AppointmentService extends CrudeService
     }
 
     /**
-     * Create or update incentive (1%) for an appointment when amount is present.
+     * Create or update incentive (1%) for an appointment when amount is present and status is "Arrived".
      */
     protected function upsertIncentiveForAppointment(Appointment $appointment): void
     {
-        if (empty($appointment->amount) || empty($appointment->agent_id)) {
+        if (empty($appointment->amount) || empty($appointment->agent_id) || !$appointment->isStatusArrived()) {
+            // If conditions are not met, delete any existing incentive
+            Incentive::where('appointment_id', $appointment->id)->delete();
             return;
         }
 
@@ -884,7 +956,8 @@ class AppointmentService extends CrudeService
         try {
             \Log::info('Updating reports for appointment ID: ' . $appointment->id);
             $updatedReports = $this->reportService->updateReportFromAppointment($appointment->id);
-            \Log::info('Successfully updated ' . count($updatedReports) . ' reports for appointment ID: ' . $appointment->id);
+            $reportCount = is_array($updatedReports) ? count($updatedReports) : ($updatedReports ? 1 : 0);
+            \Log::info('Successfully updated ' . $reportCount . ' reports for appointment ID: ' . $appointment->id);
         } catch (\Exception $e) {
             // Log the error but don't fail the appointment update
             \Log::error('Failed to update reports for appointment ID ' . $appointment->id . ': ' . $e->getMessage());

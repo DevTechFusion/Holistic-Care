@@ -117,6 +117,14 @@ class Appointment extends Model
     {
         return $this->belongsTo(Status::class);
     }
+
+    /**
+     * Check if the appointment status is "Arrived".
+     */
+    public function isStatusArrived()
+    {
+        return $this->status && $this->status->name === 'Arrived';
+    }
     /**
      * Get the reports for this appointment.
      */
@@ -198,6 +206,22 @@ class Appointment extends Model
     }
 
     /**
+     * Scope to get appointments by procedure.
+     */
+    public function scopeByProcedure($query, $procedureId)
+    {
+        return $query->where('procedure_id', $procedureId);
+    }
+
+    /**
+     * Scope to get appointments by agent.
+     */
+    public function scopeByAgent($query, $agentId)
+    {
+        return $query->where('agent_id', $agentId);
+    }
+
+    /**
      * Get the formatted time slot (for backward compatibility).
      */
     public function getTimeSlotAttribute()
@@ -264,15 +288,49 @@ class Appointment extends Model
     }
 
     /**
+     * Generate a unique MR number for the appointment.
+     * Format: MR + YYYY + MM + DD + 4-digit sequential number
+     * Example: MR202501150001
+     */
+    public function generateMrNumber()
+    {
+        $date = $this->date ?: now();
+        $datePrefix = $date->format('Ymd');
+        
+        // Get the last MR number for today
+        $lastMrNumber = static::where('mr_number', 'like', "MR{$datePrefix}%")
+            ->orderBy('mr_number', 'desc')
+            ->value('mr_number');
+        
+        if ($lastMrNumber) {
+            // Extract the sequential number and increment it
+            $lastSequence = (int) substr($lastMrNumber, -4);
+            $nextSequence = $lastSequence + 1;
+        } else {
+            // First MR number for today
+            $nextSequence = 1;
+        }
+        
+        return "MR{$datePrefix}" . str_pad($nextSequence, 4, '0', STR_PAD_LEFT);
+    }
+
+    /**
      * Boot the model and register model events.
      */
     protected static function boot()
     {
         parent::boot();
 
+        // Auto-generate MR number when creating appointment
+        static::creating(function ($appointment) {
+            if (empty($appointment->mr_number)) {
+                $appointment->mr_number = $appointment->generateMrNumber();
+            }
+        });
+
         // Create incentive when appointment is created
         static::created(function ($appointment) {
-            if (!empty($appointment->amount) && !empty($appointment->agent_id)) {
+            if (!empty($appointment->amount) && !empty($appointment->agent_id) && $appointment->isStatusArrived()) {
                 $amount = (float) $appointment->amount;
                 $percentage = 1.00; // 1%
                 $incentiveAmount = round(($amount * $percentage) / 100, 2);
@@ -289,8 +347,8 @@ class Appointment extends Model
 
         // Update incentive when appointment is updated
         static::updated(function ($appointment) {
-            if ($appointment->wasChanged('amount') || $appointment->wasChanged('agent_id')) {
-                if (!empty($appointment->amount) && !empty($appointment->agent_id)) {
+            if ($appointment->wasChanged('amount') || $appointment->wasChanged('agent_id') || $appointment->wasChanged('status_id')) {
+                if (!empty($appointment->amount) && !empty($appointment->agent_id) && $appointment->isStatusArrived()) {
                     $amount = (float) $appointment->amount;
                     $percentage = 1.00; // 1%
                     $incentiveAmount = round(($amount * $percentage) / 100, 2);
@@ -304,6 +362,9 @@ class Appointment extends Model
                             'incentive_amount' => $incentiveAmount,
                         ]
                     );
+                } else {
+                    // If status is not "Arrived" or amount/agent_id is missing, delete the incentive
+                    \App\Models\Incentive::where('appointment_id', $appointment->id)->delete();
                 }
             }
         });
