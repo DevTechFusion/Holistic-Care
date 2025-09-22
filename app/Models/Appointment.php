@@ -288,11 +288,45 @@ class Appointment extends Model
     }
 
     /**
+     * Generate a unique MR number for the appointment.
+     * Format: MR + YYYY + MM + DD + 4-digit sequential number
+     * Example: MR202501150001
+     */
+    public function generateMrNumber()
+    {
+        $date = $this->date ?: now();
+        $datePrefix = $date->format('Ymd');
+        
+        // Get the last MR number for today
+        $lastMrNumber = static::where('mr_number', 'like', "MR{$datePrefix}%")
+            ->orderBy('mr_number', 'desc')
+            ->value('mr_number');
+        
+        if ($lastMrNumber) {
+            // Extract the sequential number and increment it
+            $lastSequence = (int) substr($lastMrNumber, -4);
+            $nextSequence = $lastSequence + 1;
+        } else {
+            // First MR number for today
+            $nextSequence = 1;
+        }
+        
+        return "MR{$datePrefix}" . str_pad($nextSequence, 4, '0', STR_PAD_LEFT);
+    }
+
+    /**
      * Boot the model and register model events.
      */
     protected static function boot()
     {
         parent::boot();
+
+        // Auto-generate MR number when creating appointment
+        static::creating(function ($appointment) {
+            if (empty($appointment->mr_number)) {
+                $appointment->mr_number = $appointment->generateMrNumber();
+            }
+        });
 
         // Create incentive when appointment is created
         static::created(function ($appointment) {
