@@ -18,9 +18,64 @@ Authorization: Bearer {your-token}
 
 ## Query Parameters
 
+### Range Parameter
 | Parameter | Type | Required | Description | Default |
 |-----------|------|----------|-------------|---------|
 | `range` | string | No | Filter reports by time range. Options: `daily`, `weekly`, `monthly`, `all` | `daily` |
+
+### Date Filters
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `start_date` | date | No | Filter by appointment date from this date onwards (YYYY-MM-DD format) |
+| `end_date` | date | No | Filter by appointment date until this date (YYYY-MM-DD format) |
+
+### Report Filters
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `report_type` | string | No | Filter by report type (partial match) |
+| `generated_by_id` | integer | No | Filter by user ID who generated the report |
+| `appointment_id` | integer | No | Filter by specific appointment ID |
+| `status_id` | integer | No | Filter by status ID |
+| `remarks_1_id` | integer | No | Filter by remarks 1 ID |
+| `remarks_2_id` | integer | No | Filter by remarks 2 ID |
+
+### Amount Filters
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `amount_min` | numeric | No | Filter by minimum amount |
+| `amount_max` | numeric | No | Filter by maximum amount |
+| `payment_method` | string | No | Filter by payment method (partial match) |
+
+### Appointment-Related Filters
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `doctor_id` | integer | No | Filter by doctor ID |
+| `department_id` | integer | No | Filter by department ID |
+| `procedure_id` | integer | No | Filter by procedure ID |
+| `category_id` | integer | No | Filter by category ID |
+| `source_id` | integer | No | Filter by source ID |
+| `agent_id` | integer | No | Filter by agent ID |
+
+### Text Search Filters
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `search` | string | No | Search across report type, notes, patient name, contact number, MR number |
+| `patient_name` | string | No | Filter by patient name (partial match) |
+| `contact_number` | string | No | Filter by contact number (partial match) |
+| `mr_number` | string | No | Filter by MR number (partial match) |
+
+### Time Filters (Appointment Times)
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `start_time` | time | No | Filter by appointment start time from this time onwards (HH:MM:SS format) |
+| `end_time` | time | No | Filter by appointment start time until this time (HH:MM:SS format) |
+| `duration` | integer | No | Filter by appointment duration in minutes |
+
+### Ordering Parameters
+| Parameter | Type | Required | Description | Default |
+|-----------|------|----------|-------------|---------|
+| `order_by` | string | No | Sort field (generated_at, report_type, amount, created_at, updated_at) | `generated_at` |
+| `order_direction` | string | No | Sort direction (asc, desc) | `desc` |
 
 ## Range Options
 
@@ -68,7 +123,9 @@ The API returns a CSV file that will be automatically downloaded to the user's d
 
 ## Example Usage
 
-### Export today's reports
+### Basic Range Exports
+
+#### Export today's reports
 ```bash
 curl -X GET "https://your-domain.com/api/reports/export-csv?range=daily" \
   -H "Authorization: Bearer {your-token}" \
@@ -76,7 +133,7 @@ curl -X GET "https://your-domain.com/api/reports/export-csv?range=daily" \
   --output "reports_daily_2025-01-15_14-30-00.csv"
 ```
 
-### Export this week's reports
+#### Export this week's reports
 ```bash
 curl -X GET "https://your-domain.com/api/reports/export-csv?range=weekly" \
   -H "Authorization: Bearer {your-token}" \
@@ -84,7 +141,7 @@ curl -X GET "https://your-domain.com/api/reports/export-csv?range=weekly" \
   --output "reports_weekly_2025-01-15_14-30-00.csv"
 ```
 
-### Export this month's reports
+#### Export this month's reports
 ```bash
 curl -X GET "https://your-domain.com/api/reports/export-csv?range=monthly" \
   -H "Authorization: Bearer {your-token}" \
@@ -92,7 +149,7 @@ curl -X GET "https://your-domain.com/api/reports/export-csv?range=monthly" \
   --output "reports_monthly_2025-01-15_14-30-00.csv"
 ```
 
-### Export all reports
+#### Export all reports
 ```bash
 curl -X GET "https://your-domain.com/api/reports/export-csv?range=all" \
   -H "Authorization: Bearer {your-token}" \
@@ -100,14 +157,68 @@ curl -X GET "https://your-domain.com/api/reports/export-csv?range=all" \
   --output "reports_all_2025-01-15_14-30-00.csv"
 ```
 
+### Filtered Exports
+
+#### Export reports with date range and doctor filter
+```bash
+curl -X GET "https://your-domain.com/api/reports/export-csv?range=all&start_date=2025-01-01&end_date=2025-01-31&doctor_id=5" \
+  -H "Authorization: Bearer {your-token}" \
+  -H "Accept: text/csv" \
+  --output "reports_doctor_5_january_2025.csv"
+```
+
+#### Export reports with amount range and status filter
+```bash
+curl -X GET "https://your-domain.com/api/reports/export-csv?range=all&amount_min=100&amount_max=500&status_id=1" \
+  -H "Authorization: Bearer {your-token}" \
+  -H "Accept: text/csv" \
+  --output "reports_amount_100_500_status_1.csv"
+```
+
+#### Export reports with patient name search and ordering
+```bash
+curl -X GET "https://your-domain.com/api/reports/export-csv?range=all&patient_name=John&order_by=created_at&order_direction=asc" \
+  -H "Authorization: Bearer {your-token}" \
+  -H "Accept: text/csv" \
+  --output "reports_patient_john_ordered.csv"
+```
+
+#### Export reports with appointment time range
+```bash
+curl -X GET "https://your-domain.com/api/reports/export-csv?range=all&start_time=09:00:00&end_time=17:00:00" \
+  -H "Authorization: Bearer {your-token}" \
+  -H "Accept: text/csv" \
+  --output "reports_business_hours.csv"
+```
+
+#### Complex filtering example
+```bash
+curl -X GET "https://your-domain.com/api/reports/export-csv?range=all&start_date=2025-01-01&end_date=2025-01-31&doctor_id=5&department_id=1&status_id=1&amount_min=100&order_by=generated_at&order_direction=desc" \
+  -H "Authorization: Bearer {your-token}" \
+  -H "Accept: text/csv" \
+  --output "reports_complex_filter_january_2025.csv"
+```
+
 ## Frontend Integration
 
 ### React/JavaScript Example
 
+#### Basic Export Function
 ```javascript
-const exportReportsCsv = async (range = 'daily') => {
+const exportReportsCsv = async (range = 'daily', filters = {}) => {
   try {
-    const response = await fetch(`/api/reports/export-csv?range=${range}`, {
+    // Build query parameters
+    const params = new URLSearchParams();
+    params.append('range', range);
+    
+    // Add filters to query string
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== null && value !== '') {
+        params.append(key, value);
+      }
+    });
+    
+    const response = await fetch(`/api/reports/export-csv?${params.toString()}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -141,15 +252,87 @@ exportReportsCsv('daily');    // Export today's reports
 exportReportsCsv('weekly');   // Export this week's reports
 exportReportsCsv('monthly');  // Export this month's reports
 exportReportsCsv('all');      // Export all reports
+
+// Export with filters
+exportReportsCsv('all', {
+  start_date: '2025-01-01',
+  end_date: '2025-01-31',
+  doctor_id: 5,
+  status_id: 1,
+  order_by: 'created_at',
+  order_direction: 'asc'
+});
+
+// Export with patient search
+exportReportsCsv('all', {
+  patient_name: 'John',
+  amount_min: 100,
+  order_by: 'generated_at',
+  order_direction: 'desc'
+});
+```
+
+#### Advanced Filter Builder
+```javascript
+const buildExportUrl = (range, filters) => {
+  const params = new URLSearchParams();
+  params.append('range', range);
+  
+  // Add all possible filters
+  const filterKeys = [
+    'start_date', 'end_date', 'report_type', 'generated_by_id', 'appointment_id',
+    'status_id', 'remarks_1_id', 'remarks_2_id', 'amount_min', 'amount_max',
+    'payment_method', 'doctor_id', 'department_id', 'procedure_id', 'category_id',
+    'source_id', 'agent_id', 'search', 'patient_name', 'contact_number', 'mr_number',
+    'start_time', 'end_time', 'duration', 'order_by', 'order_direction'
+  ];
+  
+  filterKeys.forEach(key => {
+    if (filters[key] !== null && filters[key] !== '') {
+      params.append(key, filters[key]);
+    }
+  });
+  
+  return `/api/reports/export-csv?${params.toString()}`;
+};
+
+// Usage
+const filters = {
+  start_date: '2025-01-01',
+  end_date: '2025-01-31',
+  doctor_id: 5,
+  department_id: 1,
+  status_id: 1,
+  amount_min: 100,
+  order_by: 'generated_at',
+  order_direction: 'desc'
+};
+
+const exportUrl = buildExportUrl('all', filters);
+console.log('Export URL:', exportUrl);
 ```
 
 ### HTML Button Example
 
 ```html
+<!-- Basic range exports -->
 <button onclick="exportReportsCsv('daily')">Export Today's Reports</button>
 <button onclick="exportReportsCsv('weekly')">Export This Week's Reports</button>
 <button onclick="exportReportsCsv('monthly')">Export This Month's Reports</button>
 <button onclick="exportReportsCsv('all')">Export All Reports</button>
+
+<!-- Filtered exports -->
+<button onclick="exportReportsCsv('all', {start_date: '2025-01-01', end_date: '2025-01-31', doctor_id: 5})">
+  Export January 2025 Reports for Doctor 5
+</button>
+
+<button onclick="exportReportsCsv('all', {amount_min: 100, amount_max: 500, status_id: 1})">
+  Export Reports: Amount 100-500, Status 1
+</button>
+
+<button onclick="exportReportsCsv('all', {patient_name: 'John', order_by: 'created_at', order_direction: 'asc'})">
+  Export Reports for Patient John (Ordered by Created Date)
+</button>
 ```
 
 ## Error Handling
@@ -169,3 +352,8 @@ The API returns appropriate HTTP status codes:
 - The endpoint respects the same authentication and authorization as other report endpoints
 - **The CSV file will automatically download to the user's default Downloads folder**
 - The browser will handle the download automatically due to the `Content-Disposition: attachment` header
+- **All filters from the reports listing API are now supported in CSV export**
+- Filters can be combined for complex data extraction (e.g., date range + doctor + status + amount range)
+- Ordering parameters allow you to sort the exported data by any supported field
+- The `range` parameter works alongside other filters - if you specify date filters, the range parameter is ignored
+- Empty filter values are automatically ignored, so you can pass all filters and only the filled ones will be applied

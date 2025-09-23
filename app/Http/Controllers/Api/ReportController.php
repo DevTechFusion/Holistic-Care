@@ -97,7 +97,8 @@ class ReportController extends Controller
                     'filters_applied' => $filters
                 ], 200);
             } else {
-                $reports = $this->reportService->getAllReports($perPage, $page);
+                // Even when no filters are provided, respect ordering params
+                $reports = $this->reportService->getAllReports($perPage, $page, $orderBy, $orderDirection);
                 
                 return response()->json([
                     'status' => 'success',
@@ -450,13 +451,57 @@ class ReportController extends Controller
     {
         try {
             $request->validate([
-                'range' => 'nullable|string|in:daily,weekly,monthly,all'
+                'range' => 'nullable|string|in:daily,weekly,monthly,all',
+
+                // Same filters as reports index
+                'start_date' => 'nullable|date',
+                'end_date' => 'nullable|date|after_or_equal:start_date',
+                'report_type' => 'nullable|string|max:255',
+                'generated_by_id' => 'nullable|exists:users,id',
+                'appointment_id' => 'nullable|exists:appointments,id',
+                'status_id' => 'nullable|exists:statuses,id',
+                'remarks_1_id' => 'nullable|exists:remarks_1,id',
+                'remarks_2_id' => 'nullable|exists:remarks_2,id',
+                'amount_min' => 'nullable|numeric|min:0',
+                'amount_max' => 'nullable|numeric|min:0|gte:amount_min',
+                'payment_method' => 'nullable|string|max:255',
+                'doctor_id' => 'nullable|exists:doctors,id',
+                'department_id' => 'nullable|exists:departments,id',
+                'procedure_id' => 'nullable|exists:procedures,id',
+                'category_id' => 'nullable|exists:categories,id',
+                'source_id' => 'nullable|exists:sources,id',
+                'agent_id' => 'nullable|exists:users,id',
+                'search' => 'nullable|string|max:255',
+                'patient_name' => 'nullable|string|max:255',
+                'contact_number' => 'nullable|string|max:255',
+                'mr_number' => 'nullable|string|max:255',
+                'start_time' => 'nullable|date_format:H:i:s',
+                'end_time' => 'nullable|date_format:H:i:s|after:start_time',
+                'duration' => 'nullable|integer|min:1',
+                'order_by' => 'nullable|string|in:generated_at,report_type,amount,created_at,updated_at',
+                'order_direction' => 'nullable|string|in:asc,desc',
             ]);
 
             $range = $request->get('range', 'daily');
-            
-            // Get CSV data
-            $csvData = $this->reportService->exportToCsv($range);
+
+            // Extract filters
+            $filters = $request->only([
+                'start_date', 'end_date', 'report_type', 'generated_by_id', 'appointment_id',
+                'status_id', 'remarks_1_id', 'remarks_2_id', 'amount_min', 'amount_max',
+                'payment_method', 'doctor_id', 'department_id', 'procedure_id', 'category_id',
+                'source_id', 'agent_id', 'search', 'patient_name', 'contact_number', 'mr_number',
+                'start_time', 'end_time', 'duration'
+            ]);
+
+            $filters = array_filter($filters, function($value) {
+                return $value !== null && $value !== '';
+            });
+
+            $orderBy = $request->get('order_by', 'generated_at');
+            $orderDirection = $request->get('order_direction', 'desc');
+
+            // Get CSV data with filters and ordering
+            $csvData = $this->reportService->exportToCsv($range, $filters, $orderBy, $orderDirection);
             
             // Generate filename
             $filename = 'reports_' . $range . '_' . now()->format('Y-m-d_H-i-s') . '.csv';

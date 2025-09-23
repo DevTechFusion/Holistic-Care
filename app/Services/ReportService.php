@@ -15,12 +15,17 @@ class ReportService extends CrudeService
     /**
      * Get all reports with pagination
      */
-    public function getAllReports($perPage = 20, $page = 1, $orderBy = 'generated_at', $format = 'desc')
+    public function getAllReports($perPage = 20, $page = 1, $orderBy = 'generated_at', $orderDirection = 'desc')
     {
-        return $this->_paginate($perPage, $page, [], [
+        $query = $this->model->query();
+
+        // Apply ordering for the unfiltered list as well
+        $query->orderBy($orderBy, $orderDirection);
+
+        return $query->with([
             'appointment.doctor', 'appointment.procedure', 'appointment.category',
             'appointment.department', 'appointment.source', 'appointment.agent', 'remarks1', 'remarks2', 'status', 'generatedBy'
-        ]);
+        ])->paginate($perPage, ['*'], 'page', $page);
     }
 
     /**
@@ -518,9 +523,156 @@ class ReportService extends CrudeService
     /**
      * Export reports to CSV format
      */
-    public function exportToCsv($range = 'daily')
+    public function exportToCsv($range = 'daily', array $filters = [], $orderBy = 'generated_at', $orderDirection = 'desc')
     {
-        $reports = $this->getReportsByRange($range);
+        // Base query with relations
+        $query = $this->model->with([
+            'appointment.doctor', 'appointment.procedure', 'appointment.category',
+            'appointment.department', 'appointment.source', 'appointment.agent', 'remarks1', 'remarks2', 'status', 'generatedBy'
+        ]);
+
+        // Apply range shortcut if provided and no explicit date filters
+        if ($range !== 'all' && empty($filters['start_date']) && empty($filters['end_date'])) {
+            switch ($range) {
+                case 'daily':
+                    $query->whereDate('generated_at', now()->toDateString());
+                    break;
+                case 'weekly':
+                    $query->whereBetween('generated_at', [
+                        now()->startOfWeek()->toDateString(),
+                        now()->endOfWeek()->toDateString()
+                    ]);
+                    break;
+                case 'monthly':
+                    $query->whereBetween('generated_at', [
+                        now()->startOfMonth()->toDateString(),
+                        now()->endOfMonth()->toDateString()
+                    ]);
+                    break;
+            }
+        }
+
+        // Reuse filter logic from getFilteredReports (inlined to avoid pagination)
+        if (!empty($filters['start_date']) || !empty($filters['end_date'])) {
+            $query->whereHas('appointment', function($q) use ($filters) {
+                if (!empty($filters['start_date']) && !empty($filters['end_date'])) {
+                    $q->whereBetween('date', [$filters['start_date'], $filters['end_date']]);
+                } elseif (!empty($filters['start_date'])) {
+                    $q->where('date', '>=', $filters['start_date']);
+                } elseif (!empty($filters['end_date'])) {
+                    $q->where('date', '<=', $filters['end_date']);
+                }
+            });
+        }
+
+        if (!empty($filters['report_type'])) {
+            $query->byType($filters['report_type']);
+        }
+        if (!empty($filters['generated_by_id'])) {
+            $query->byGeneratedBy($filters['generated_by_id']);
+        }
+        if (!empty($filters['appointment_id'])) {
+            $query->where('appointment_id', $filters['appointment_id']);
+        }
+        if (!empty($filters['status_id'])) {
+            $query->where('status_id', $filters['status_id']);
+        }
+        if (!empty($filters['remarks_1_id'])) {
+            $query->where('remarks_1_id', $filters['remarks_1_id']);
+        }
+        if (!empty($filters['remarks_2_id'])) {
+            $query->where('remarks_2_id', $filters['remarks_2_id']);
+        }
+        if (!empty($filters['amount_min'])) {
+            $query->where('amount', '>=', $filters['amount_min']);
+        }
+        if (!empty($filters['amount_max'])) {
+            $query->where('amount', '<=', $filters['amount_max']);
+        }
+        if (!empty($filters['payment_method'])) {
+            $query->where('payment_method', 'like', '%' . $filters['payment_method'] . '%');
+        }
+        if (!empty($filters['doctor_id'])) {
+            $query->whereHas('appointment', function($q) use ($filters) {
+                $q->where('doctor_id', $filters['doctor_id']);
+            });
+        }
+        if (!empty($filters['department_id'])) {
+            $query->whereHas('appointment', function($q) use ($filters) {
+                $q->where('department_id', $filters['department_id']);
+            });
+        }
+        if (!empty($filters['procedure_id'])) {
+            $query->whereHas('appointment', function($q) use ($filters) {
+                $q->where('procedure_id', $filters['procedure_id']);
+            });
+        }
+        if (!empty($filters['category_id'])) {
+            $query->whereHas('appointment', function($q) use ($filters) {
+                $q->where('category_id', $filters['category_id']);
+            });
+        }
+        if (!empty($filters['source_id'])) {
+            $query->whereHas('appointment', function($q) use ($filters) {
+                $q->where('source_id', $filters['source_id']);
+            });
+        }
+        if (!empty($filters['agent_id'])) {
+            $query->whereHas('appointment', function($q) use ($filters) {
+                $q->where('agent_id', $filters['agent_id']);
+            });
+        }
+        if (!empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function($q) use ($search) {
+                $q->where('report_type', 'like', "%{$search}%")
+                  ->orWhere('notes', 'like', "%{$search}%")
+                  ->orWhereHas('generatedBy', function($userQuery) use ($search) {
+                      $userQuery->where('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('appointment', function($appointmentQuery) use ($search) {
+                      $appointmentQuery->where('patient_name', 'like', "%{$search}%")
+                                      ->orWhere('contact_number', 'like', "%{$search}%")
+                                      ->orWhere('mr_number', 'like', "%{$search}%");
+                  });
+            });
+        }
+        if (!empty($filters['patient_name'])) {
+            $query->whereHas('appointment', function($q) use ($filters) {
+                $q->where('patient_name', 'like', '%' . $filters['patient_name'] . '%');
+            });
+        }
+        if (!empty($filters['contact_number'])) {
+            $query->whereHas('appointment', function($q) use ($filters) {
+                $q->where('contact_number', 'like', '%' . $filters['contact_number'] . '%');
+            });
+        }
+        if (!empty($filters['mr_number'])) {
+            $query->whereHas('appointment', function($q) use ($filters) {
+                $q->where('mr_number', 'like', '%' . $filters['mr_number'] . '%');
+            });
+        }
+        if (!empty($filters['start_time']) || !empty($filters['end_time'])) {
+            $query->whereHas('appointment', function($q) use ($filters) {
+                if (!empty($filters['start_time']) && !empty($filters['end_time'])) {
+                    $q->whereBetween('start_time', [$filters['start_time'], $filters['end_time']]);
+                } elseif (!empty($filters['start_time'])) {
+                    $q->where('start_time', '>=', $filters['start_time']);
+                } elseif (!empty($filters['end_time'])) {
+                    $q->where('start_time', '<=', $filters['end_time']);
+                }
+            });
+        }
+        if (!empty($filters['duration'])) {
+            $query->whereHas('appointment', function($q) use ($filters) {
+                $q->where('duration', $filters['duration']);
+            });
+        }
+
+        // Ordering
+        $query->orderBy($orderBy, $orderDirection);
+
+        $reports = $query->get();
         
         $csvData = [];
         
