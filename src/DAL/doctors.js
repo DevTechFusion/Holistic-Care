@@ -18,7 +18,7 @@ export const getDoctors = (page = 1, perPage = 15) => {
 export const getDoctorById = (id) => {
   return invokeApi({ path: `api/doctors/${id}` });
 };
-
+  
 export const updateDoctor = (id, data) => {
   const reqObj = {
     method: "PUT",

@@ -16,15 +16,16 @@ import {
 import { getAppointments, deleteAppointment } from "../../DAL/appointments";
 import CreateAppointmentModal from "../../components/forms/AppointmentForm";
 import ActionButtons from "../../constants/actionButtons";
+import FilterPopover from "./FilterPopover"; 
 import { useSnackbar } from "notistack";
 import ComplaintForm from "../../components/forms/ComplaintForm";
 import dayjs from "dayjs";
-
 
 const AppointmentsPage = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
+  const [filterAnchor, setFilterAnchor] = useState(null); 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [total, setTotal] = useState(0);
@@ -32,10 +33,32 @@ const AppointmentsPage = () => {
   const { enqueueSnackbar } = useSnackbar();
   const [complaintModalOpen, setComplaintModalOpen] = useState(false);
 
+  const [filters, setFilters] = useState({
+    start_date: "",
+    end_date: "",
+    doctor_id: "",
+    agent_id: "",
+    department_id: "",
+    procedure_id: "",
+    order_by: "created_at",
+    order_direction: "desc",
+  });
+
   const fetchAppointments = async () => {
     setLoading(true);
     try {
-      const res = await getAppointments(page + 1, rowsPerPage);
+      const res = await getAppointments(
+        page + 1,
+        rowsPerPage,
+        filters.start_date,
+        filters.end_date,
+        filters.doctor_id,
+        filters.agent_id,
+        filters.department_id,
+        filters.procedure_id,
+        filters.order_by,
+        filters.order_direction
+      );
       setAppointments(res?.data?.data || []);
       setTotal(res?.data?.total || 0);
     } catch (err) {
@@ -47,20 +70,16 @@ const AppointmentsPage = () => {
 
   useEffect(() => {
     fetchAppointments();
-  }, [page, rowsPerPage]);
+  }, [page, rowsPerPage, filters]);
 
   const handleDeleteAppointment = async (id) => {
     try {
       await deleteAppointment(id);
       fetchAppointments();
-      enqueueSnackbar("Appointment deleted successfully", {
-        variant: "success",
-      });
+      enqueueSnackbar("Appointment deleted successfully", { variant: "success" });
     } catch (err) {
       console.error("Failed to delete appointment", err);
-      enqueueSnackbar("Failed to delete appointment", {
-        variant: "error",
-      });
+      enqueueSnackbar("Failed to delete appointment", { variant: "error" });
     }
   };
 
@@ -88,9 +107,17 @@ const AppointmentsPage = () => {
     <Box p={3}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography variant="h5">Appointments</Typography>
-        <Button variant="contained" onClick={handleCreateAppointment}>
-          + Add Appointment
-        </Button>
+        <Box display="flex" gap={2}>
+          <Button
+            variant="outlined"
+            onClick={(e) => setFilterAnchor(e.currentTarget)}
+          >
+            Filters
+          </Button>
+          <Button variant="contained" onClick={handleCreateAppointment}>
+            + Add Appointment
+          </Button>
+        </Box>
       </Box>
 
       <Paper>
@@ -100,9 +127,8 @@ const AppointmentsPage = () => {
           </Box>
         ) : (
           <>
-            {/* ✅ Horizontal scroll + sticky Sr# column */}
             <TableContainer sx={{ maxHeight: 700 }}>
-              <Table fixedHeader>
+              <Table stickyHeader>
                 <TableHead>
                   <TableRow>
                     <TableCell>Sr#</TableCell>
@@ -110,7 +136,6 @@ const AppointmentsPage = () => {
                     <TableCell>Start Time</TableCell>
                     <TableCell>End Time</TableCell>
                     <TableCell>Appt. ID</TableCell>
-                    <TableCell>Duration</TableCell>
                     <TableCell>Patient</TableCell>
                     <TableCell>Contact</TableCell>
                     <TableCell>Doctor</TableCell>
@@ -124,22 +149,13 @@ const AppointmentsPage = () => {
                 <TableBody>
                   {appointments.map((appt, idx) => (
                     <TableRow key={appt.id}>
-                      <TableCell
-                        sx={{
-                          position: "sticky",
-                          left: 0,
-                          zIndex: 1,
-                          backgroundColor: "#fff",
-                          fontWeight: 500,
-                        }}
-                      >
+                      <TableCell sx={{ position: "sticky", left: 0, zIndex: 1, backgroundColor: "#fff", fontWeight: 500 }}>
                         {page * rowsPerPage + idx + 1}
                       </TableCell>
                       <TableCell>{dayjs(appt.date).format("DD-MM-YYYY")}</TableCell>
                       <TableCell>{appt.start_time}</TableCell>
                       <TableCell>{appt.end_time}</TableCell>
                       <TableCell>{appt.id}</TableCell>
-                      <TableCell>{appt.duration}</TableCell>
                       <TableCell>{appt.patient_name}</TableCell>
                       <TableCell>{appt.contact_number}</TableCell>
                       <TableCell>{appt.doctor?.name}</TableCell>
@@ -187,10 +203,19 @@ const AppointmentsPage = () => {
           setTargetItem(null);
         }}
       />
-      <ComplaintForm
-        data={targetItem}
-        open={complaintModalOpen}
-        onClose={handleCloseComplaint}
+
+      <ComplaintForm data={targetItem} open={complaintModalOpen} onClose={handleCloseComplaint} />
+
+      {/* Filter Popover */}
+      <FilterPopover
+        anchorEl={filterAnchor}
+        open={Boolean(filterAnchor)}
+        onClose={() => setFilterAnchor(null)}
+        filters={filters}
+        setFilters={(newFilters) => {
+          setFilters(newFilters);
+          setPage(0);
+        }}
       />
     </Box>
   );

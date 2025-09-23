@@ -11,59 +11,155 @@ import {
   TableBody,
   TablePagination,
   TableContainer,
+  Button,
 } from "@mui/material";
 
-import { getAllReports } from "../../DAL/reports";
+import { getAllReports, exportReports } from "../../DAL/reports";
+import { getAllStatuses } from "../../DAL/status";
 import { useSnackbar } from "notistack";
 import dayjs from "dayjs";
+import ReportsFilterPopover from "./ReportsFilterPopover";
 
 const statusColors = {
-  "Already Taken": "#e7f2fe", 
-  "Arrived": "#b3e5ca", 
-  "Cancelled": "#f99f9f", 
-  "Not Show": "#FFE4F7", 
-  "Rescheduled": "#FFFEE0", 
+  "Already Taken": "#e7f2fe",
+  Arrived: "#b3e5ca",
+  Cancelled: "#f99f9f",
+  "Not Show": "#FFE4F7",
+  Rescheduled: "#FFFEE0",
 };
 
 const ReportsPage = () => {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [exporting, setExporting] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [total, setTotal] = useState(0);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [statuses, setStatuses] = useState([]);
 
   const { enqueueSnackbar } = useSnackbar();
 
+  const [filters, setFilters] = useState({
+    start_date: "",
+    end_date: "",
+    doctor_id: "",
+    agent_id: "",
+    department_id: "",
+    procedure_id: "",
+    status: "",
+    payment_mode: "",
+    order_by: "created_at",
+    order_direction: "desc",
+  });
+
+  // Fetch statuses for filter dropdown
+  const fetchStatuses = async () => {
+    try {
+      const res = await getAllStatuses();
+      setStatuses(res?.data?.data || []);
+    } catch (err) {
+      console.error("Failed to fetch statuses", err);
+    }
+  };
+
+  const fetchReports = async () => {
+    try {
+      setLoading(true);
+      const res = await getAllReports(
+        page + 1,
+        rowsPerPage,
+        filters.start_date,
+        filters.end_date,
+        filters.doctor_id,
+        filters.agent_id,
+        filters.department_id,
+        filters.procedure_id,
+        filters.status,
+        filters.payment_mode,
+        filters.order_by,
+        filters.order_direction
+      );
+      setReports(res?.data?.data || []);
+      setTotal(res?.data?.total || 0);
+    } catch (err) {
+      console.error("Failed to fetch reports", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchReports = async () => {
-      try {
-        const res = await getAllReports(page + 1, rowsPerPage);
-
-        const reportList = res?.data?.data || [];
-        setReports(reportList);
-
-        setTotal(res?.data?.total || 0);
-      } catch (err) {
-        setError(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchReports();
-  }, [page, rowsPerPage]);
+    fetchStatuses();
+  }, [page, rowsPerPage, filters]);
 
-  if (error) {
-    return <Typography color="error">Error fetching reports</Typography>;
-  }
+  // Updated handleExport to include all=true
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+      const res = await exportReports(
+        filters.start_date,
+        filters.end_date,
+        filters.doctor_id,
+        filters.agent_id,
+        filters.department_id,
+        filters.procedure_id,
+        filters.status,
+        filters.payment_mode,
+        filters.order_by,
+        filters.order_direction
+      );
+
+      const blob =
+        res.data instanceof Blob
+          ? res.data
+          : new Blob([res.data], { type: "text/csv;charset=utf-8;" });
+
+      const contentDisposition =
+        res.headers?.["content-disposition"] || res.headers?.get?.("content-disposition");
+
+      const filename =
+        contentDisposition?.split("filename=")[1]?.replace(/"/g, "") ||
+        `reports_${dayjs().format("YYYYMMDD_HHmmss")}.csv`;
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      enqueueSnackbar("CSV download started", { variant: "success" });
+    } catch (err) {
+      console.error("CSV export failed", err);
+      enqueueSnackbar("Failed to download CSV", { variant: "error" });
+    } finally {
+      setExporting(false);
+    }
+  };
 
   return (
     <Box p={3}>
+      {/* Header */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography variant="h5">Reports</Typography>
+        <Box display="flex" gap={2}>
+          <Button
+            variant="outlined"
+            onClick={(e) => setAnchorEl(anchorEl ? null : e.currentTarget)}
+          >
+            Filters
+          </Button>
+          <Button variant="contained" color="primary" onClick={handleExport} disabled={exporting}>
+            {exporting ? "Exporting..." : "Export CSV"}
+          </Button>
+        </Box>
       </Box>
 
+      {/* Table */}
       <Paper>
         {loading ? (
           <Box display="flex" justifyContent="center" alignItems="center" p={3}>
@@ -72,12 +168,11 @@ const ReportsPage = () => {
         ) : (
           <>
             <TableContainer sx={{ maxHeight: 700 }}>
-              <Table fixedHeader>
+              <Table stickyHeader>
                 <TableHead>
                   <TableRow>
                     <TableCell>Sr#</TableCell>
                     <TableCell>Date</TableCell>
-                    <TableCell>Duration</TableCell>
                     <TableCell>Patient</TableCell>
                     <TableCell>Contact</TableCell>
                     <TableCell>Doctor</TableCell>
@@ -96,16 +191,12 @@ const ReportsPage = () => {
                   {reports.map((rep, idx) => {
                     const status = rep.status?.name;
                     const bgColor = statusColors[status] || "inherit";
-
                     return (
                       <TableRow
                         key={rep.id}
                         sx={{
                           backgroundColor: bgColor,
-                          "&:hover": {
-                            backgroundColor: bgColor,
-                            opacity: 0.9,
-                          },
+                          "&:hover": { backgroundColor: bgColor, opacity: 0.9 },
                         }}
                       >
                         <TableCell
@@ -120,7 +211,6 @@ const ReportsPage = () => {
                           {page * rowsPerPage + idx + 1}
                         </TableCell>
                         <TableCell>{dayjs(rep.appointment?.date).format("DD-MM-YYYY")}</TableCell>
-                        <TableCell>{rep.appointment?.duration}</TableCell>
                         <TableCell>{rep.appointment?.patient_name}</TableCell>
                         <TableCell>{rep.appointment?.contact_number}</TableCell>
                         <TableCell>{rep.appointment?.doctor?.name}</TableCell>
@@ -140,6 +230,7 @@ const ReportsPage = () => {
               </Table>
             </TableContainer>
 
+            {/* Pagination */}
             <TablePagination
               component="div"
               count={total}
@@ -147,7 +238,7 @@ const ReportsPage = () => {
               onPageChange={(e, newPage) => setPage(newPage)}
               rowsPerPage={rowsPerPage}
               onRowsPerPageChange={(e) => {
-                setRowsPerPage(parseInt(e.target.value));
+                setRowsPerPage(parseInt(e.target.value, 10));
                 setPage(0);
               }}
               rowsPerPageOptions={[15, 25, 50, 100]}
@@ -155,6 +246,16 @@ const ReportsPage = () => {
           </>
         )}
       </Paper>
+
+      {/* Reports Filter Popover */}
+      <ReportsFilterPopover
+        open={Boolean(anchorEl)}
+        anchorEl={anchorEl}
+        onClose={() => setAnchorEl(null)}
+        filters={filters}
+        setFilters={setFilters}
+        statuses={statuses}
+      />
     </Box>
   );
 };

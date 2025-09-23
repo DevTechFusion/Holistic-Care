@@ -119,6 +119,11 @@ const routes = [
     element: <DepartmentsPage />,
     role: "agent",
   },
+  {
+    path: "/agent/pharmacy",
+    element: <PharmacyList />,
+    role: "agent",
+  },
 
   // Manager Routes
 

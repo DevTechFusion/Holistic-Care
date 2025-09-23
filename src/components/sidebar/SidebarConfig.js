@@ -102,6 +102,11 @@ const SidebarConfig = {
           icon: ProcedureIcon,
           path: "/agent/procedures",
         },
+        {
+          title: "Pharmacy List",
+          icon: PharmacyIcon,
+          path: "/agent/pharmacy",
+        }
       ],
     },
     {

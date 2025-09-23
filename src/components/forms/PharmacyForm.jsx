@@ -33,7 +33,7 @@ const DEFAULT_FORM_DATA = {
 
 // Validation rules
 const VALIDATION_RULES = {
-  PHONE_MAX_LENGTH: 15,
+  PHONE_MAX_LENGTH: 11,
   PHONE_MIN_LENGTH: 10,
   AMOUNT_MIN: 0,
   REQUIRED_FIELDS: ['patient_name', 'date', 'phone_number'],

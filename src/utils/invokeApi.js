@@ -10,14 +10,15 @@ export async function invokeApi({
   queryParams = {},
   postData = {},
   isAuth = true,
+  responseType = "json", // ✅ allow responseType to be passed
 }) {
   const reqObj = {
     method,
     url: baseUri + path,
     headers,
+    params: queryParams,
+    responseType, // ✅ this is critical for CSV export
   };
-
-  reqObj.params = queryParams;
 
   if (method !== "GET") {
     reqObj.data = postData;
@@ -30,17 +31,18 @@ export async function invokeApi({
     reqObj.headers.Authorization = `Bearer ${localStorage.getItem("token")}`;
   }
 
-  let results;
-
-  // console.log("<===REQUEST-OBJECT===>", reqObj);
-
   try {
-    results = await axios(reqObj);
-    // console.log("<===Api-Success-Result===>", results);
+    const results = await axios(reqObj);
 
+    // ✅ If this was a blob request, return full response so we can access headers
+    if (responseType === "blob") {
+      return results;
+    }
+
+    // Otherwise return data as before (backward compatibility)
     return results.data;
   } catch (error) {
-    console.log("<===Api-Error===>", error.response?.data);
+    console.error("<===Api-Error===>", error.response?.data);
 
     if (error.response?.status === 401) {
       localStorage.clear();

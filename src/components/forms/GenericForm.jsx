@@ -279,7 +279,7 @@ const GenericFormModal = ({
               ...field.InputProps,
             }}
             inputProps={{
-              step: "0.01",
+              step: "1.00",
               min: field.min || 0,
               inputMode: "decimal",
               ...field.inputProps,
