@@ -45,7 +45,7 @@ class WebAuthController extends Controller
         }
 
         // Revoke existing tokens for this user
-        $user->tokens()->delete();
+        // $user->tokens()->delete();
 
         // Create new Sanctum token with expiration (8 hours)
         $token = $user->createToken('auth_token', ['*'], now()->addHours(8))->plainTextToken;
