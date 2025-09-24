@@ -56,7 +56,7 @@ class AuthService extends CrudeService
         $user = $this->_findBy(['email' => $data['email']], ['roles']);
 
         // Revoke existing tokens
-        $user->tokens()->delete();
+        // $user->tokens()->delete();
 
         // Create new token
         $token = $user->createToken('auth_token')->plainTextToken;

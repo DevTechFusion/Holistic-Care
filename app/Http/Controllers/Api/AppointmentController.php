@@ -49,7 +49,7 @@ class AppointmentController extends Controller
                 // Pagination and ordering
                 'per_page' => 'nullable|integer|min:1|max:100',
                 'page' => 'nullable|integer|min:1',
-                'order_by' => 'nullable|string|in:date,start_time,end_time,patient_name,created_at,updated_at',
+                'order_by' => 'nullable|string|in:date,start_time,end_time,patient_name,created_at,updated_at,duration,amount,contact_number,mr_number',
                 'order_direction' => 'nullable|string|in:asc,desc',
             ]);
 
@@ -83,7 +83,7 @@ class AppointmentController extends Controller
                     'filters_applied' => $filters
                 ], 200);
             } else {
-                $appointments = $this->appointmentService->getAllAppointments($perPage, $page);
+                $appointments = $this->appointmentService->getAllAppointments($perPage, $page, $orderBy, $orderDirection);
                 
                 return response()->json([
                     'status' => 'success',
@@ -115,7 +115,8 @@ class AppointmentController extends Controller
                 'payment_mode' => 'nullable|string|max:100',
                 'amount' => 'nullable|numeric|min:0',
                 'doctor_id' => 'required|exists:doctors,id',
-                'procedure_id' => 'required|exists:procedures,id',
+                // 'procedure_id' => 'required|exists:procedures,id',
+                'procedure_id' => 'nullable|exists:procedures,id',
                 'category_id' => 'required|exists:categories,id',
                 'department_id' => 'required|exists:departments,id',
                 'source_id' => 'required|exists:sources,id',
@@ -206,7 +207,8 @@ class AppointmentController extends Controller
                 'payment_mode' => 'sometimes|nullable|string|max:100',
                 'amount' => 'sometimes|nullable|numeric|min:0',
                 'doctor_id' => 'sometimes|required|exists:doctors,id',
-                'procedure_id' => 'sometimes|required|exists:procedures,id',
+                // 'procedure_id' => 'sometimes|required|exists:procedures,id',
+                'procedure_id' => 'sometimes|nullable|exists:procedures,id',
                 'category_id' => 'sometimes|required|exists:categories,id',
                 'department_id' => 'sometimes|required|exists:departments,id',
                 'source_id' => 'sometimes|required|exists:sources,id',
