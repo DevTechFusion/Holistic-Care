@@ -7,7 +7,6 @@ import {
   InputLabel,
   Stack,
   Typography,
-  Box,
   CircularProgress,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -15,6 +14,7 @@ import GenericFormModal from "./GenericForm";
 import { useSnackbar } from "notistack";
 import { createAppointment, updateAppointment } from "../../DAL/appointments";
 import { getDoctors } from "../../DAL/doctors";
+import { getProcedures } from "../../DAL/procedure";
 import { getCategories } from "../../DAL/category";
 import { getSources } from "../../DAL/source";
 import { getRoles } from "../../DAL/modelRoles";
@@ -85,6 +85,7 @@ const PAYMENT_MODES = [
 
 const API_ENDPOINTS = [
   { key: 'doctors', call: getDoctors, errorMsg: 'Failed to load doctors. Please refresh and try again.' },
+  { key: 'procedures', call: getProcedures, errorMsg: 'Failed to load procedures. Please refresh and try again.' },
   { key: 'categories', call: getCategories, errorMsg: 'Failed to load categories. Please refresh and try again.' },
   { key: 'sources', call: getSources, errorMsg: 'Failed to load sources. Please refresh and try again.' },
   { key: 'roles', call: getRoles, errorMsg: 'Failed to load agents. Please refresh and try again.' },
@@ -112,11 +113,11 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState(null);
-  const [procedures, setProcedures] = useState([]);
 
   // API data state
   const [apiData, setApiData] = useState({
     doctors: [],
+    procedures: [],
     categories: [],
     sources: [],
     roles: [],
@@ -127,6 +128,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
 
   const [loadingStates, setLoadingStates] = useState({
     doctors: false,
+    procedures: false,
     categories: false,
     sources: false,
     roles: false,
@@ -137,6 +139,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
 
   const [errorStates, setErrorStates] = useState({
     doctors: null,
+    procedures: null,
     categories: null,
     sources: null,
     roles: null,
@@ -186,15 +189,6 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
       case "source_id":
         return !value ? "Source is required" : "";
 
-      case "amount":
-        if (isEditing) {
-          if (!value && value !== 0) return "Amount is required";
-          if (Number(value) <= 0) return "Amount must be a positive number";
-        }
-        return "";
-
-      case "payment_mode":
-        return isEditing && !value ? "Payment mode is required" : "";
 
       default:
         return "";
@@ -221,7 +215,6 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
     setFormData(DEFAULT_FORM_DATA);
     setErrors({});
     setSelectedDepartment(null);
-    setProcedures([]);
   };
 
   // Handle form field changes with validation
@@ -263,10 +256,8 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
         doctor_id: doctorId,
         department_id: selectedDoctor.department?.id || "",
       }));
-      setProcedures(selectedDoctor.procedures || []);
     } else {
       setSelectedDepartment(null);
-      setProcedures([]);
     }
   };
 
@@ -365,7 +356,6 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
         );
         if (selectedDoctor) {
           setSelectedDepartment(selectedDoctor.department);
-          setProcedures(selectedDoctor.procedures || []);
         }
       } else {
         resetForm();
@@ -375,71 +365,108 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
 
   // Auto-calculate end_time when start_time changes
   useEffect(() => {
-    if (formData.start_time && !isEditing) {
+    if (formData.start_time) {
       setFormData(p => ({
         ...p,
         end_time: addMinutes(p.start_time, 30),
       }));
     }
-  }, [formData.start_time, isEditing]);
+  }, [formData.start_time]);
 
   // Handle form submission
   const handleSubmit = async () => {
-    const validationErrors = validateForm();
+  const validationErrors = validateForm();
 
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      enqueueSnackbar("Please fix validation errors before submitting", {
-        variant: "error",
-      });
+  if (Object.keys(validationErrors).length > 0) {
+    setErrors(validationErrors);
+    enqueueSnackbar("Please fix validation errors before submitting", {
+      variant: "error",
+    });
+    return;
+  }
+
+  setIsSubmitting(true);
+
+  try {
+    const payload = {
+      ...formData,
+      start_time: normalizeTime(formData.start_time),
+      end_time: normalizeTime(formData.end_time),
+    };
+
+    const res = isEditing
+      ? await updateAppointment(data?.id, payload)
+      : await createAppointment(payload);
+
+    // Extract error message from various possible API response formats
+    const getErrorMessage = (response) => {
+      // Format 1: {status: "error", message: "...", error: "..."}
+      if (response?.status === "error") {
+        return response.message || response.error;
+      }
+      
+      // Format 2: {code: 400, error: "...", message: "..."}
+      if (response?.code && response.code !== 200 && response.code !== 201) {
+        return response.message || response.error;
+      }
+      
+      // Format 3: Axios error response structure
+      if (response?.data) {
+        return response.data.message || response.data.error;
+      }
+      
+      return "An error occurred while processing your request";
+    };
+
+    const errorMessage = getErrorMessage(res);
+    
+    // If there's an error message, show it and stop further execution
+    if (errorMessage && errorMessage !== "An error occurred while processing your request") {
+      enqueueSnackbar(errorMessage, { variant: "error" });
+      
+      // If there are field-specific errors, set them
+      if (res?.errors && Object.keys(res.errors).length > 0) {
+        setErrors(res.errors);
+      }
+      
       return;
     }
 
-    setIsSubmitting(true);
-
-    try {
-      const payload = {
-        ...formData,
-        start_time: normalizeTime(formData.start_time),
-        end_time: normalizeTime(formData.end_time),
-      };
-
-      const res = isEditing
-        ? await updateAppointment(data?.id, payload)
-        : await createAppointment(payload);
-
-      if (res?.code && res.code !== 200 && res.code !== 201) {
-        if (res.errors && Object.keys(res.errors).length > 0) {
-          setErrors(res.errors);
-        }
-
-        const errorMessages = {
-          422: "Please check the form data and try again",
-          409: "An appointment with this information already exists",
-          403: "You don't have permission to perform this action",
-        };
-
-        const errorMessage = errorMessages[res.code] || res.error || "An error occurred";
-        enqueueSnackbar(errorMessage, { variant: "error" });
-        return;
+    // Success case
+    enqueueSnackbar(
+      `Appointment ${isEditing ? "updated" : "created"} successfully!`,
+      { variant: "success" }
+    );
+    resetForm();
+    onClose();
+  } catch (error) {
+    console.error("Error saving appointment:", error);
+    
+    // Handle different error formats in catch block
+    let errorMessage = `Failed to ${isEditing ? "update" : "create"} appointment. Please try again.`;
+    
+    if (error.response?.data) {
+      const apiError = error.response.data;
+      
+      // Your specific error format
+      if (apiError.status === "error") {
+        errorMessage = apiError.message || apiError.error || errorMessage;
       }
-
-      enqueueSnackbar(
-        `Appointment ${isEditing ? "updated" : "created"} successfully!`,
-        { variant: "success" }
-      );
-      resetForm();
-      onClose();
-    } catch (error) {
-      console.error("Error saving appointment:", error);
-      enqueueSnackbar(
-        `Failed to ${isEditing ? "update" : "create"} appointment. Please try again.`,
-        { variant: "error" }
-      );
-    } finally {
-      setIsSubmitting(false);
+      // Other common error formats
+      else if (apiError.message) {
+        errorMessage = apiError.message;
+      } else if (apiError.error) {
+        errorMessage = apiError.error;
+      }
+    } else if (error.message) {
+      errorMessage = error.message;
     }
-  };
+    
+    enqueueSnackbar(errorMessage, { variant: "error" });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   // Handle modal close
   const handleClose = () => {
@@ -545,6 +572,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
               fullWidth
               value={formData.end_time}
               InputLabelProps={{ shrink: true }}
+              InputProps={{ readOnly: true }}
             />
           </Stack>
         </Stack>
@@ -567,7 +595,6 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
                 `${formData.patient_name.length}/${VALIDATION_RULES.NAME_MAX_LENGTH} characters`
               }
               placeholder="Enter patient's full name"
-              disabled={isEditing}
               inputProps={{ maxLength: VALIDATION_RULES.NAME_MAX_LENGTH }}
             />
 
@@ -583,7 +610,6 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
                 `${formData.contact_number.length}/${VALIDATION_RULES.PHONE_MAX_LENGTH} digits`
               }
               placeholder="1234567890"
-              disabled={isEditing}
               inputProps={{
                 inputMode: "numeric",
                 pattern: "[0-9]*",
@@ -605,8 +631,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
               "Agent",
               formData.agent_id,
               (e) => handleChange("agent_id", e.target.value),
-              true,
-              isEditing
+              true
             )}
 
             {renderSelectField(
@@ -614,8 +639,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
               "Doctor",
               formData.doctor_id,
               (e) => handleDoctorChange(e.target.value),
-              true,
-              isEditing
+              true
             )}
           </Stack>
 
@@ -633,33 +657,13 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
               </Select>
             </FormControl>
 
-            <FormControl fullWidth error={!!errors.procedure_id}>
-              <InputLabel>Procedure *</InputLabel>
-              <Select
-                value={formData.procedure_id}
-                onChange={(e) => handleChange("procedure_id", e.target.value)}
-                label="Procedure *"
-                disabled={isEditing}
-              >
-                <MenuItem value="">
-                  <em>Select a procedure</em>
-                </MenuItem>
-                {procedures.length > 0 ? (
-                  procedures.map((proc) => (
-                    <MenuItem key={proc.id} value={proc.id}>
-                      {proc.name}
-                    </MenuItem>
-                  ))
-                ) : (
-                  <MenuItem disabled>Select a doctor first</MenuItem>
-                )}
-              </Select>
-              {errors.procedure_id && (
-                <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 2 }}>
-                  {errors.procedure_id}
-                </Typography>
-              )}
-            </FormControl>
+            {renderSelectField(
+              "procedures",
+              "Procedure",
+              formData.procedure_id,
+              (e) => handleChange("procedure_id", e.target.value),
+              true
+            )}
           </Stack>
         </Stack>
 
@@ -675,8 +679,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
               "Category",
               formData.category_id,
               (e) => handleChange("category_id", e.target.value),
-              true,
-              isEditing
+              true
             )}
 
             {renderSelectField(
@@ -684,8 +687,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
               "Source",
               formData.source_id,
               (e) => handleChange("source_id", e.target.value),
-              true,
-              isEditing
+              true
             )}
           </Stack>
         </Stack>

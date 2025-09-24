@@ -8,7 +8,7 @@ import {
   Stack,
   Autocomplete,
   Divider,
-  MenuItem,
+ 
 } from "@mui/material";
 import { getDoctors } from "../../DAL/doctors";
 import { getProcedures } from "../../DAL/procedure";
@@ -137,7 +137,7 @@ const ReportsFilterPopover = ({
               <TextField
                 {...params}
                 label="Doctor"
-                placeholder="Select Doctor"
+                placeholder="Type to Search Doctor"
               />
             )}
             isOptionEqualToValue={(o, v) => o.id === v.id}
@@ -150,7 +150,7 @@ const ReportsFilterPopover = ({
             value={agents.find((a) => a.id === localFilters.agent_id) || null}
             onChange={(e, value) => handleChange("agent_id", value?.id)}
             renderInput={(params) => (
-              <TextField {...params} label="Agent" placeholder="Select Agent" />
+              <TextField {...params} label="Agent" placeholder="Type to Search Agent" />
             )}
             isOptionEqualToValue={(o, v) => o.id === v.id}
             fullWidth
@@ -168,7 +168,7 @@ const ReportsFilterPopover = ({
               <TextField
                 {...params}
                 label="Department"
-                placeholder="Select Department"
+                placeholder="Type to Search Departm..."
               />
             )}
             isOptionEqualToValue={(o, v) => o.id === v.id}
@@ -186,7 +186,7 @@ const ReportsFilterPopover = ({
               <TextField
                 {...params}
                 label="Procedure"
-                placeholder="Select Procedure"
+                placeholder="Type to Search Proced..."
               />
             )}
             isOptionEqualToValue={(o, v) => o.id === v.id}

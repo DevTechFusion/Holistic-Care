@@ -77,18 +77,6 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
         }
         return "";
       
-      case 'amount':
-        if (isEditing) {
-          if (!value && value !== 0) return "Amount is required";
-          if (Number(value) < VALIDATION_RULES.AMOUNT_MIN) {
-            return "Amount must be a positive number";
-          }
-        }
-        return "";
-      
-      case 'payment_mode':
-        return isEditing && !value ? "Payment mode is required" : "";
-      
       default:
         return "";
     }
@@ -336,13 +324,13 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
               }}
             />
             
-            <TextField
+            {/* <TextField
               label="Pharmacy MR Number"
               fullWidth
               value={formData.pharmacy_mr_number}
               onChange={(e) => handleChange("pharmacy_mr_number", e.target.value)}
               placeholder="MR-001234"
-            />
+            /> */}
           </Stack>
 
           <TextField
@@ -421,7 +409,7 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
             
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
               <TextField
-                label="Amount *"
+                label="Amount"
                 type="number"
                 fullWidth
                 value={formData.amount}
@@ -434,16 +422,16 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
                 }}
                 inputProps={{
                   min: 0,
-                  step: "0.01"
+                  step: "1"
                 }}
               />
 
               <FormControl fullWidth error={!!errors.payment_mode}>
-                <InputLabel>Payment Mode *</InputLabel>
+                <InputLabel>Payment Mode</InputLabel>
                 <Select
                   value={formData.payment_mode}
                   onChange={(e) => handleChange("payment_mode", e.target.value)}
-                  label="Payment Mode *"
+                  label="Payment Mode"
                 >
                   <MenuItem value="">
                     <em>Select payment mode</em>

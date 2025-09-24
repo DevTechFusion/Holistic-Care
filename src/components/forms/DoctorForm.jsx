@@ -69,9 +69,7 @@ const CreateDoctorModal = ({ open, onClose, isEditing, data }) => {
       
       case 'department_id':
         return !value ? "Department is required" : "";
-      
-      case 'procedures':
-        return !value || value.length === 0 ? "At least one procedure is required" : "";
+    
       
       default:
         return "";

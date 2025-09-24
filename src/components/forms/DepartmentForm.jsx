@@ -115,10 +115,8 @@ const CreateDepartmentModal = ({ open, onClose, isEditing, data }) => {
           setErrors(res.errors);
         }
         
-        // Show appropriate error message
         let errorMessage = res.message || "Something went wrong";
         
-        // Customize messages based on error codes
         if (res.code === 422) {
           errorMessage = "Please check the form data and try again";
         } else if (res.code === 409) {

@@ -18,10 +18,7 @@ import {
   TableCell,
   TableBody,
   TablePagination,
-  TextField,
-  MenuItem,
   Stack,
-  Tooltip,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -29,9 +26,9 @@ import {
   IconButton,
 } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 import PharmacyForm from "../../components/forms/PharmacyForm";
+import PharmacyFilterPopover from "./PharmacyFilterPopover";
 
 const PharmacyList = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -40,7 +37,6 @@ const PharmacyList = () => {
   const [loading, setLoading] = useState(true);
   const [selectedPharmacy, setSelectedPharmacy] = useState(null);
   const [openModal, setOpenModal] = useState(false);
-
   const [totalIncentive, setTotalIncentive] = useState(0);
 
   // Pagination
@@ -48,14 +44,18 @@ const PharmacyList = () => {
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [total, setTotal] = useState(0);
 
-  // Filters
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("");
-  const [agentId, setAgentId] = useState("");
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  // ✅ Filters
+  const [filters, setFilters] = useState({
+    search: "",
+    status: "",
+    agent_id: "",
+    start_date: null,
+    end_date: null,
+  });
 
-  // ✅ State for description modal
+  const [filterAnchor, setFilterAnchor] = useState(null);
+
+  // ✅ Description modal
   const [selectedDescription, setSelectedDescription] = useState("");
   const [descriptionModalOpen, setDescriptionModalOpen] = useState(false);
 
@@ -78,27 +78,29 @@ const PharmacyList = () => {
     }
   };
 
-  // Debounced search
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  useEffect(() => {
-    const handler = setTimeout(() => setDebouncedSearch(search), 500);
-    return () => clearTimeout(handler);
-  }, [search]);
+  // Filter Popover
+  const handleOpenFilters = (e) => setFilterAnchor(e.currentTarget);
+  const handleCloseFilters = () => setFilterAnchor(null);
 
   // Fetch Pharmacies
   const fetchPharmacies = useCallback(async () => {
     setLoading(true);
     try {
       let res;
-      if (startDate || endDate || debouncedSearch) {
+      if (filters.start_date || filters.end_date || filters.search) {
         res = await getFilteredPharmacy(
-          agentId || "",
-          startDate ? dayjs(startDate).format("YYYY-MM-DD") : "",
-          endDate ? dayjs(endDate).format("YYYY-MM-DD") : "",
-          debouncedSearch || ""
+          filters.agent_id || "",
+          filters.start_date ? dayjs(filters.start_date).format("YYYY-MM-DD") : "",
+          filters.end_date ? dayjs(filters.end_date).format("YYYY-MM-DD") : "",
+          filters.search || ""
         );
       } else {
-        res = await getPharmacy(page + 1, rowsPerPage, agentId || "", status || "");
+        res = await getPharmacy(
+          page + 1,
+          rowsPerPage,
+          filters.agent_id || "",
+          filters.status || ""
+        );
       }
 
       setData(res?.data?.data || []);
@@ -110,11 +112,11 @@ const PharmacyList = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, rowsPerPage, agentId, status, startDate, endDate, debouncedSearch, enqueueSnackbar]);
+  }, [page, rowsPerPage, filters, enqueueSnackbar]);
 
   useEffect(() => {
     fetchPharmacies();
-  }, [fetchPharmacies]);
+  }, [fetchPharmacies, filters]);
 
   // Delete
   const handleDelete = async (id) => {
@@ -155,60 +157,26 @@ const PharmacyList = () => {
           <Button variant="contained" sx={{ fontWeight: "bold" }} disableElevation>
             Total Incentive: {Number(totalIncentive).toFixed(2)}
           </Button>
-
           <Button variant="contained" onClick={() => setOpenModal(true)}>
             + Add Pharmacy Record
+          </Button>
+          <Button variant="outlined" onClick={handleOpenFilters}>
+            Filters
           </Button>
         </Stack>
       </Box>
 
-      {/* Filters */}
-      <Stack direction={{ xs: "column", sm: "row" }} spacing={2} mb={2}>
-        <TextField
-          label="Search (name/phone)"
-          size="small"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <TextField
-          label="Status"
-          select
-          size="small"
-          value={status}
-          onChange={(e) => {
-            setStatus(e.target.value);
-            setPage(0);
-          }}
-          sx={{ minWidth: 150 }}
-        >
-          <MenuItem value="">All</MenuItem>
-          <MenuItem value="pending">Pending</MenuItem>
-          <MenuItem value="completed">Completed</MenuItem>
-          <MenuItem value="cancelled">Cancelled</MenuItem>
-        </TextField>
-        <TextField
-          label="Agent ID"
-          size="small"
-          value={agentId}
-          onChange={(e) => {
-            setAgentId(e.target.value);
-            setPage(0);
-          }}
-          sx={{ minWidth: 120 }}
-        />
-        <DatePicker
-          label="Start Date"
-          value={startDate}
-          onChange={(newVal) => setStartDate(newVal)}
-          slotProps={{ textField: { size: "small" } }}
-        />
-        <DatePicker
-          label="End Date"
-          value={endDate}
-          onChange={(newVal) => setEndDate(newVal)}
-          slotProps={{ textField: { size: "small" } }}
-        />
-      </Stack>
+      {/* Filter Popover */}
+      <PharmacyFilterPopover
+        anchorEl={filterAnchor}
+        open={Boolean(filterAnchor)}
+        onClose={handleCloseFilters}
+        filters={filters}
+        setFilters={(newFilters) => {
+          setFilters(newFilters);
+          setPage(0); // Reset pagination when filters change
+        }}
+      />
 
       {/* Table */}
       <Paper sx={{ width: "100%", overflowX: "auto" }}>
@@ -224,9 +192,7 @@ const PharmacyList = () => {
                 <TableCell>Date</TableCell>
                 <TableCell>Patient</TableCell>
                 <TableCell>Phone</TableCell>
-                <TableCell>MR Number</TableCell>
                 <TableCell>Agent</TableCell>
-                <TableCell>Agent ID</TableCell>
                 <TableCell>Description</TableCell>
                 <TableCell>Amount</TableCell>
                 <TableCell>Status</TableCell>
@@ -241,11 +207,7 @@ const PharmacyList = () => {
                     <TableCell>{dayjs(item.date).format("DD-MM-YYYY")}</TableCell>
                     <TableCell>{item.patient_name}</TableCell>
                     <TableCell>{item.phone_number}</TableCell>
-                    <TableCell>{item.pharmacy_mr_number}</TableCell>
                     <TableCell>{item.agent?.name || "—"}</TableCell>
-                    <TableCell>{item.agent?.id || "—"}</TableCell>
-
-                    {/* ✅ Description cell with modal trigger */}
                     <TableCell
                       sx={{
                         maxWidth: 250,
@@ -260,7 +222,6 @@ const PharmacyList = () => {
                     >
                       {item.description || "—"}
                     </TableCell>
-
                     <TableCell>{item.amount}</TableCell>
                     <TableCell>{item.status}</TableCell>
                     <TableCell>
@@ -297,7 +258,7 @@ const PharmacyList = () => {
         rowsPerPageOptions={[15, 25, 50, 100]}
       />
 
-      {/* Modal */}
+      {/* Pharmacy Form Modal */}
       <PharmacyForm
         open={openModal}
         onClose={handleCloseModal}
@@ -305,7 +266,7 @@ const PharmacyList = () => {
         data={selectedPharmacy}
       />
 
-      {/* ✅ Description Modal */}
+      {/* Description Modal */}
       <Dialog open={descriptionModalOpen} onClose={handleCloseDescription} maxWidth="sm" fullWidth>
         <DialogTitle>
           Pharmacy Description
