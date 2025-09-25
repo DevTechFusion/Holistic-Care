@@ -35,7 +35,40 @@ class PharmacyService extends CrudeService
      */
     public function createPharmacyRecord($data)
     {
+        // Auto-generate pharmacy_mr_number if not provided
+        if (!isset($data['pharmacy_mr_number']) || empty($data['pharmacy_mr_number'])) {
+            $data['pharmacy_mr_number'] = $this->generatePharmacyMrNumber();
+        }
+        
         return $this->_create($data);
+    }
+
+    /**
+     * Generate a unique pharmacy MR number
+     */
+    private function generatePharmacyMrNumber()
+    {
+        $prefix = 'PH';
+        $year = date('Y');
+        $month = date('m');
+        
+        // Get the last MR number for this month/year
+        $lastRecord = $this->model
+            ->where('pharmacy_mr_number', 'like', $prefix . $year . $month . '%')
+            ->orderBy('pharmacy_mr_number', 'desc')
+            ->first();
+        
+        if ($lastRecord && $lastRecord->pharmacy_mr_number) {
+            // Extract the number part and increment
+            $lastNumber = (int) substr($lastRecord->pharmacy_mr_number, -4);
+            $newNumber = $lastNumber + 1;
+        } else {
+            // First record for this month/year
+            $newNumber = 1;
+        }
+        
+        // Format: PH2025010001 (PH + Year + Month + 4-digit number)
+        return $prefix . $year . $month . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
     }
 
     /**

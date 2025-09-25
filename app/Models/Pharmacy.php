@@ -92,11 +92,45 @@ class Pharmacy extends Model
     }
 
     /**
+     * Generate a unique pharmacy MR number
+     */
+    public static function generatePharmacyMrNumber()
+    {
+        $prefix = 'PH';
+        $year = date('Y');
+        $month = date('m');
+        
+        // Get the last MR number for this month/year
+        $lastRecord = static::where('pharmacy_mr_number', 'like', $prefix . $year . $month . '%')
+            ->orderBy('pharmacy_mr_number', 'desc')
+            ->first();
+        
+        if ($lastRecord && $lastRecord->pharmacy_mr_number) {
+            // Extract the number part and increment
+            $lastNumber = (int) substr($lastRecord->pharmacy_mr_number, -4);
+            $newNumber = $lastNumber + 1;
+        } else {
+            // First record for this month/year
+            $newNumber = 1;
+        }
+        
+        // Format: PH2025010001 (PH + Year + Month + 4-digit number)
+        return $prefix . $year . $month . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+    }
+
+    /**
      * Boot the model and register model events.
      */
     protected static function boot()
     {
         parent::boot();
+
+        // Auto-generate pharmacy_mr_number when creating
+        static::creating(function ($pharmacy) {
+            if (empty($pharmacy->pharmacy_mr_number)) {
+                $pharmacy->pharmacy_mr_number = static::generatePharmacyMrNumber();
+            }
+        });
 
         // Create incentive when pharmacy record is created
         static::created(function ($pharmacy) {
