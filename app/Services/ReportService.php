@@ -23,7 +23,7 @@ class ReportService extends CrudeService
         $query->orderBy($orderBy, $orderDirection);
 
         return $query->with([
-            'appointment.doctor', 'appointment.procedure', 'appointment.category',
+            'appointment.doctor', 'appointment.procedures', 'appointment.category',
             'appointment.department', 'appointment.source', 'appointment.agent', 'remarks1', 'remarks2', 'status', 'generatedBy'
         ])->paginate($perPage, ['*'], 'page', $page);
     }
@@ -198,7 +198,7 @@ class ReportService extends CrudeService
     public function getReportById($id)
     {
         return $this->_find($id, [
-            'appointment.doctor', 'appointment.procedure', 'appointment.category',
+            'appointment.doctor', 'appointment.procedures', 'appointment.category',
             'appointment.department', 'appointment.source', 'appointment.agent', 'remarks1', 'remarks2', 'status', 'generatedBy'
         ]);
     }
@@ -218,7 +218,7 @@ class ReportService extends CrudeService
     {
         $this->_update($id, $data);
         return $this->_find($id, [
-            'appointment.doctor', 'appointment.procedure', 'appointment.category',
+            'appointment.doctor', 'appointment.procedures', 'appointment.category',
             'appointment.department', 'appointment.source', 'appointment.agent', 'remarks1', 'remarks2', 'status', 'generatedBy'
         ]);
     }
@@ -237,7 +237,7 @@ class ReportService extends CrudeService
     public function generateReportFromAppointment($appointmentId, $reportType = 'appointment_summary', $generatedById = null, $notes = null, $amount = null, $paymentMethod = null, $remarks1Id = null, $remarks2Id = null, $statusId = null)
     {
         $appointment = Appointment::with([
-            'doctor', 'procedure', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
+            'doctor', 'procedures', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
         ])->find($appointmentId);
 
         if (!$appointment) {
@@ -248,7 +248,7 @@ class ReportService extends CrudeService
         $summaryData = [
             'patient_name' => $appointment->patient_name,
             'doctor_name' => $appointment->doctor->name ?? 'N/A',
-            'procedure_name' => $appointment->procedure->name ?? 'N/A',
+            'procedure_name' => $appointment->procedures->pluck('name')->implode(', ') ?: 'N/A',
             'department_name' => $appointment->department->name ?? 'N/A',
             'category_name' => $appointment->category->name ?? 'N/A',
             'source_name' => $appointment->source->name ?? 'N/A',
@@ -323,7 +323,7 @@ class ReportService extends CrudeService
     public function getReportsByRange($range = 'daily')
     {
         $query = $this->model->with([
-            'appointment.doctor', 'appointment.procedure', 'appointment.category',
+            'appointment.doctor', 'appointment.procedures', 'appointment.category',
             'appointment.department', 'appointment.source', 'appointment.agent', 'remarks1', 'remarks2', 'status', 'generatedBy'
         ]);
 
@@ -371,7 +371,7 @@ class ReportService extends CrudeService
     public function updateReportFromAppointment($appointmentId, $reportType = 'appointment_summary')
     {
         $appointment = Appointment::with([
-            'doctor', 'procedure', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
+            'doctor', 'procedures', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
         ])->find($appointmentId);
 
         if (!$appointment) {
@@ -465,7 +465,7 @@ class ReportService extends CrudeService
               });
         })
         ->with([
-            'appointment.doctor', 'appointment.procedure', 'appointment.category',
+            'appointment.doctor', 'appointment.procedures', 'appointment.category',
             'appointment.department', 'appointment.source', 'appointment.agent', 'remarks1', 'remarks2', 'status', 'generatedBy'
         ]);
 
@@ -513,7 +513,7 @@ class ReportService extends CrudeService
         }
 
         $query->with([
-            'appointment.doctor', 'appointment.procedure', 'appointment.category',
+            'appointment.doctor', 'appointment.procedures', 'appointment.category',
             'appointment.department', 'appointment.source', 'appointment.agent', 'remarks1', 'remarks2', 'status', 'generatedBy'
         ]);
 
@@ -527,7 +527,7 @@ class ReportService extends CrudeService
     {
         // Base query with relations
         $query = $this->model->with([
-            'appointment.doctor', 'appointment.procedure', 'appointment.category',
+            'appointment.doctor', 'appointment.procedures', 'appointment.category',
             'appointment.department', 'appointment.source', 'appointment.agent', 'remarks1', 'remarks2', 'status', 'generatedBy'
         ]);
 
