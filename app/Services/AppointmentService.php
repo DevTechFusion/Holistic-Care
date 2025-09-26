@@ -36,7 +36,7 @@ class AppointmentService extends CrudeService
         
         // Load relationships and paginate
         return $query->with([
-            'doctor', 'procedure', 'procedures', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
+            'doctor', 'procedures', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
         ])->paginate($perPage, ['*'], 'page', $page);
     }
 
@@ -105,7 +105,7 @@ class AppointmentService extends CrudeService
 
         // Load relationships and paginate
         return $query->with([
-            'doctor', 'procedure', 'procedures', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
+            'doctor', 'procedures', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
         ])->paginate($perPage, ['*'], 'page', $page);
     }
 
@@ -115,7 +115,7 @@ class AppointmentService extends CrudeService
     public function getAppointmentById($id)
     {
         return $this->_find($id, [
-            'doctor', 'procedure', 'procedures', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
+            'doctor', 'procedures', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
         ]);
     }
 
@@ -129,9 +129,6 @@ class AppointmentService extends CrudeService
         if (isset($data['procedure_ids']) && is_array($data['procedure_ids'])) {
             $procedureIds = $data['procedure_ids'];
             unset($data['procedure_ids']); // Remove from data to avoid conflicts
-        } elseif (isset($data['procedure_id'])) {
-            // Backward compatibility: convert single procedure_id to array
-            $procedureIds = [$data['procedure_id']];
         }
         
         // Check doctor availability and time conflicts before creating appointment
@@ -194,7 +191,10 @@ class AppointmentService extends CrudeService
             $this->createReportForAppointment($appointment);
         }
         
-        return $appointment;
+        // Reload appointment with all relationships to include procedure data in response
+        return $this->_find($appointment->id, [
+            'doctor', 'procedures', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
+        ]);
     }
 
     /**
@@ -207,9 +207,6 @@ class AppointmentService extends CrudeService
         if (isset($data['procedure_ids']) && is_array($data['procedure_ids'])) {
             $procedureIds = $data['procedure_ids'];
             unset($data['procedure_ids']); // Remove from data to avoid conflicts
-        } elseif (isset($data['procedure_id'])) {
-            // Backward compatibility: convert single procedure_id to array
-            $procedureIds = [$data['procedure_id']];
         }
         
         // Check doctor availability and time conflicts before updating appointment
@@ -259,12 +256,16 @@ class AppointmentService extends CrudeService
         
         $this->_update($id, $data);
         $appointment = $this->_find($id, [
-            'doctor', 'procedure', 'procedures', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
+            'doctor', 'procedures', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
         ]);
         
         // Sync procedures if provided
-        if (!empty($procedureIds) || isset($data['procedure_id'])) {
+        if (!empty($procedureIds)) {
             $appointment->syncProcedures($procedureIds);
+            // Reload appointment after syncing procedures to include updated procedure data
+            $appointment = $this->_find($id, [
+                'doctor', 'procedures', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
+            ]);
         }
         
         $this->upsertIncentiveForAppointment($appointment);
@@ -891,7 +892,7 @@ class AppointmentService extends CrudeService
         }
         
         return $query
-            ->with(['doctor', 'status', 'procedure', 'procedures', 'remarks1', 'remarks2', 'department'])
+            ->with(['doctor', 'status', 'procedures', 'remarks1', 'remarks2', 'department'])
             ->orderByDesc('start_time')
             ->limit($limit)
             ->get();
@@ -957,7 +958,7 @@ class AppointmentService extends CrudeService
         return $this->model
             ->byDateRange($startDate, $endDate)
             ->where('appointments.agent_id', $agentId)
-            ->with(['doctor', 'procedure', 'procedures', 'category', 'department', 'source', 'status', 'remarks1', 'remarks2'])
+            ->with(['doctor', 'procedures', 'category', 'department', 'source', 'status', 'remarks1', 'remarks2'])
             ->orderByDesc('date')
             ->orderByDesc('start_time')
             ->paginate($perPage, ['*'], 'page', $page);
@@ -1016,7 +1017,7 @@ class AppointmentService extends CrudeService
                       $agentQuery->where('name', 'like', "%{$search}%");
                   });
             })
-            ->with(['doctor', 'procedure', 'procedures', 'category', 'department', 'source', 'agent']);
+            ->with(['doctor', 'procedures', 'category', 'department', 'source', 'agent']);
 
         return $query->paginate($perPage, ['*'], 'page', $page);
     }

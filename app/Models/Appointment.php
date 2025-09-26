@@ -27,7 +27,6 @@ class Appointment extends Model
         'amount',
         'mr_number',
         'doctor_id',
-        'procedure_id',
         'category_id',
         'department_id',
         'source_id',
@@ -52,15 +51,6 @@ class Appointment extends Model
     public function doctor()
     {
         return $this->belongsTo(Doctor::class);
-    }
-
-    /**
-     * Get the procedure for this appointment (backward compatibility).
-     * Returns the first procedure if multiple procedures exist.
-     */
-    public function procedure()
-    {
-        return $this->belongsTo(Procedure::class);
     }
 
     /**
@@ -310,17 +300,18 @@ class Appointment extends Model
         
         if (!empty($procedureIds)) {
             $this->procedures()->sync($procedureIds);
-            
-            // Update the single procedure_id field for backward compatibility
-            // Use the first procedure as the primary one
-            $this->procedure_id = $procedureIds[0];
-            $this->save();
         } else {
             // If no procedures provided, clear the relationship
             $this->procedures()->detach();
-            $this->procedure_id = null;
-            $this->save();
         }
+    }
+
+    /**
+     * Get the primary procedure (first procedure) for backward compatibility.
+     */
+    public function getPrimaryProcedureAttribute()
+    {
+        return $this->procedures->first();
     }
 
     /**

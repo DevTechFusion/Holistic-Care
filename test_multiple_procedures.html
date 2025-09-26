@@ -312,7 +312,30 @@
                 
                 if (response.ok) {
                     responseDiv.className = 'response success';
-                    responseDiv.textContent = `Success!\n\n${JSON.stringify(result, null, 2)}`;
+                    
+                    // Format the response to highlight procedure data
+                    let formattedResponse = `Success!\n\n`;
+                    formattedResponse += `Appointment ID: ${result.data.id}\n`;
+                    formattedResponse += `Patient: ${result.data.patient_name}\n`;
+                    formattedResponse += `Date: ${result.data.date}\n`;
+                    formattedResponse += `Time: ${result.data.start_time} - ${result.data.end_time}\n`;
+                    
+                    if (result.data.procedures && result.data.procedures.length > 0) {
+                        formattedResponse += `\nProcedures (${result.data.procedures.length}):\n`;
+                        result.data.procedures.forEach((proc, index) => {
+                            formattedResponse += `  ${index + 1}. ${proc.name} (ID: ${proc.id})\n`;
+                        });
+                    } else {
+                        formattedResponse += `\nProcedures: None\n`;
+                    }
+                    
+                    if (result.data.procedure_names) {
+                        formattedResponse += `\nProcedure Names: ${result.data.procedure_names}\n`;
+                    }
+                    
+                    formattedResponse += `\nFull Response:\n${JSON.stringify(result, null, 2)}`;
+                    
+                    responseDiv.textContent = formattedResponse;
                 } else {
                     responseDiv.className = 'response error';
                     responseDiv.textContent = `Error!\n\n${JSON.stringify(result, null, 2)}`;
