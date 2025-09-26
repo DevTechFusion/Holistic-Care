@@ -935,13 +935,13 @@ class AppointmentService extends CrudeService
                         'id' => $appointment->doctor->id ?? null,
                         'name' => $appointment->doctor->name ?? 'N/A',
                         'profile_picture' => null, // Field doesn't exist in doctors table
-                        'specialty' => $appointment->procedure->name ?? $appointment->category->name ?? 'N/A',
+                        'specialty' => $appointment->procedures->isNotEmpty() ? $appointment->procedures->pluck('name')->implode(', ') : ($appointment->category->name ?? 'N/A'),
                     ],
                     'start_time' => $appointment->start_time,
                     'end_time' => $appointment->end_time,
                     'duration' => $appointment->duration,
                     'date' => $appointment->date,
-                    'specialty' => $appointment->procedure->name ?? $appointment->category->name ?? 'N/A',
+                    'specialty' => $appointment->procedures->isNotEmpty() ? $appointment->procedures->pluck('name')->implode(', ') : ($appointment->category->name ?? 'N/A'),
                     'status' => $appointment->status->name ?? 'N/A',
                     'patient_name' => $appointment->patient_name,
                     'contact_number' => $appointment->contact_number,
@@ -1126,13 +1126,12 @@ class AppointmentService extends CrudeService
                 'appointments.mr_number',
                 'appointments.agent_id',
                 'appointments.doctor_id',
-                'appointments.procedure_id',
                 'appointments.id as appointment_id'
             ])
             ->byDateRange($startDate, $endDate)
             ->where('appointments.agent_id', $agentId)
             ->whereHas('complaints') // Only show appointments that have complaints
-            ->with(['doctor:id,name', 'procedure:id,name', 'agent:id,name']);
+            ->with(['doctor:id,name', 'procedures:id,name', 'agent:id,name']);
 
         // Get complaints data for the same date range
         // Only show complaints that have appointment_id (linked to appointments)
@@ -1154,7 +1153,7 @@ class AppointmentService extends CrudeService
                          ->whereBetween('complaints.created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
                   });
             })
-            ->with(['doctor:id,name', 'appointment:id,date,patient_name,mr_number,procedure_id,agent_id', 'appointment.procedure:id,name', 'appointment.agent:id,name']); // Include doctor and appointment info for complaints
+            ->with(['doctor:id,name', 'appointment:id,date,patient_name,mr_number,agent_id', 'appointment.procedures:id,name', 'appointment.agent:id,name']); // Include doctor and appointment info for complaints
 
         // Get appointments data
         $appointments = $query->get();
@@ -1172,7 +1171,7 @@ class AppointmentService extends CrudeService
         //         'pt_name' => $appointment->pt_name,
         //         'mr_number' => $appointment->mr_number,
         //         'platform' => null, // Will be filled if complaint exists
-        //         'procedure' => $appointment->procedure->name ?? null,
+        //         'procedure' => $appointment->procedures->isNotEmpty() ? $appointment->procedures->pluck('name')->implode(', ') : null,
         //         'doctor' => $appointment->doctor->name ?? null,
         //         'staff_name' => $appointment->agent->name ?? null,
         //         'complaint_description' => null, // Will be filled if complaint exists
@@ -1192,7 +1191,7 @@ class AppointmentService extends CrudeService
                 'pt_name' => $relatedAppointment ? $relatedAppointment->patient_name : null,
                 'mr_number' => $relatedAppointment ? $relatedAppointment->mr_number : null,
                 'platform' => $complaint->platform,
-                'procedure' => $relatedAppointment && $relatedAppointment->procedure ? $relatedAppointment->procedure->name : null,
+                'procedure' => $relatedAppointment && $relatedAppointment->procedures->isNotEmpty() ? $relatedAppointment->procedures->pluck('name')->implode(', ') : null,
                 'doctor' => $complaint->doctor ? ($complaint->doctor->name) : null,
                 // 'staff_name' => $complaint->submitted_by ? \App\Models\User::find($complaint->submitted_by)->name : null,
                 'staff_name' => $relatedAppointment && $relatedAppointment->agent ? $relatedAppointment->agent->name : null,

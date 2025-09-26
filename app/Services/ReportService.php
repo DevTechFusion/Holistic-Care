@@ -101,8 +101,8 @@ class ReportService extends CrudeService
         }
 
         if (!empty($filters['procedure_id'])) {
-            $query->whereHas('appointment', function($q) use ($filters) {
-                $q->where('procedure_id', $filters['procedure_id']);
+            $query->whereHas('appointment.procedures', function($q) use ($filters) {
+                $q->where('procedures.id', $filters['procedure_id']);
             });
         }
 
@@ -402,7 +402,7 @@ class ReportService extends CrudeService
             $summaryData = [
                 'patient_name' => $appointment->patient_name,
                 'doctor_name' => $appointment->doctor->name ?? 'N/A',
-                'procedure_name' => $appointment->procedure->name ?? 'N/A',
+                'procedure_name' => $appointment->procedures->isNotEmpty() ? $appointment->procedures->pluck('name')->implode(', ') : 'N/A',
                 'department_name' => $appointment->department->name ?? 'N/A',
                 'category_name' => $appointment->category->name ?? 'N/A',
                 'source_name' => $appointment->source->name ?? 'N/A',
@@ -603,8 +603,8 @@ class ReportService extends CrudeService
             });
         }
         if (!empty($filters['procedure_id'])) {
-            $query->whereHas('appointment', function($q) use ($filters) {
-                $q->where('procedure_id', $filters['procedure_id']);
+            $query->whereHas('appointment.procedures', function($q) use ($filters) {
+                $q->where('procedures.id', $filters['procedure_id']);
             });
         }
         if (!empty($filters['category_id'])) {
@@ -726,7 +726,7 @@ class ReportService extends CrudeService
                 $report->appointment ? $report->appointment->end_time : 'N/A',
                 $report->appointment ? $report->appointment->duration : 'N/A',
                 $report->appointment && $report->appointment->doctor ? $report->appointment->doctor->name : 'N/A',
-                $report->appointment && $report->appointment->procedure ? $report->appointment->procedure->name : 'N/A',
+                $report->appointment && $report->appointment->procedures->isNotEmpty() ? $report->appointment->procedures->pluck('name')->implode(', ') : 'N/A',
                 $report->appointment && $report->appointment->category ? $report->appointment->category->name : 'N/A',
                 $report->appointment && $report->appointment->department ? $report->appointment->department->name : 'N/A',
                 $report->appointment && $report->appointment->source ? $report->appointment->source->name : 'N/A',
