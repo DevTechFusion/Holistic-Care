@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\ReportService;
 use App\Services\DoctorService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class AppointmentService extends CrudeService
 {
@@ -35,7 +36,7 @@ class AppointmentService extends CrudeService
         
         // Load relationships and paginate
         return $query->with([
-            'doctor', 'procedure', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
+            'doctor', 'procedure', 'procedures', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
         ])->paginate($perPage, ['*'], 'page', $page);
     }
 
@@ -104,7 +105,7 @@ class AppointmentService extends CrudeService
 
         // Load relationships and paginate
         return $query->with([
-            'doctor', 'procedure', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
+            'doctor', 'procedure', 'procedures', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
         ])->paginate($perPage, ['*'], 'page', $page);
     }
 
@@ -114,7 +115,7 @@ class AppointmentService extends CrudeService
     public function getAppointmentById($id)
     {
         return $this->_find($id, [
-            'doctor', 'procedure', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
+            'doctor', 'procedure', 'procedures', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
         ]);
     }
 
@@ -123,10 +124,20 @@ class AppointmentService extends CrudeService
      */
     public function createAppointment($data)
     {
+        // Extract procedure_ids if provided
+        $procedureIds = [];
+        if (isset($data['procedure_ids']) && is_array($data['procedure_ids'])) {
+            $procedureIds = $data['procedure_ids'];
+            unset($data['procedure_ids']); // Remove from data to avoid conflicts
+        } elseif (isset($data['procedure_id'])) {
+            // Backward compatibility: convert single procedure_id to array
+            $procedureIds = [$data['procedure_id']];
+        }
+        
         // Check doctor availability and time conflicts before creating appointment
         if (isset($data['doctor_id']) && isset($data['date']) && isset($data['start_time']) && isset($data['end_time'])) {
             // Log the incoming time data for debugging
-            \Log::info('Creating appointment with time data', [
+            Log::info('Creating appointment with time data', [
                 'start_time' => $data['start_time'],
                 'end_time' => $data['end_time'],
                 'start_time_type' => gettype($data['start_time']),
@@ -170,6 +181,12 @@ class AppointmentService extends CrudeService
         $createReport = isset($data['create_report']) && $data['create_report'];
         
         $appointment = $this->_create($data);
+        
+        // Sync procedures if provided
+        if (!empty($procedureIds)) {
+            $appointment->syncProcedures($procedureIds);
+        }
+        
         $this->upsertIncentiveForAppointment($appointment);
         
         // Create report if requested
@@ -185,10 +202,20 @@ class AppointmentService extends CrudeService
      */
     public function updateAppointment($id, $data)
     {
+        // Extract procedure_ids if provided
+        $procedureIds = [];
+        if (isset($data['procedure_ids']) && is_array($data['procedure_ids'])) {
+            $procedureIds = $data['procedure_ids'];
+            unset($data['procedure_ids']); // Remove from data to avoid conflicts
+        } elseif (isset($data['procedure_id'])) {
+            // Backward compatibility: convert single procedure_id to array
+            $procedureIds = [$data['procedure_id']];
+        }
+        
         // Check doctor availability and time conflicts before updating appointment
         if (isset($data['doctor_id']) && isset($data['date']) && isset($data['start_time']) && isset($data['end_time'])) {
             // Log the incoming time data for debugging
-            \Log::info('Updating appointment with time data', [
+            Log::info('Updating appointment with time data', [
                 'appointment_id' => $id,
                 'start_time' => $data['start_time'],
                 'end_time' => $data['end_time'],
@@ -232,8 +259,14 @@ class AppointmentService extends CrudeService
         
         $this->_update($id, $data);
         $appointment = $this->_find($id, [
-            'doctor', 'procedure', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
+            'doctor', 'procedure', 'procedures', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status'
         ]);
+        
+        // Sync procedures if provided
+        if (!empty($procedureIds) || isset($data['procedure_id'])) {
+            $appointment->syncProcedures($procedureIds);
+        }
+        
         $this->upsertIncentiveForAppointment($appointment);
         
         // Check if reports should be updated (default to true for automatic updates)
@@ -262,7 +295,7 @@ class AppointmentService extends CrudeService
     {
         $query = $this->model
             ->byDateRange($startDate, $endDate)
-            ->with(['doctor', 'procedure', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status']);
+            ->with(['doctor', 'procedure', 'procedures', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status']);
 
         return $query->paginate($perPage, ['*'], 'page', $page);
     }
@@ -274,7 +307,7 @@ class AppointmentService extends CrudeService
     {
         $query = $this->model
             ->byDoctor($doctorId)
-            ->with(['doctor', 'procedure', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status']);
+            ->with(['doctor', 'procedure', 'procedures', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status']);
 
         return $query->paginate($perPage, ['*'], 'page', $page);
     }
@@ -294,13 +327,13 @@ class AppointmentService extends CrudeService
             $doctor = Doctor::find($doctorId);
             
             if (!$doctor) {
-                \Log::warning('Doctor not found for availability check', ['doctor_id' => $doctorId]);
+                Log::warning('Doctor not found for availability check', ['doctor_id' => $doctorId]);
                 return false;
             }
 
             // If doctor has no availability data, skip availability check and only check conflicts
             if (!$doctor->availability) {
-                \Log::info('Doctor has no availability data, skipping availability check', ['doctor_id' => $doctorId]);
+                Log::info('Doctor has no availability data, skipping availability check', ['doctor_id' => $doctorId]);
                 return true; // Allow appointment if no availability restrictions are set
             }
 
@@ -310,7 +343,7 @@ class AppointmentService extends CrudeService
                 'duration' => $duration
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error checking doctor availability', [
+            Log::error('Error checking doctor availability', [
                 'doctor_id' => $doctorId,
                 'date' => $date,
                 'start_time' => $startTime,
@@ -449,7 +482,7 @@ class AppointmentService extends CrudeService
     {
         $query = $this->model
             ->byDepartment($departmentId)
-            ->with(['doctor', 'procedure', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status']);
+            ->with(['doctor', 'procedure', 'procedures', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status']);
 
         return $query->paginate($perPage, ['*'], 'page', $page);
     }
@@ -461,7 +494,7 @@ class AppointmentService extends CrudeService
     {
         $query = $this->model
             ->byCategory($categoryId)
-            ->with(['doctor', 'procedure', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status']);
+            ->with(['doctor', 'procedure', 'procedures', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status']);
 
         return $query->paginate($perPage, ['*'], 'page', $page);
     }
@@ -473,7 +506,7 @@ class AppointmentService extends CrudeService
     {
         $query = $this->model
             ->bySource($sourceId)
-            ->with(['doctor', 'procedure', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status']);
+            ->with(['doctor', 'procedure', 'procedures', 'category', 'department', 'source', 'agent', 'remarks1', 'remarks2', 'status']);
 
         return $query->paginate($perPage, ['*'], 'page', $page);
     }
@@ -858,7 +891,7 @@ class AppointmentService extends CrudeService
         }
         
         return $query
-            ->with(['doctor', 'status', 'procedure', 'remarks1', 'remarks2', 'department'])
+            ->with(['doctor', 'status', 'procedure', 'procedures', 'remarks1', 'remarks2', 'department'])
             ->orderByDesc('start_time')
             ->limit($limit)
             ->get();
@@ -924,7 +957,7 @@ class AppointmentService extends CrudeService
         return $this->model
             ->byDateRange($startDate, $endDate)
             ->where('appointments.agent_id', $agentId)
-            ->with(['doctor', 'procedure', 'category', 'department', 'source', 'status', 'remarks1', 'remarks2'])
+            ->with(['doctor', 'procedure', 'procedures', 'category', 'department', 'source', 'status', 'remarks1', 'remarks2'])
             ->orderByDesc('date')
             ->orderByDesc('start_time')
             ->paginate($perPage, ['*'], 'page', $page);
@@ -949,7 +982,7 @@ class AppointmentService extends CrudeService
             );
         } catch (\Exception $e) {
             // Log the error but don't fail the appointment creation
-            \Log::error('Failed to create report for appointment: ' . $e->getMessage());
+            Log::error('Failed to create report for appointment: ' . $e->getMessage());
         }
     }
 
@@ -959,13 +992,13 @@ class AppointmentService extends CrudeService
     protected function updateReportsForAppointment($appointment)
     {
         try {
-            \Log::info('Updating reports for appointment ID: ' . $appointment->id);
+            Log::info('Updating reports for appointment ID: ' . $appointment->id);
             $updatedReports = $this->reportService->updateReportFromAppointment($appointment->id);
             $reportCount = is_array($updatedReports) ? count($updatedReports) : ($updatedReports ? 1 : 0);
-            \Log::info('Successfully updated ' . $reportCount . ' reports for appointment ID: ' . $appointment->id);
+            Log::info('Successfully updated ' . $reportCount . ' reports for appointment ID: ' . $appointment->id);
         } catch (\Exception $e) {
             // Log the error but don't fail the appointment update
-            \Log::error('Failed to update reports for appointment ID ' . $appointment->id . ': ' . $e->getMessage());
+            Log::error('Failed to update reports for appointment ID ' . $appointment->id . ': ' . $e->getMessage());
         }
     }
 
@@ -983,7 +1016,7 @@ class AppointmentService extends CrudeService
                       $agentQuery->where('name', 'like', "%{$search}%");
                   });
             })
-            ->with(['doctor', 'procedure', 'category', 'department', 'source', 'agent']);
+            ->with(['doctor', 'procedure', 'procedures', 'category', 'department', 'source', 'agent']);
 
         return $query->paginate($perPage, ['*'], 'page', $page);
     }

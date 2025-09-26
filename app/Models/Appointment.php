@@ -55,11 +55,20 @@ class Appointment extends Model
     }
 
     /**
-     * Get the procedure for this appointment.
+     * Get the procedure for this appointment (backward compatibility).
+     * Returns the first procedure if multiple procedures exist.
      */
     public function procedure()
     {
         return $this->belongsTo(Procedure::class);
+    }
+
+    /**
+     * Get the procedures for this appointment (many-to-many relationship).
+     */
+    public function procedures()
+    {
+        return $this->belongsToMany(Procedure::class, 'appointment_procedures');
     }
 
     /**
@@ -285,6 +294,41 @@ class Appointment extends Model
     public function scopeByDuration($query, $duration)
     {
         return $query->where('duration', $duration);
+    }
+
+    /**
+     * Sync procedures for this appointment.
+     * 
+     * @param array $procedureIds Array of procedure IDs
+     */
+    public function syncProcedures(array $procedureIds)
+    {
+        // Remove null values and ensure all are integers
+        $procedureIds = array_filter($procedureIds, function($id) {
+            return $id !== null && $id !== '';
+        });
+        
+        if (!empty($procedureIds)) {
+            $this->procedures()->sync($procedureIds);
+            
+            // Update the single procedure_id field for backward compatibility
+            // Use the first procedure as the primary one
+            $this->procedure_id = $procedureIds[0];
+            $this->save();
+        } else {
+            // If no procedures provided, clear the relationship
+            $this->procedures()->detach();
+            $this->procedure_id = null;
+            $this->save();
+        }
+    }
+
+    /**
+     * Get procedure names as a comma-separated string.
+     */
+    public function getProcedureNamesAttribute()
+    {
+        return $this->procedures->pluck('name')->implode(', ');
     }
 
     /**
