@@ -188,7 +188,9 @@ class AppointmentService extends CrudeService
         
         // Create report if requested
         if ($createReport) {
+            Log::info('Creating report for appointment ID: ' . $appointment->id);
             $this->createReportForAppointment($appointment);
+            Log::info('Report creation completed for appointment ID: ' . $appointment->id);
         }
         
         // Reload appointment with all relationships to include procedure data in response
@@ -970,7 +972,8 @@ class AppointmentService extends CrudeService
     protected function createReportForAppointment($appointment)
     {
         try {
-            $this->reportService->generateReportFromAppointment(
+            Log::info('Attempting to create report for appointment ID: ' . $appointment->id);
+            $result = $this->reportService->generateReportFromAppointment(
                 $appointment->id,
                 'appointment_summary',
                 $appointment->agent_id,
@@ -981,9 +984,11 @@ class AppointmentService extends CrudeService
                 $appointment->remarks_2_id,
                 $appointment->status_id
             );
+            Log::info('Report created successfully for appointment ID: ' . $appointment->id . ', Report ID: ' . ($result->id ?? 'unknown'));
         } catch (\Exception $e) {
             // Log the error but don't fail the appointment creation
-            Log::error('Failed to create report for appointment: ' . $e->getMessage());
+            Log::error('Failed to create report for appointment ID ' . $appointment->id . ': ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
         }
     }
 
