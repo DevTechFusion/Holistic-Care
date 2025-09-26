@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Multiple Procedures for Appointments</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .response {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .procedure-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .procedure-item input {
+            width: auto;
+            margin-right: 10px;
+        }
+        .procedure-item label {
+            margin-bottom: 0;
+            font-weight: normal;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Multiple Procedures for Appointments</h1>
+    
+    <form id="appointmentForm">
+        <div class="form-group">
+            <label for="date">Date:</label>
+            <input type="date" id="date" name="date" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="start_time">Start Time:</label>
+            <input type="time" id="start_time" name="start_time" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="end_time">End Time:</label>
+            <input type="time" id="end_time" name="end_time" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="patient_name">Patient Name:</label>
+            <input type="text" id="patient_name" name="patient_name" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="contact_number">Contact Number:</label>
+            <input type="text" id="contact_number" name="contact_number" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="doctor_id">Doctor:</label>
+            <select id="doctor_id" name="doctor_id" required>
+                <option value="">Select Doctor</option>
+                <!-- Will be populated by JavaScript -->
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Procedures (Multiple Selection):</label>
+            <div id="procedures-container">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="category_id">Category:</label>
+            <select id="category_id" name="category_id" required>
+                <option value="">Select Category</option>
+                <!-- Will be populated by JavaScript -->
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="department_id">Department:</label>
+            <select id="department_id" name="department_id" required>
+                <option value="">Select Department</option>
+                <!-- Will be populated by JavaScript -->
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="source_id">Source:</label>
+            <select id="source_id" name="source_id" required>
+                <option value="">Select Source</option>
+                <!-- Will be populated by JavaScript -->
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="agent_id">Agent:</label>
+            <select id="agent_id" name="agent_id" required>
+                <option value="">Select Agent</option>
+                <!-- Will be populated by JavaScript -->
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="amount">Amount:</label>
+            <input type="number" id="amount" name="amount" step="0.01" min="0">
+        </div>
+        
+        <div class="form-group">
+            <label for="notes">Notes:</label>
+            <textarea id="notes" name="notes" rows="3"></textarea>
+        </div>
+        
+        <button type="submit">Create Appointment</button>
+    </form>
+    
+    <div id="response" class="response" style="display: none;"></div>
+
+    <script>
+        // Set today's date as default
+        document.getElementById('date').value = new Date().toISOString().split('T')[0];
+        
+        // Load initial data
+        loadDoctors();
+        loadProcedures();
+        loadCategories();
+        loadDepartments();
+        loadSources();
+        loadAgents();
+        
+        async function loadDoctors() {
+            try {
+                const response = await fetch('/api/doctors');
+                const data = await response.json();
+                const select = document.getElementById('doctor_id');
+                
+                data.data.forEach(doctor => {
+                    const option = document.createElement('option');
+                    option.value = doctor.id;
+                    option.textContent = doctor.name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading doctors:', error);
+            }
+        }
+        
+        async function loadProcedures() {
+            try {
+                const response = await fetch('/api/procedures');
+                const data = await response.json();
+                const container = document.getElementById('procedures-container');
+                
+                data.data.forEach(procedure => {
+                    const div = document.createElement('div');
+                    div.className = 'procedure-item';
+                    div.innerHTML = `
+                        <input type="checkbox" id="procedure_${procedure.id}" name="procedure_ids[]" value="${procedure.id}">
+                        <label for="procedure_${procedure.id}">${procedure.name}</label>
+                    `;
+                    container.appendChild(div);
+                });
+            } catch (error) {
+                console.error('Error loading procedures:', error);
+            }
+        }
+        
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/categories');
+                const data = await response.json();
+                const select = document.getElementById('category_id');
+                
+                data.data.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category.id;
+                    option.textContent = category.name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading categories:', error);
+            }
+        }
+        
+        async function loadDepartments() {
+            try {
+                const response = await fetch('/api/departments');
+                const data = await response.json();
+                const select = document.getElementById('department_id');
+                
+                data.data.forEach(department => {
+                    const option = document.createElement('option');
+                    option.value = department.id;
+                    option.textContent = department.name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading departments:', error);
+            }
+        }
+        
+        async function loadSources() {
+            try {
+                const response = await fetch('/api/sources');
+                const data = await response.json();
+                const select = document.getElementById('source_id');
+                
+                data.data.forEach(source => {
+                    const option = document.createElement('option');
+                    option.value = source.id;
+                    option.textContent = source.name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading sources:', error);
+            }
+        }
+        
+        async function loadAgents() {
+            try {
+                const response = await fetch('/api/users');
+                const data = await response.json();
+                const select = document.getElementById('agent_id');
+                
+                data.data.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.id;
+                    option.textContent = user.name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading agents:', error);
+            }
+        }
+        
+        document.getElementById('appointmentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            
+            // Get selected procedure IDs
+            const selectedProcedures = Array.from(document.querySelectorAll('input[name="procedure_ids[]"]:checked'))
+                .map(checkbox => checkbox.value);
+            
+            if (selectedProcedures.length > 0) {
+                data.procedure_ids = selectedProcedures;
+            }
+            
+            // Remove empty values
+            Object.keys(data).forEach(key => {
+                if (data[key] === '') {
+                    delete data[key];
+                }
+            });
+            
+            try {
+                const response = await fetch('/api/appointments', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                const responseDiv = document.getElementById('response');
+                
+                if (response.ok) {
+                    responseDiv.className = 'response success';
+                    
+                    // Format the response to highlight procedure data
+                    let formattedResponse = `Success!\n\n`;
+                    formattedResponse += `Appointment ID: ${result.data.id}\n`;
+                    formattedResponse += `Patient: ${result.data.patient_name}\n`;
+                    formattedResponse += `Date: ${result.data.date}\n`;
+                    formattedResponse += `Time: ${result.data.start_time} - ${result.data.end_time}\n`;
+                    
+                    if (result.data.procedures && result.data.procedures.length > 0) {
+                        formattedResponse += `\nProcedures (${result.data.procedures.length}):\n`;
+                        result.data.procedures.forEach((proc, index) => {
+                            formattedResponse += `  ${index + 1}. ${proc.name} (ID: ${proc.id})\n`;
+                        });
+                    } else {
+                        formattedResponse += `\nProcedures: None\n`;
+                    }
+                    
+                    if (result.data.procedure_names) {
+                        formattedResponse += `\nProcedure Names: ${result.data.procedure_names}\n`;
+                    }
+                    
+                    formattedResponse += `\nFull Response:\n${JSON.stringify(result, null, 2)}`;
+                    
+                    responseDiv.textContent = formattedResponse;
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = `Error!\n\n${JSON.stringify(result, null, 2)}`;
+                }
+                
+                responseDiv.style.display = 'block';
+            } catch (error) {
+                const responseDiv = document.getElementById('response');
+                responseDiv.className = 'response error';
+                responseDiv.textContent = `Network Error!\n\n${error.message}`;
+                responseDiv.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

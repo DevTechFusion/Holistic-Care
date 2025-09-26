@@ -27,10 +27,10 @@ class Procedure extends Model
     }
 
     /**
-     * Get the doctors for the procedure.
+     * Get the appointments for this procedure.
      */
-    public function doctors()
+    public function appointments()
     {
-        return $this->belongsToMany(Doctor::class, 'doctor_procedure');
+        return $this->belongsToMany(Appointment::class, 'appointment_procedures');
     }
 }
