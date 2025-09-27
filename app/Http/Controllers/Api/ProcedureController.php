@@ -132,4 +132,25 @@ class ProcedureController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get all procedures without pagination (for select dropdowns)
+     */
+    public function getAll()
+    {
+        try {
+            $procedures = $this->procedureService->getAllProceduresWithoutPagination();
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $procedures
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch procedures',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

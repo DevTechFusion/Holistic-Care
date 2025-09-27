@@ -17,6 +17,7 @@ Route::middleware(['sanctum.token', 'auth:sanctum'])->group(function () {
 
     // User management routes
     Route::get('users/by-roles', [App\Http\Controllers\Api\UserController::class, 'getUsersByRoles']);
+    Route::get('agents-all', [App\Http\Controllers\Api\UserController::class, 'getAllAgents']);
     Route::apiResource('users', App\Http\Controllers\Api\UserController::class);
     Route::post('users/{id}/assign-role', [App\Http\Controllers\Api\UserController::class, 'assignRole']);
     Route::post('users/{id}/remove-role', [App\Http\Controllers\Api\UserController::class, 'removeRole']);
@@ -24,6 +25,7 @@ Route::middleware(['sanctum.token', 'auth:sanctum'])->group(function () {
 
     // Department management routes
     Route::apiResource('departments', App\Http\Controllers\Api\DepartmentController::class);
+    Route::get('departments-all', [App\Http\Controllers\Api\DepartmentController::class, 'getAll']);
 
     // Category management routes
     Route::apiResource('categories', App\Http\Controllers\Api\CategoryController::class);
@@ -89,9 +91,11 @@ Route::middleware(['sanctum.token', 'auth:sanctum'])->group(function () {
 
     // Procedure management routes
     Route::apiResource('procedures', App\Http\Controllers\Api\ProcedureController::class);
+    Route::get('procedures-all', [App\Http\Controllers\Api\ProcedureController::class, 'getAll']);
 
     // Doctor management routes
     Route::apiResource('doctors', App\Http\Controllers\Api\DoctorController::class);
+    Route::get('doctors-all', [App\Http\Controllers\Api\DoctorController::class, 'getAll']);
     Route::get('doctors/department/{departmentId}', [App\Http\Controllers\Api\DoctorController::class, 'getByDepartment']);
     Route::get('doctors/procedure/{procedureId}', [App\Http\Controllers\Api\DoctorController::class, 'getByProcedure']);
     Route::get('doctors/available', [App\Http\Controllers\Api\DoctorController::class, 'getAvailable']);

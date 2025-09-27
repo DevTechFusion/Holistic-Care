@@ -75,4 +75,14 @@ class DepartmentService extends CrudeService
     {
         return $this->allSelect(['id', 'name']);
     }
+
+    /**
+     * Get all departments without pagination (for select dropdowns)
+     */
+    public function getAllDepartmentsWithoutPagination()
+    {
+        return $this->model::select('id', 'name')
+            ->orderBy('name')
+            ->get();
+    }
 }

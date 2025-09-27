@@ -132,4 +132,25 @@ class DepartmentController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get all departments without pagination (for select dropdowns)
+     */
+    public function getAll()
+    {
+        try {
+            $departments = $this->departmentService->getAllDepartmentsWithoutPagination();
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $departments
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch departments',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

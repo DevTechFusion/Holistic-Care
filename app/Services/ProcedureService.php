@@ -75,4 +75,14 @@ class ProcedureService extends CrudeService
     {
         return $this->allSelect(['id', 'name']);
     }
+
+    /**
+     * Get all procedures without pagination (for select dropdowns)
+     */
+    public function getAllProceduresWithoutPagination()
+    {
+        return $this->model::select('id', 'name')
+            ->orderBy('name')
+            ->get();
+    }
 }
