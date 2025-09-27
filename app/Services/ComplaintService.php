@@ -168,7 +168,8 @@ class ComplaintService extends CrudeService
     public function countInRange(string $startDateTime, string $endDateTime): int
     {
         return $this->buildDateRangeQuery($this->model, $startDateTime, $endDateTime)
-            ->whereNull('appointment_id')
+            // ->whereNull('appointment_id')
+            ->whereNull('doctor_id')
             ->count();
     }
 
@@ -183,7 +184,8 @@ class ComplaintService extends CrudeService
             $startDateTime,
             $endDateTime
         )
-        ->whereNull('appointment_id')
+        ->whereNull('doctor_id')
+        // ->whereNull('appointment_id')
         ->groupBy('complaint_type_id')
         ->orderByDesc('count')
         ->with('complaintType')
@@ -484,7 +486,8 @@ class ComplaintService extends CrudeService
     {
         $query = $this->buildDateRangeQuery($this->model, $startDateTime, $endDateTime);
         return $this->buildFilteredQuery($query, $agentId, $complaintTypeId, $platform)
-            ->whereNull('appointment_id')
+            // ->whereNull('appointment_id')
+            ->whereNull('doctor_id')
             ->count();
     }
 
@@ -501,7 +504,8 @@ class ComplaintService extends CrudeService
         );
         
         return $this->buildFilteredQuery($query, $agentId, $complaintTypeId, $platform)
-            ->whereNull('appointment_id')
+            // ->whereNull('appointment_id')
+            ->whereNull('doctor_id')
             ->groupBy('complaint_type_id')
             ->orderByDesc('count')
             ->with('complaintType')

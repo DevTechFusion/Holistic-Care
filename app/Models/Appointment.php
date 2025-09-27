@@ -209,7 +209,9 @@ class Appointment extends Model
      */
     public function scopeByProcedure($query, $procedureId)
     {
-        return $query->where('procedure_id', $procedureId);
+        return $query->whereHas('procedures', function($q) use ($procedureId) {
+            $q->where('procedures.id', $procedureId);
+        });
     }
 
     /**
