@@ -376,4 +376,25 @@ class UserController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get all agents without pagination (for select dropdowns)
+     */
+    public function getAllAgents()
+    {
+        try {
+            $agents = $this->userService->getAllAgentsWithoutPagination();
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $agents
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch agents',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

@@ -265,4 +265,25 @@ class DoctorController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get all doctors without pagination (for select dropdowns)
+     */
+    public function getAll()
+    {
+        try {
+            $doctors = $this->doctorService->getAllDoctorsWithoutPagination();
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $doctors
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch doctors',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

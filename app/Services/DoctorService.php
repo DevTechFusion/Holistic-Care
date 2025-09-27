@@ -346,4 +346,15 @@ class DoctorService extends CrudeService
     {
         return $this->allSelect(['id', 'name']);
     }
+
+    /**
+     * Get all doctors without pagination (for select dropdowns)
+     */
+    public function getAllDoctorsWithoutPagination()
+    {
+        return $this->model::select('id', 'name', 'phone_number', 'department_id')
+            ->with(['department:id,name'])
+            ->orderBy('name')
+            ->get();
+    }
 }

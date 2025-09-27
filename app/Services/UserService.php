@@ -152,4 +152,15 @@ class UserService extends CrudeService
             ->withSum('incentives as incentives_sum', 'incentive_amount')
             ->paginate($perPage, ['*'], 'page', $page);
     }
+
+    /**
+     * Get all agents without pagination (for select dropdowns)
+     */
+    public function getAllAgentsWithoutPagination()
+    {
+        return $this->model::role('agent')
+            ->select('id', 'name', 'email')
+            ->orderBy('name')
+            ->get();
+    }
 }
