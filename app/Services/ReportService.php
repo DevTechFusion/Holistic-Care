@@ -186,7 +186,7 @@ class ReportService extends CrudeService
 
         // Load relationships and paginate
         return $query->with([
-            'appointment.doctor', 'appointment.procedure', 'appointment.category',
+            'appointment.doctor', 'appointment.procedures', 'appointment.category',
             'appointment.department', 'appointment.source', 'appointment.agent', 
             'remarks1', 'remarks2', 'status', 'generatedBy'
         ])->paginate($perPage, ['*'], 'page', $page);
@@ -282,7 +282,7 @@ class ReportService extends CrudeService
     {
         $query = $this->model->byType($type)
             ->with([
-                'appointment.doctor', 'appointment.procedure', 'appointment.category',
+                'appointment.doctor', 'appointment.procedures', 'appointment.category',
                 'appointment.department', 'appointment.source', 'appointment.agent', 'remarks1', 'remarks2', 'status', 'generatedBy'
             ]);
 
@@ -296,7 +296,7 @@ class ReportService extends CrudeService
     {
         $query = $this->model->byGeneratedBy($user)
             ->with([
-                'appointment.doctor', 'appointment.procedure', 'appointment.category',
+                'appointment.doctor', 'appointment.procedures', 'appointment.category',
                 'appointment.department', 'appointment.source', 'appointment.agent', 'remarks1', 'remarks2', 'status', 'generatedBy'
             ]);
 
@@ -310,7 +310,7 @@ class ReportService extends CrudeService
     {
         $query = $this->model->byDateRange($startDate, $endDate)
             ->with([
-                'appointment.doctor', 'appointment.procedure', 'appointment.category',
+                'appointment.doctor', 'appointment.procedures', 'appointment.category',
                 'appointment.department', 'appointment.source', 'appointment.agent', 'remarks1', 'remarks2', 'status', 'generatedBy'
             ]);
 
@@ -358,7 +358,7 @@ class ReportService extends CrudeService
     {
         $query = $this->model->where('appointment_id', $appointmentId)
             ->with([
-                'appointment.doctor', 'appointment.procedure', 'appointment.category',
+                'appointment.doctor', 'appointment.procedures', 'appointment.category',
                 'appointment.department', 'appointment.source', 'appointment.agent', 'remarks1', 'remarks2', 'status', 'generatedBy'
             ]);
 
