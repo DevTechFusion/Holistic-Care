@@ -255,7 +255,7 @@ const PharmacyList = () => {
           setRowsPerPage(parseInt(e.target.value, 10));
           setPage(0);
         }}
-        rowsPerPageOptions={[15, 25, 50, 100]}
+        rowsPerPageOptions={[5, 15, 25, 50, 100]}
       />
 
       {/* Pharmacy Form Modal */}

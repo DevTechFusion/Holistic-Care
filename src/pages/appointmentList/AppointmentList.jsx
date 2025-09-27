@@ -160,7 +160,12 @@ const AppointmentsPage = () => {
                       <TableCell>{appt.contact_number}</TableCell>
                       <TableCell>{appt.doctor?.name}</TableCell>
                       <TableCell>{appt.agent?.name}</TableCell>
-                      <TableCell>{appt.procedure?.name}</TableCell>
+                      <TableCell>
+                        {/* Show multiple procedures as comma separated or chips */}
+                        {Array.isArray(appt.procedures) && appt.procedures.length > 0
+                          ? appt.procedures.map(p => p.name).join(", ")
+                          : appt.procedure?.name || "-"}
+                      </TableCell>
                       <TableCell>{appt.department?.name}</TableCell>
                       <TableCell>{appt.source?.name}</TableCell>
                       <TableCell>
@@ -186,7 +191,7 @@ const AppointmentsPage = () => {
                 setRowsPerPage(parseInt(e.target.value, 10));
                 setPage(0);
               }}
-              rowsPerPageOptions={[15, 25, 50, 100]}
+              rowsPerPageOptions={[5, 15, 25, 50, 100]}
             />
           </>
         )}

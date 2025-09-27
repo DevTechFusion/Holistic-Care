@@ -122,7 +122,7 @@ const DepartmentsPage = () => {
                 setRowsPerPage(parseInt(e.target.value));
                 setPage(0);
               }}
-              rowsPerPageOptions={[15, 25, 50, 100]}
+              rowsPerPageOptions={[5, 15, 25, 50, 100]}
             />
           </>
         )}

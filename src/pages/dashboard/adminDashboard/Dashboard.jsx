@@ -19,8 +19,6 @@ import BusinessIcon from "@mui/icons-material/Business";
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 import AddIcon from "@mui/icons-material/Add";
 
-
-import CreateUserModal from "../../../components/forms/UserForm";
 import CreateProcedureModal from "../../../components/forms/ProcedureForm";
 import CreateDepartmentModal from "../../../components/forms/DepartmentForm";
 import CreateDoctorModal from "../../../components/forms/DoctorForm";

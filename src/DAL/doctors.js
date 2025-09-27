@@ -15,6 +15,10 @@ export const getDoctors = (page = 1, perPage = 15) => {
   });
 };
 
+export const getDoctorsList = () => {
+  return invokeApi({ path: `api/doctors-all` });
+};
+
 export const getDoctorById = (id) => {
   return invokeApi({ path: `api/doctors/${id}` });
 };

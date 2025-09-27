@@ -16,6 +16,10 @@ export const getAllDepartments = (page = 1, perPage = 15) => {
   });
 };
 
+export const getDepartmentsList = () => {
+  return invokeApi({ path: `api/departments-all` });
+};
+
 export const getDepartmentById = (id) => {
   return invokeApi({ path: `api/departments/${id}` });
 };

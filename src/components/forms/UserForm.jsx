@@ -32,7 +32,7 @@ const DEFAULT_FORM_DATA = {
 
 // Validation rules
 const VALIDATION_RULES = {
-  PASSWORD_MIN_LENGTH: 6,
+  PASSWORD_MIN_LENGTH: 8,
   REQUIRED_FIELDS: ['name', 'email'],
   REQUIRED_FIELDS_CREATE: ['name', 'email', 'password']
 };

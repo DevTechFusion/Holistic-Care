@@ -183,12 +183,14 @@ const ComplaintForm = ({ open, onClose, isEditing, data }) => {
     }
 
     setIsSubmitting(true);
-    
+
     try {
       const tempData = { ...formData };
-      
-      // Handle complaint_against logic (only when creating)
+
+      // Set occurred_at to current date/time (ISO string) if creating
       if (!isEditing) {
+        tempData.occurred_at = new Date().toISOString();
+
         if (tempData.complaint_against === "doctor") {
           tempData.agent_id = null;
         } else {
@@ -196,14 +198,14 @@ const ComplaintForm = ({ open, onClose, isEditing, data }) => {
         }
         delete tempData.complaint_against;
       }
-      
+
       tempData.submitted_by = user.id;
 
       const res = isEditing
         ? await updateMistake(data.id, { 
             description: tempData.description,
             is_resolved: tempData.is_resolved 
-          }) // Send description and status when editing
+          })
         : await createMistake(tempData);
 
       // Handle your invokeApi response structure

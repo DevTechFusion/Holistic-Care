@@ -1,20 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   Box,
   Card,
   CardContent,
   Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   CircularProgress,
   Alert,
-  Paper,
 } from "@mui/material";
 import { getAdminDashboard } from "../../DAL/dashboard";
+
+import RevenueTable from "./RevenueTable";
+import RevenueCharts from "./RevenueCharts";
 
 const RevenueSection = () => {
   const [revenueData, setRevenueData] = useState([]);
@@ -37,7 +33,6 @@ const RevenueSection = () => {
         setError(null);
 
         const response = await getAdminDashboard();
-        // ✅ Access nested structure correctly
         const rows = response?.data?.revenue?.rows ?? [];
         setRevenueData(rows);
       } catch (err) {
@@ -49,6 +44,21 @@ const RevenueSection = () => {
 
     fetchRevenueData();
   }, []);
+
+  const topFiveRevenue = useMemo(
+    () => [...revenueData].sort((a, b) => (b.revenue ?? 0) - (a.revenue ?? 0)).slice(0, 5),
+    [revenueData]
+  );
+
+  const topFiveBookings = useMemo(
+    () => [...revenueData].sort((a, b) => (b.bookings ?? 0) - (a.bookings ?? 0)).slice(0, 5),
+    [revenueData]
+  );
+
+  const topFiveIncentive = useMemo(
+    () => [...revenueData].sort((a, b) => (b.incentive ?? 0) - (a.incentive ?? 0)).slice(0, 5),
+    [revenueData]
+  );
 
   return (
     <Card sx={{ height: "100%", borderRadius: 3, boxShadow: 1 }}>
@@ -65,48 +75,20 @@ const RevenueSection = () => {
 
         {error && <Alert severity="error">{error}</Alert>}
 
-        {!loading && !error && (
-          <TableContainer component={Paper} sx={{ boxShadow: "none", border: 1, borderColor: "divider" }}>
-            <Table size="small">
-              <TableHead sx={{ backgroundColor: "#f9fafb" }}>
-                <TableRow>
-                  {["Sr#", "Agent", "Bookings", "Arrived", "No Show", "Arrived %", "Revenue", "Incentive"].map(
-                    (header) => (
-                      <TableCell key={header} sx={{ fontWeight: "bold" }}>
-                        {header}
-                      </TableCell>
-                    )
-                  )}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {revenueData.length > 0 ? (
-                  revenueData.map((row, index) => (
-                    <TableRow key={row.agent_id ?? index}>
-                      <TableCell>{index + 1}</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>{row.agent?.name ?? "Unknown Agent"}</TableCell>
-                      <TableCell>{row.bookings ?? 0}</TableCell>
-                      <TableCell>{row.arrived ?? 0}</TableCell>
-                      <TableCell>{row.no_show ?? 0}</TableCell>
-                      <TableCell sx={{ color: "primary.main", fontWeight: "bold" }}>
-                        {calculatePercentage(row.arrived, row.bookings)}
-                      </TableCell>
-                      <TableCell sx={{ fontWeight: "bold" }}>{formatCurrency(row.revenue)}</TableCell>
-                      <TableCell sx={{ color: "warning.main", fontWeight: "bold" }}>
-                        {formatCurrency(row.incentive)}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={8} align="center" sx={{ py: 3, color: "text.secondary" }}>
-                      No revenue data available
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
+        {!loading && !error && revenueData.length > 0 && (
+          <>
+            <RevenueTable
+              data={revenueData}
+              formatCurrency={formatCurrency}
+              calculatePercentage={calculatePercentage}
+            />
+
+            <RevenueCharts
+              topFiveRevenue={topFiveRevenue}
+              topFiveBookings={topFiveBookings}
+              topFiveIncentive={topFiveIncentive}
+            />
+          </>
         )}
       </CardContent>
     </Card>

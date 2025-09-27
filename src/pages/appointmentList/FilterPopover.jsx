@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import {
   Popover,
-  Box,
   Typography,
   Divider,
   Stack,
@@ -10,10 +9,10 @@ import {
   MenuItem,
   Button,
 } from "@mui/material";
-import { getDoctors } from "../../DAL/doctors";
-import { getProcedures } from "../../DAL/procedure";
-import { getAllDepartments } from "../../DAL/departments";
-import { getUsers } from "../../DAL/users";
+import { getDoctorsList } from "../../DAL/doctors";
+import { getProceduresList } from "../../DAL/procedure";
+import { getDepartmentsList } from "../../DAL/departments";
+import { getAgentList } from "../../DAL/users";
 
 const FilterPopover = ({ anchorEl, open, onClose, filters, setFilters }) => {
   const [doctors, setDoctors] = useState([]);
@@ -27,20 +26,29 @@ const FilterPopover = ({ anchorEl, open, onClose, filters, setFilters }) => {
   }, [filters]);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (open) fetchData();
+  }, [open]);
 
   const fetchData = async () => {
-    const [docRes, agentRes, deptRes, procRes] = await Promise.all([
-      getDoctors(),
-      getUsers(1, 100, "agent"),
-      getAllDepartments(),
-      getProcedures(),
-    ]);
-    setDoctors(docRes?.data?.data || []);
-    setAgents(agentRes?.data?.data || []);
-    setDepartments(deptRes?.data?.data || []);
-    setProcedures(procRes?.data?.data || []);
+    try {
+      const [docRes, agentRes, deptRes, procRes] = await Promise.all([
+        getDoctorsList(), // ✅ new API
+        getAgentList(), // ✅ new API with pagination + role
+        getDepartmentsList(), // ✅ new API
+        getProceduresList(), // ✅ new API
+      ]);
+
+      setDoctors(Array.isArray(docRes?.data) ? docRes.data : []);
+      setAgents(Array.isArray(agentRes?.data) ? agentRes.data : []);
+      setDepartments(Array.isArray(deptRes?.data) ? deptRes.data : []);
+      setProcedures(Array.isArray(procRes?.data) ? procRes.data : []);
+    } catch (error) {
+      console.error("Error fetching filter data:", error);
+      setDoctors([]);
+      setAgents([]);
+      setDepartments([]);
+      setProcedures([]);
+    }
   };
 
   const handleChange = (field, value) => {
@@ -109,24 +117,34 @@ const FilterPopover = ({ anchorEl, open, onClose, filters, setFilters }) => {
             InputLabelProps={{ shrink: true }}
             fullWidth
           />
+
+          {/* Doctor Dropdown */}
           <Autocomplete
             options={doctors}
             getOptionLabel={(option) => option.name || ""}
             value={doctors.find((d) => d.id === localFilters.doctor_id) || null}
             onChange={(e, value) => handleChange("doctor_id", value?.id)}
-            renderInput={(params) => <TextField {...params} label="Doctor" placeholder="Select Doctor" />}
+            renderInput={(params) => (
+              <TextField {...params} label="Doctor" placeholder="Select Doctor" />
+            )}
             isOptionEqualToValue={(o, v) => o.id === v.id}
             fullWidth
           />
+
+          {/* Agent Dropdown */}
           <Autocomplete
             options={agents}
             getOptionLabel={(option) => option.name || ""}
             value={agents.find((a) => a.id === localFilters.agent_id) || null}
             onChange={(e, value) => handleChange("agent_id", value?.id)}
-            renderInput={(params) => <TextField {...params} label="Agent" placeholder="Select Agent" />}
+            renderInput={(params) => (
+              <TextField {...params} label="Agent" placeholder="Select Agent" />
+            )}
             isOptionEqualToValue={(o, v) => o.id === v.id}
             fullWidth
           />
+
+          {/* Department Dropdown */}
           <TextField
             select
             label="Department"
@@ -141,12 +159,16 @@ const FilterPopover = ({ anchorEl, open, onClose, filters, setFilters }) => {
               </MenuItem>
             ))}
           </TextField>
+
+          {/* Procedure Dropdown */}
           <Autocomplete
             options={procedures}
             getOptionLabel={(option) => option.name || ""}
             value={procedures.find((p) => p.id === localFilters.procedure_id) || null}
             onChange={(e, value) => handleChange("procedure_id", value?.id)}
-            renderInput={(params) => <TextField {...params} label="Procedure" placeholder="Select Procedure" />}
+            renderInput={(params) => (
+              <TextField {...params} label="Procedure" placeholder="Select Procedure" />
+            )}
             isOptionEqualToValue={(o, v) => o.id === v.id}
             fullWidth
           />

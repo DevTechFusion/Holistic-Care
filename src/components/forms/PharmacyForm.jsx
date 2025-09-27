@@ -15,6 +15,7 @@ import { createPharmacy, updatePharmacy } from "../../DAL/pharmacy";
 import { getRoles } from "../../DAL/modelRoles";
 import dayjs from "dayjs";
 import GenericFormModal from "./GenericForm";
+import { useAuth } from "../../contexts/AuthContext"; // <-- Add this import
 
 // Constants moved outside component for better performance
 const STATUS_OPTIONS = ["pending", "completed", "cancelled"];
@@ -34,7 +35,7 @@ const DEFAULT_FORM_DATA = {
 // Validation rules
 const VALIDATION_RULES = {
   PHONE_MAX_LENGTH: 11,
-  PHONE_MIN_LENGTH: 10,
+  PHONE_MIN_LENGTH: 11,
   AMOUNT_MIN: 0,
   REQUIRED_FIELDS: ['patient_name', 'date', 'phone_number'],
   REQUIRED_FIELDS_EDIT: ['patient_name', 'date', 'phone_number', 'amount', 'payment_mode']
@@ -42,12 +43,16 @@ const VALIDATION_RULES = {
 
 const PharmacyForm = ({ open, onClose, isEditing, data }) => {
   const { enqueueSnackbar } = useSnackbar();
+  const { user } = useAuth(); // <-- Add this line
   const [formData, setFormData] = useState(DEFAULT_FORM_DATA);
   const [roles, setRoles] = useState([]);
   const [rolesLoading, setRolesLoading] = useState(false);
   const [rolesError, setRolesError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
+
+  // Detect if current user is an agent
+  const isCurrentUserAgent = Array.isArray(user?.roles) && user.roles.some(role => role.name?.toLowerCase() === 'agent');
 
   // Memoized options to prevent unnecessary re-renders
   const formOptions = useMemo(() => ({
@@ -136,10 +141,19 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
           date: data.date ? dayjs(data.date) : null
         });
       } else {
-        resetForm();
+        // If user is agent, set agent_id automatically
+        if (isCurrentUserAgent && user) {
+          setFormData(prev => ({
+            ...DEFAULT_FORM_DATA,
+            agent_id: String(user.id)
+          }));
+        } else {
+          setFormData(DEFAULT_FORM_DATA);
+        }
+        setErrors({});
       }
     }
-  }, [open, isEditing, data, resetForm]);
+  }, [open, isEditing, data, isCurrentUserAgent, user]);
 
   // Fetch roles with better error handling
   useEffect(() => {
@@ -295,7 +309,7 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
               onChange={(e) => handleChange("phone_number", e.target.value)}
               error={!!errors.phone_number}
               helperText={errors.phone_number || `${formData.phone_number.length}/${VALIDATION_RULES.PHONE_MAX_LENGTH} digits`}
-              placeholder="1234567890"
+              placeholder="03000000000"
               inputProps={{
                 inputMode: "numeric",
                 pattern: "[0-9]*",
@@ -349,10 +363,10 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
           <Typography variant="h6" color="primary" sx={{ fontWeight: 600, mb: 1 }}>
             Assignment & Status
           </Typography>
-          
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+            {/* Agent Field */}
             <FormControl fullWidth>
-              <InputLabel>Agent</InputLabel>
+              {/* <InputLabel>Agent</InputLabel> */}
               {rolesLoading ? (
                 <Stack direction="row" alignItems="center" spacing={1} p={2}>
                   <CircularProgress size={20} />
@@ -362,6 +376,14 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
                 <Typography color="error" variant="body2" p={2}>
                   {rolesError}
                 </Typography>
+              ) : isCurrentUserAgent && user ? (
+                <TextField
+                  label="Agent"
+                  fullWidth
+                  value={user.name || "Current User"}
+                  disabled
+                  helperText="Automatically set to current agent"
+                />
               ) : (
                 <Select
                   value={formData.agent_id}
@@ -372,7 +394,11 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
                     <em>Select an agent</em>
                   </MenuItem>
                   {roles.length > 0 ? (
-                    roleOptions
+                    roles.map((role) => (
+                      <MenuItem key={role.id} value={role.id}>
+                        {role.name}
+                      </MenuItem>
+                    ))
                   ) : (
                     <MenuItem disabled>No agents available</MenuItem>
                   )}

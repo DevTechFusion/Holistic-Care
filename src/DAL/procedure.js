@@ -29,3 +29,7 @@ export const updateProcedure = (id, data) => {
 export const deleteProcedure = (id) => {
   return invokeApi({ method: "DELETE", path: `api/procedures/${id}` });
 };
+
+export const getProceduresList = () => {
+  return invokeApi({ path: `api/procedures-all` });
+};

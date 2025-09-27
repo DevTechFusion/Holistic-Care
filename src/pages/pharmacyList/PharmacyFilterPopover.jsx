@@ -7,44 +7,30 @@ import {
   Stack,
   Divider,
   Autocomplete,
-  CircularProgress,
+  MenuItem,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { getUsers } from "../../DAL/users";
+import { getAgentList } from "../../DAL/users";
 
-const PharmacyFilterPopover = ({
-  anchorEl,
-  open,
-  onClose,
-  filters,
-  setFilters,
-}) => {
+const PharmacyFilterPopover = ({ anchorEl, open, onClose, filters, setFilters }) => {
   const [localFilters, setLocalFilters] = useState(filters);
   const [agents, setAgents] = useState([]);
-  const [loadingAgents, setLoadingAgents] = useState(false);
-  const [agentSearch, setAgentSearch] = useState("");
 
   useEffect(() => {
     setLocalFilters(filters);
   }, [filters]);
 
-  // Fetch agents when typing
   useEffect(() => {
-    if (agentSearch === "" && agents.length > 0) return; // ✅ avoid refetch when clearing input
-    const timeout = setTimeout(() => fetchAgents(agentSearch), 400);
-    return () => clearTimeout(timeout);
-  }, [agentSearch]);
+    if (open) fetchAgents();
+  }, [open]);
 
-  const fetchAgents = async (query = "") => {
+  const fetchAgents = async () => {
     try {
-      setLoadingAgents(true);
-      const res = await getUsers(1, 50, "agent", query); // Pass query if API supports it
-      setAgents(res?.data?.data || []);
+      const res = await getAgentList(); // ✅ just like appointment filters
+      setAgents(Array.isArray(res?.data) ? res.data : []);
     } catch (err) {
-      console.error("Failed to fetch agents", err);
+      console.error("Failed to fetch agents:", err);
       setAgents([]);
-    } finally {
-      setLoadingAgents(false);
     }
   };
 
@@ -95,6 +81,7 @@ const PharmacyFilterPopover = ({
         <Divider />
 
         <Stack spacing={2}>
+          {/* Search Field */}
           <TextField
             label="Search (name/phone)"
             value={localFilters.search}
@@ -102,54 +89,36 @@ const PharmacyFilterPopover = ({
             fullWidth
           />
 
+          {/* Status Dropdown */}
           <TextField
-  label="Status"
-  select
-  SelectProps={{ native: true }}
-  value={localFilters.status}
-  onChange={(e) => handleChange("status", e.target.value)}
-  fullWidth
->
-  {/* Placeholder option */}
-  <option value="" disabled hidden>
-    Select Status
-  </option>
+            label="Status"
+            select
+            value={localFilters.status}
+            onChange={(e) => handleChange("status", e.target.value)}
+            fullWidth
+          >
+            <MenuItem value="">
+              <em>Select Status</em>
+            </MenuItem>
+            <MenuItem value="pending">Pending</MenuItem>
+            <MenuItem value="completed">Completed</MenuItem>
+            <MenuItem value="cancelled">Cancelled</MenuItem>
+          </TextField>
 
-  <option value="pending">Pending</option>
-  <option value="completed">Completed</option>
-  <option value="cancelled">Cancelled</option>
-</TextField>
-
-
-          {/* ✅ Agent Autocomplete with live search */}
+          {/* Agent Dropdown */}
           <Autocomplete
             options={agents}
-            loading={loadingAgents}
             getOptionLabel={(option) => option.name || ""}
             value={agents.find((a) => a.id === localFilters.agent_id) || null}
             onChange={(e, value) => handleChange("agent_id", value?.id)}
-            onInputChange={(e, newInputValue) => setAgentSearch(newInputValue)}
             renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Agent"
-                placeholder="Type to search agent..."
-                InputProps={{
-                  ...params.InputProps,
-                  endAdornment: (
-                    <>
-                      {loadingAgents ? <CircularProgress size={18} /> : null}
-                      {params.InputProps.endAdornment}
-                    </>
-                  ),
-                }}
-              />
+              <TextField {...params} label="Agent" placeholder="Select Agent" />
             )}
             isOptionEqualToValue={(o, v) => o.id === v.id}
             fullWidth
-            filterOptions={(x) => x}
           />
 
+          {/* Date Filters */}
           <DatePicker
             label="Start Date"
             value={localFilters.start_date || null}
@@ -164,6 +133,7 @@ const PharmacyFilterPopover = ({
           />
         </Stack>
 
+        {/* Action Buttons */}
         <Stack direction="row" spacing={2} justifyContent="flex-end" mt={2}>
           <Button onClick={handleClear} variant="outlined" color="error">
             Clear

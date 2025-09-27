@@ -41,12 +41,12 @@ const ComplaintList = () => {
   const [selectedDescription, setSelectedDescription] = useState("");
   const [descriptionModalOpen, setDescriptionModalOpen] = useState(false);
 
-  const [filterType, setFilterType] = useState("all");
+  // Set default filter to "agent"
+  const [filterType, setFilterType] = useState("agent");
 
   const fetchComplaints = async () => {
     setLoading(true);
     try {
-      // ✅ Pass filterType as the first parameter to the API call
       const res = await getAllMistakes(filterType, page + 1, rowsPerPage);
       setComplaints(res?.data?.data || []);
       setTotal(res?.data?.total || 0);
@@ -58,12 +58,10 @@ const ComplaintList = () => {
     }
   };
 
-  // ✅ Reset page to 0 when filter changes
   useEffect(() => {
     setPage(0);
   }, [filterType]);
 
-  // ✅ Include filterType in dependency array so it refetches when filter changes
   useEffect(() => {
     fetchComplaints();
   }, [filterType, page, rowsPerPage]);
@@ -92,11 +90,15 @@ const ComplaintList = () => {
     }
   };
 
- 
+  // Only show agent or doctor column based on filter
+  const showAgent = filterType === "agent";
+  const showDoctor = filterType === "doctor";
+
+  // Filter complaints based on presence of doctor_id or agent_id
   const filteredComplaints = complaints.filter((complaint) => {
-    if (filterType === "doctor") return !!complaint.doctor;
-    if (filterType === "agent") return !!complaint.agent;
-    return true; // 'all'
+    if (filterType === "doctor") return !!complaint.doctor_id;
+    if (filterType === "agent") return !!complaint.agent_id;
+    return true;
   });
 
   return (
@@ -113,7 +115,6 @@ const ComplaintList = () => {
             label="Filter By"
             onChange={(e) => setFilterType(e.target.value)}
           >
-            <MenuItem value="all">All</MenuItem>
             <MenuItem value="doctor">Doctor</MenuItem>
             <MenuItem value="agent">Agent</MenuItem>
           </Select>
@@ -134,8 +135,8 @@ const ComplaintList = () => {
                   <TableCell>Appointment ID</TableCell>
                   <TableCell>Complaint Type</TableCell>
                   <TableCell>Description</TableCell>
-                  <TableCell>Doctor</TableCell>
-                  <TableCell>Agent</TableCell>
+                  {showDoctor && <TableCell>Doctor</TableCell>}
+                  {showAgent && <TableCell>Agent</TableCell>}
                   <TableCell>Status</TableCell>
                   <TableCell>Actions</TableCell>
                 </TableRow>
@@ -144,7 +145,11 @@ const ComplaintList = () => {
                 {filteredComplaints.map((complaint, idx) => (
                   <TableRow key={complaint.id || idx}>
                     <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
-                    <TableCell>{complaint.appointment_id || "-"}</TableCell>
+                    <TableCell>
+                      {complaint.appointment_id ||
+                       complaint.appointment?.id ||
+                       "-"}
+                    </TableCell>
                     <TableCell>{complaint.complaint_type?.name || "-"}</TableCell>
                     <TableCell
                       sx={{
@@ -160,8 +165,18 @@ const ComplaintList = () => {
                     >
                       {complaint.description}
                     </TableCell>
-                    <TableCell>{complaint.doctor?.name || "-"}</TableCell>
-                    <TableCell>{complaint.agent?.name || "-"}</TableCell>
+                    {showDoctor && (
+                      <TableCell>
+                        {complaint.doctor?.name ||
+                         "-"}
+                      </TableCell>
+                    )}
+                    {showAgent && (
+                      <TableCell>
+                        {complaint.agent?.name ||
+                         "-"}
+                      </TableCell>
+                    )}
                     <TableCell>
                       {complaint.is_resolved ? (
                         <Chip label="Resolved" color="success" size="small" />
