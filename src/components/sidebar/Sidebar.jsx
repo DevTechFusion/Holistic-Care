@@ -39,7 +39,7 @@ const Sidebar = () => {
       let token = localStorage.getItem("token");
       await logout(token);
       localStorage.removeItem("token");
-      navigate("/login");
+      window.location.href = "/login"; 
     } catch (error) {
       console.error("Logout failed:", error);
     }

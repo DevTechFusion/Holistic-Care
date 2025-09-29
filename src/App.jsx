@@ -201,13 +201,39 @@ const ProtectedRoute = () => {
 // App Routes Component
 const AppRoutes = () => {
   const { isAuthenticated, loading, user } = useAuth();
-  console.log(user);
   let role = null;
   if (user) role = user?.roles[0]?.name ?? null;
 
+  if (loading) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="100vh"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
     <Routes>
-      <Route path="/" element={<ProtectedRoute />} />
+      <Route
+        path="/"
+        element={
+          <Navigate
+            to={
+              role === "super_admin"
+                ? "/dashboard"
+                : role === "managerly"
+                ? "/manager/dashboard"
+                : "/agent/dashboard"
+            }
+            replace
+          />
+        }
+      />
       <Route element={<NoAuthLayout />}>
         <Route path="/login" element={<LoginPage />} />
       </Route>
@@ -215,25 +241,9 @@ const AppRoutes = () => {
         {routes
           .filter((route) => route.role === role)
           .map((route) => (
-            <>
-              <Route path={route.path} element={route.element} />
-            </>
+            <Route key={route.path} path={route.path} element={route.element} />
           ))}
-        <Route
-          path="*"
-          element={
-            <Navigate
-              to={
-                role === "super_admin"
-                  ? "/dashboard"
-                  : role === "managerly"
-                  ? "/manager/dashboard"
-                  : "/agent/dashboard"
-              }
-              replace
-            />
-          }
-        />
+        <Route path="*" element={<div>404 - Page Not Found</div>} />
       </Route>
     </Routes>
   );

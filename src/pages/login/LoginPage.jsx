@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Grid,
   Typography,
@@ -33,6 +33,7 @@ const Logo = () => (
 
 const LoginForm = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -55,7 +56,17 @@ const LoginForm = () => {
       if (result?.status === "success") {
         enqueueSnackbar("Login successful", { variant: "success" });
         localStorage.setItem("token", result.data.token);
-        navigate("/dashboard");
+        const { user } = result.data; // Make sure your login API returns user info
+
+        let from = location.state?.from?.pathname;
+        if (!from) {
+          const role = user?.roles?.[0]?.name;
+          if (role === "super_admin") from = "/dashboard";
+          else if (role === "managerly") from = "/manager/dashboard";
+          else if (role === "agent") from = "/agent/dashboard";
+          else from = "/dashboard"; // fallback
+        }
+        navigate(from, { replace: true });
       } else {
         enqueueSnackbar(result?.message || "Login failed", {
           variant: "error",
@@ -133,9 +144,9 @@ const LoginForm = () => {
             className="remember-label"
           />
 
-          <Link href="#" className="forgot-password" underline="none">
+          {/* <Link href="#" className="forgot-password" underline="none">
             Forgot Password?
-          </Link>
+          </Link> */}
         </Box>
 
         <Button

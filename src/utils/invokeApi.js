@@ -34,7 +34,7 @@ export async function invokeApi({
   try {
     const results = await axios(reqObj);
 
-    // ✅ If this was a blob request, return full response so we can access headers
+   
     if (responseType === "blob") {
       return results;
     }

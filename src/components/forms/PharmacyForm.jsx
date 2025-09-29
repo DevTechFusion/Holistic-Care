@@ -15,7 +15,7 @@ import { createPharmacy, updatePharmacy } from "../../DAL/pharmacy";
 import { getRoles } from "../../DAL/modelRoles";
 import dayjs from "dayjs";
 import GenericFormModal from "./GenericForm";
-import { useAuth } from "../../contexts/AuthContext"; // <-- Add this import
+import { useAuth } from "../../contexts/AuthContext"; 
 
 // Constants moved outside component for better performance
 const STATUS_OPTIONS = ["pending", "completed", "cancelled"];

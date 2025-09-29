@@ -1,15 +1,13 @@
 import { Box, CircularProgress } from "@mui/material";
 import React from "react";
 import Topbar from "../components/topbar/Topbar";
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import Sidebar from "../components/sidebar/Sidebar";
 import { useAuth } from "../contexts/AuthContext";
 
 const AuthLayout = () => {
   const { user, loading, isAuthenticated } = useAuth();
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -25,6 +23,11 @@ const AuthLayout = () => {
       </div>
     );
   }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
   return (
     <Box sx={{ display: "flex" }}>
       <Sidebar />
