@@ -32,7 +32,12 @@ Route::middleware(['sanctum.token', 'auth:sanctum'])->group(function () {
     Route::get('categories/select', [App\Http\Controllers\Api\CategoryController::class, 'getCategoriesForSelect']);
 
     // Source management routes
+    // Route::get('sources/select', [App\Http\Controllers\Api\SourceController::class, 'getSourcesForSelect'])->middleware(PermissionHelper::actionPermission('view', 'Sources'));
+    // Route::get('sources/{id}/can-delete', [App\Http\Controllers\Api\SourceController::class, 'canDelete'])->middleware(PermissionHelper::actionPermission('view', 'Sources'));
+    // Route::apiResource('sources', App\Http\Controllers\Api\SourceController::class)->middleware(PermissionHelper::resourcePermissions('Sources'));
+
     Route::get('sources/select', [App\Http\Controllers\Api\SourceController::class, 'getSourcesForSelect']);
+    Route::get('sources/{id}/can-delete', [App\Http\Controllers\Api\SourceController::class, 'canDelete']);
     Route::apiResource('sources', App\Http\Controllers\Api\SourceController::class);
 
     // Remarks1 management routes
@@ -44,7 +49,12 @@ Route::middleware(['sanctum.token', 'auth:sanctum'])->group(function () {
     Route::apiResource('remarks2', App\Http\Controllers\Api\Remarks2Controller::class);
 
     // Status management routes
+    // Route::get('statuses/select', [App\Http\Controllers\Api\StatusController::class, 'getStatusesForSelect'])->middleware(PermissionHelper::actionPermission('view', 'Statuses'));
+    // Route::get('statuses/{id}/can-delete', [App\Http\Controllers\Api\StatusController::class, 'canDelete'])->middleware(PermissionHelper::actionPermission('view', 'Statuses'));
+    // Route::apiResource('statuses', App\Http\Controllers\Api\StatusController::class)->middleware(PermissionHelper::resourcePermissions('Statuses')); 
+
     Route::get('statuses/select', [App\Http\Controllers\Api\StatusController::class, 'getStatusesForSelect']);
+    Route::get('statuses/{id}/can-delete', [App\Http\Controllers\Api\StatusController::class, 'canDelete']);
     Route::apiResource('statuses', App\Http\Controllers\Api\StatusController::class);
 
     // Complaint Type management routes

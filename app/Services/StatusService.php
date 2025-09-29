@@ -69,6 +69,42 @@ class StatusService extends CrudeService
     }
 
     /**
+     * Check if status is being used by appointments
+     */
+    public function isStatusInUse($id)
+    {
+        return \App\Models\Appointment::where('status_id', $id)->exists();
+    }
+
+    /**
+     * Get count of appointments using this status
+     */
+    public function getAppointmentsCount($id)
+    {
+        return \App\Models\Appointment::where('status_id', $id)->count();
+    }
+
+    /**
+     * Delete status with validation
+     */
+    public function deleteStatusWithValidation($id)
+    {
+        $status = $this->_find($id);
+        
+        if (!$status) {
+            throw new \Exception('Status not found');
+        }
+
+        $appointmentsCount = $this->getAppointmentsCount($id);
+        
+        if ($appointmentsCount > 0) {
+            throw new \Exception("Cannot delete status '{$status->name}'. It is being used by {$appointmentsCount} appointment(s). Please reassign or delete the appointments first.");
+        }
+
+        return $this->_delete($id);
+    }
+
+    /**
      * Get statuses for select dropdown
      */
     public function getStatusesForSelect()

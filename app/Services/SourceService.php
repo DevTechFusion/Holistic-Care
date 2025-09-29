@@ -69,6 +69,42 @@ class SourceService extends CrudeService
     }
 
     /**
+     * Check if source is being used by appointments
+     */
+    public function isSourceInUse($id)
+    {
+        return \App\Models\Appointment::where('source_id', $id)->exists();
+    }
+
+    /**
+     * Get count of appointments using this source
+     */
+    public function getAppointmentsCount($id)
+    {
+        return \App\Models\Appointment::where('source_id', $id)->count();
+    }
+
+    /**
+     * Delete source with validation
+     */
+    public function deleteSourceWithValidation($id)
+    {
+        $source = $this->_find($id);
+        
+        if (!$source) {
+            throw new \Exception('Source not found');
+        }
+
+        $appointmentsCount = $this->getAppointmentsCount($id);
+        
+        if ($appointmentsCount > 0) {
+            throw new \Exception("Cannot delete source '{$source->name}'. It is being used by {$appointmentsCount} appointment(s). Please reassign or delete the appointments first.");
+        }
+
+        return $this->_delete($id);
+    }
+
+    /**
      * Get sources for select dropdown
      */
     public function getSourcesForSelect()
