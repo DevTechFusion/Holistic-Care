@@ -32,8 +32,8 @@ Route::middleware(['sanctum.token', 'auth:sanctum'])->group(function () {
     Route::get('categories/select', [App\Http\Controllers\Api\CategoryController::class, 'getCategoriesForSelect']);
 
     // Source management routes
-    Route::apiResource('sources', App\Http\Controllers\Api\SourceController::class);
     Route::get('sources/select', [App\Http\Controllers\Api\SourceController::class, 'getSourcesForSelect']);
+    Route::apiResource('sources', App\Http\Controllers\Api\SourceController::class);
 
     // Remarks1 management routes
     Route::get('remarks1/select', [App\Http\Controllers\Api\Remarks1Controller::class, 'getRemarks1ForSelect']);
