@@ -43,6 +43,24 @@ class CategorySeeder extends Seeder
             [
                 'name' => 'Oladoc',
             ],
+            [
+                'name' => 'Instagram',
+            ],
+            [
+                'name' => 'Facebook',
+            ],
+            [
+                'name' => 'Google',
+            ],
+            [
+                'name' => 'Referral',
+            ],
+            [
+                'name' => 'Website',
+            ],
+            [
+                'name' => 'Direct',
+            ],
         ];
 
         foreach ($categories as $category) {
