@@ -72,7 +72,9 @@ const PharmacyList = () => {
   const handleCopyDescription = async () => {
     try {
       await navigator.clipboard.writeText(selectedDescription);
-      enqueueSnackbar("Description copied to clipboard!", { variant: "success" });
+      enqueueSnackbar("Description copied to clipboard!", {
+        variant: "success",
+      });
     } catch (err) {
       enqueueSnackbar("Failed to copy description", { variant: "error" });
     }
@@ -90,7 +92,9 @@ const PharmacyList = () => {
       if (filters.start_date || filters.end_date || filters.search) {
         res = await getFilteredPharmacy(
           filters.agent_id || "",
-          filters.start_date ? dayjs(filters.start_date).format("YYYY-MM-DD") : "",
+          filters.start_date
+            ? dayjs(filters.start_date).format("YYYY-MM-DD")
+            : "",
           filters.end_date ? dayjs(filters.end_date).format("YYYY-MM-DD") : "",
           filters.search || ""
         );
@@ -123,7 +127,9 @@ const PharmacyList = () => {
     setLoading(true);
     try {
       await deletePharmacy(id);
-      enqueueSnackbar("Pharmacy record deleted successfully", { variant: "success" });
+      enqueueSnackbar("Pharmacy record deleted successfully", {
+        variant: "success",
+      });
       fetchPharmacies();
     } catch (err) {
       console.error("Failed to delete pharmacy record", err);
@@ -148,13 +154,22 @@ const PharmacyList = () => {
   return (
     <Box p={3}>
       {/* Header */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
         <Typography variant="h4" fontWeight={600}>
           Pharmacy List
         </Typography>
 
         <Stack direction="row" spacing={2} alignItems="center">
-          <Button variant="contained" sx={{ fontWeight: "bold" }} disableElevation>
+          <Button
+            variant="contained"
+            sx={{ fontWeight: "bold" }}
+            disableElevation
+          >
             Total Incentive: {Number(totalIncentive).toFixed(2)}
           </Button>
           <Button variant="contained" onClick={() => setOpenModal(true)}>
@@ -185,78 +200,82 @@ const PharmacyList = () => {
             <CircularProgress />
           </Box>
         ) : (
-          <Table stickyHeader>
-            <TableHead>
-              <TableRow>
-                <TableCell>Sr#</TableCell>
-                <TableCell>Date</TableCell>
-                <TableCell>Patient</TableCell>
-                <TableCell>Phone</TableCell>
-                <TableCell>Agent</TableCell>
-                <TableCell>Description</TableCell>
-                <TableCell>Amount</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {data.length > 0 ? (
-                data.map((item, idx) => (
-                  <TableRow key={item.id}>
-                    <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
-                    <TableCell>{dayjs(item.date).format("DD-MM-YYYY")}</TableCell>
-                    <TableCell>{item.patient_name}</TableCell>
-                    <TableCell>{item.phone_number}</TableCell>
-                    <TableCell>{item.agent?.name || "—"}</TableCell>
-                    <TableCell
-                      sx={{
-                        maxWidth: 250,
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        cursor: "pointer",
-                        color: "primary.main",
-                      }}
-                      onClick={() => handleOpenDescription(item.description)}
-                      title="Click to view full description"
-                    >
-                      {item.description || "—"}
-                    </TableCell>
-                    <TableCell>{item.amount}</TableCell>
-                    <TableCell>{item.status}</TableCell>
-                    <TableCell>
-                      <ActionButtons
-                        onEdit={() => handleEdit(item)}
-                        onDelete={() => handleDelete(item.id)}
-                      />
+          <>
+            <Table stickyHeader>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Sr#</TableCell>
+                  <TableCell>Date</TableCell>
+                  <TableCell>Patient</TableCell>
+                  <TableCell>Phone</TableCell>
+                  <TableCell>Agent</TableCell>
+                  <TableCell>Description</TableCell>
+                  <TableCell>Amount</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {data.length > 0 ? (
+                  data.map((item, idx) => (
+                    <TableRow key={item.id}>
+                      <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
+                      <TableCell>
+                        {dayjs(item.date).format("DD-MM-YYYY")}
+                      </TableCell>
+                      <TableCell>{item.patient_name}</TableCell>
+                      <TableCell>{item.phone_number}</TableCell>
+                      <TableCell>{item.agent?.name || "—"}</TableCell>
+                      <TableCell
+                        sx={{
+                          maxWidth: 250,
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          cursor: "pointer",
+                          color: "primary.main",
+                        }}
+                        onClick={() => handleOpenDescription(item.description)}
+                        title="Click to view full description"
+                      >
+                        {item.description || "—"}
+                      </TableCell>
+                      <TableCell>{item.amount}</TableCell>
+                      <TableCell>{item.status}</TableCell>
+                      <TableCell>
+                        <ActionButtons
+                          onEdit={() => handleEdit(item)}
+                          onDelete={() => handleDelete(item.id)}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={11} align="center">
+                      No pharmacy records found
                     </TableCell>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={11} align="center">
-                    No pharmacy records found
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                )}
+              </TableBody>
+            </Table>
+
+            {/* Pagination */}
+            <TablePagination
+              component="div"
+              count={total}
+              page={page}
+              onPageChange={(_, newPage) => setPage(newPage)}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={(e) => {
+                setRowsPerPage(parseInt(e.target.value, 10));
+                setPage(0);
+              }}
+              rowsPerPageOptions={[5, 15, 25, 50, 100]}
+            />
+          </>
         )}
       </Paper>
-
-      {/* Pagination */}
-      <TablePagination
-        component="div"
-        count={total}
-        page={page}
-        onPageChange={(_, newPage) => setPage(newPage)}
-        rowsPerPage={rowsPerPage}
-        onRowsPerPageChange={(e) => {
-          setRowsPerPage(parseInt(e.target.value, 10));
-          setPage(0);
-        }}
-        rowsPerPageOptions={[5, 15, 25, 50, 100]}
-      />
 
       {/* Pharmacy Form Modal */}
       <PharmacyForm
@@ -267,10 +286,19 @@ const PharmacyList = () => {
       />
 
       {/* Description Modal */}
-      <Dialog open={descriptionModalOpen} onClose={handleCloseDescription} maxWidth="sm" fullWidth>
+      <Dialog
+        open={descriptionModalOpen}
+        onClose={handleCloseDescription}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>
           Pharmacy Description
-          <IconButton onClick={handleCopyDescription} size="small" sx={{ ml: 1 }}>
+          <IconButton
+            onClick={handleCopyDescription}
+            size="small"
+            sx={{ ml: 1 }}
+          >
             <ContentCopyIcon fontSize="small" />
           </IconButton>
         </DialogTitle>

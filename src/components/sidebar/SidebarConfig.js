@@ -9,7 +9,9 @@ import {
   ComplaintIcon,
   ProcedureIcon,
   DepartmentIcon,
-  PharmacyIcon
+  PharmacyIcon,
+  SourceIcon,
+  StatusIcon,
 } from "../../assets/icons/sidebar";
 
 const SidebarConfig = {
@@ -57,7 +59,17 @@ const SidebarConfig = {
           title: "Pharmacy List",
           icon: PharmacyIcon,
           path: "/pharmacy",
-        }
+        },
+        {
+          title: "Meta Ads Source List",
+          icon: SourceIcon,
+          path: "/sources",
+        },
+        {
+          title: "Status List",
+          icon: StatusIcon,
+          path: "/statuses",
+        },
       ],
     },
     {

@@ -9,3 +9,5 @@ export {default as ComplaintIcon} from './complaint.svg';
 export {default as ProcedureIcon} from './procedure.svg';
 export {default as DepartmentIcon} from './department.svg';
 export {default as PharmacyIcon} from './pharmacy.svg';
+export {default as SourceIcon} from './source.svg';
+export {default as StatusIcon} from './status.svg';

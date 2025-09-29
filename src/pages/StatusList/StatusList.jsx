@@ -12,16 +12,17 @@ import {
   TableBody,
   TablePagination,
 } from "@mui/material";
-import { getAllDepartments, deleteDepartment } from "../../DAL/departments";
-import CreateDepartmentModal from "../../components/forms/DepartmentForm";
+import { getAllStatuses, deleteStatus } from "../../DAL/status";
+import CreateStatusModal from "../../components/forms/StatusForm";
 import ActionButtons from "../../constants/actionButtons";
 import { useAuth } from "../../contexts/AuthContext";
-const DepartmentsPage = () => {
-  const [departments, setDepartments] = useState([]);
+
+const StatusesPage = () => {
+  const [statuses, setStatuses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
 
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(0); // TablePagination is 0-based
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [total, setTotal] = useState(0);
   const [targetItem, setTargetItem] = useState(null);
@@ -30,34 +31,34 @@ const DepartmentsPage = () => {
   const role = user?.roles?.[0]?.name ?? null;
   const isSuperAdmin = role === "super_admin";
 
-  const fetchDepartments = async () => {
+  const fetchStatuses = async () => {
     setLoading(true);
     try {
-      const res = await getAllDepartments(page + 1, rowsPerPage);
-      setDepartments(res?.data?.data || []);
+      const res = await getAllStatuses(page + 1, rowsPerPage); // API expects 1-based page
+      setStatuses(res?.data?.data || []);
       setTotal(res?.data?.total || 0);
     } catch (err) {
-      console.error("Failed to fetch departments", err);
+      console.error("Failed to fetch statuses", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchDepartments();
+    fetchStatuses();
   }, [page, rowsPerPage]);
 
   const handleDelete = async (id) => {
     try {
-      await deleteDepartment(id);
-      fetchDepartments();
+      await deleteStatus(id);
+      fetchStatuses();
     } catch (err) {
       console.error("Delete failed", err);
     }
   };
 
-  const handleEdit = (dept) => {
-    setTargetItem(dept);
+  const handleEdit = (status) => {
+    setTargetItem(status);
     setOpenModal(true);
   };
 
@@ -70,10 +71,10 @@ const DepartmentsPage = () => {
         alignItems="center"
         mb={2}
       >
-        <Typography variant="h5">Departments</Typography>
+        <Typography variant="h5">Statuses List</Typography>
         {isSuperAdmin && (
           <Button variant="contained" onClick={() => setOpenModal(true)}>
-            + Add Department
+            + Add Status
           </Button>
         )}
       </Box>
@@ -95,15 +96,15 @@ const DepartmentsPage = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {departments.map((dept, idx) => (
-                  <TableRow key={dept.id}>
+                {statuses.map((status, idx) => (
+                  <TableRow key={status.id}>
                     <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
-                    <TableCell>{dept.name}</TableCell>
+                    <TableCell>{status.name}</TableCell>
                     {isSuperAdmin && (
                       <TableCell>
                         <ActionButtons
-                          onEdit={() => handleEdit(dept)}
-                          onDelete={() => handleDelete(dept.id)}
+                          onEdit={() => handleEdit(status)}
+                          onDelete={() => handleDelete(status.id)}
                         />
                       </TableCell>
                     )}
@@ -120,7 +121,7 @@ const DepartmentsPage = () => {
               onPageChange={(e, newPage) => setPage(newPage)}
               rowsPerPage={rowsPerPage}
               onRowsPerPageChange={(e) => {
-                setRowsPerPage(parseInt(e.target.value));
+                setRowsPerPage(parseInt(e.target.value, 10));
                 setPage(0);
               }}
               rowsPerPageOptions={[5, 15, 25, 50, 100]}
@@ -130,13 +131,13 @@ const DepartmentsPage = () => {
       </Paper>
 
       {/* Modal */}
-      <CreateDepartmentModal
+      <CreateStatusModal
         isEditing={!!targetItem}
         data={targetItem}
         open={openModal}
         onClose={() => {
           setOpenModal(false);
-          fetchDepartments();
+          fetchStatuses();
           setTargetItem(null);
         }}
       />
@@ -144,4 +145,4 @@ const DepartmentsPage = () => {
   );
 };
 
-export default DepartmentsPage;
+export default StatusesPage;

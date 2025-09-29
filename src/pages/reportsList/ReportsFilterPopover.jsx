@@ -1,20 +1,19 @@
 import { useEffect, useState } from "react";
 import {
   Popover,
-  Box,
-  Button,
-  TextField,
   Typography,
-  Stack,
-  Autocomplete,
   Divider,
- 
+  Stack,
+  TextField,
+  Autocomplete,
+  MenuItem,
+  Button,
 } from "@mui/material";
-import { getDoctors } from "../../DAL/doctors";
-import { getProcedures } from "../../DAL/procedure";
-import { getAllDepartments } from "../../DAL/departments";
-import { getUsers } from "../../DAL/users";
-import { getAllStatuses } from "../../DAL/status";
+import { getDoctorsList } from "../../DAL/doctors";
+import { getProceduresList } from "../../DAL/procedure";
+import { getDepartmentsList } from "../../DAL/departments";
+import { getAgentList } from "../../DAL/users";
+import { getSelectStatuses } from "../../DAL/status";
 
 const paymentModes = [
   { id: "cash", name: "Cash" },
@@ -22,13 +21,7 @@ const paymentModes = [
   { id: "card", name: "Card" },
 ];
 
-const ReportsFilterPopover = ({
-  anchorEl,
-  open,
-  onClose,
-  filters,
-  setFilters,
-}) => {
+const ReportsFilterPopover = ({ anchorEl, open, onClose, filters, setFilters }) => {
   const [doctors, setDoctors] = useState([]);
   const [agents, setAgents] = useState([]);
   const [departments, setDepartments] = useState([]);
@@ -41,22 +34,36 @@ const ReportsFilterPopover = ({
   }, [filters]);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (open) fetchData();
+  }, [open]);
 
   const fetchData = async () => {
-    const [docRes, agentRes, deptRes, procRes, statusRes] = await Promise.all([
-      getDoctors(),
-      getUsers(1, 100, "agent"),
-      getAllDepartments(),
-      getProcedures(),
-      getAllStatuses(),
-    ]);
-    setDoctors(docRes?.data?.data || []);
-    setAgents(agentRes?.data?.data || []);
-    setDepartments(deptRes?.data?.data || []);
-    setProcedures(procRes?.data?.data || []);
-    setStatuses(statusRes?.data?.data || []);
+    try {
+      const [docRes, agentRes, deptRes, procRes, statusRes] = await Promise.all([
+        getDoctorsList(),
+        getAgentList(),
+        getDepartmentsList(),
+        getProceduresList(),
+        getSelectStatuses(),
+      ]);
+
+      setDoctors(Array.isArray(docRes?.data) ? docRes.data : []);
+      setAgents(Array.isArray(agentRes?.data) ? agentRes.data : []);
+      setDepartments(Array.isArray(deptRes?.data) ? deptRes.data : []);
+      setProcedures(Array.isArray(procRes?.data) ? procRes.data : []);
+      setStatuses(
+      Array.isArray(statusRes?.data)
+        ? statusRes.data.map((s) => ({ id: s.value, name: s.label }))
+        : []
+      );
+    } catch (error) {
+      console.error("Error fetching filter data:", error);
+      setDoctors([]);
+      setAgents([]);
+      setDepartments([]);
+      setProcedures([]);
+      setStatuses([]);
+    }
   };
 
   const handleChange = (field, value) => {
@@ -88,8 +95,8 @@ const ReportsFilterPopover = ({
 
   return (
     <Popover
-      open={open}
       anchorEl={anchorEl}
+      open={open}
       onClose={onClose}
       anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
       transformOrigin={{ vertical: "top", horizontal: "left" }}
@@ -111,6 +118,7 @@ const ReportsFilterPopover = ({
         <Divider />
 
         <Stack spacing={2}>
+          {/* Date Filters */}
           <TextField
             label="Start Date"
             type="date"
@@ -128,6 +136,7 @@ const ReportsFilterPopover = ({
             fullWidth
           />
 
+          {/* Doctor Dropdown */}
           <Autocomplete
             options={doctors}
             getOptionLabel={(option) => option.name || ""}
@@ -137,44 +146,43 @@ const ReportsFilterPopover = ({
               <TextField
                 {...params}
                 label="Doctor"
-                placeholder="Type to Search Doctor"
+                placeholder="Select Doctor"
               />
             )}
             isOptionEqualToValue={(o, v) => o.id === v.id}
             fullWidth
           />
 
+          {/* Agent Dropdown */}
           <Autocomplete
             options={agents}
             getOptionLabel={(option) => option.name || ""}
             value={agents.find((a) => a.id === localFilters.agent_id) || null}
             onChange={(e, value) => handleChange("agent_id", value?.id)}
             renderInput={(params) => (
-              <TextField {...params} label="Agent" placeholder="Type to Search Agent" />
+              <TextField {...params} label="Agent" placeholder="Select Agent" />
             )}
             isOptionEqualToValue={(o, v) => o.id === v.id}
             fullWidth
           />
 
-          <Autocomplete
-            options={departments}
-            getOptionLabel={(option) => option.name || ""}
-            value={
-              departments.find((d) => d.id === localFilters.department_id) ||
-              null
-            }
-            onChange={(e, value) => handleChange("department_id", value?.id)}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Department"
-                placeholder="Type to Search Departm..."
-              />
-            )}
-            isOptionEqualToValue={(o, v) => o.id === v.id}
+          {/* Department Dropdown */}
+          <TextField
+            select
+            label="Department"
+            value={localFilters.department_id}
+            onChange={(e) => handleChange("department_id", e.target.value)}
             fullWidth
-          />
+          >
+            <MenuItem value="">All Departments</MenuItem>
+            {departments.map((d) => (
+              <MenuItem key={d.id} value={d.id}>
+                {d.name}
+              </MenuItem>
+            ))}
+          </TextField>
 
+          {/* Procedure Dropdown */}
           <Autocomplete
             options={procedures}
             getOptionLabel={(option) => option.name || ""}
@@ -186,13 +194,14 @@ const ReportsFilterPopover = ({
               <TextField
                 {...params}
                 label="Procedure"
-                placeholder="Type to Search Proced..."
+                placeholder="Select Procedure"
               />
             )}
             isOptionEqualToValue={(o, v) => o.id === v.id}
             fullWidth
           />
 
+          {/* Status Dropdown */}
           <Autocomplete
             options={statuses}
             getOptionLabel={(option) => option.name || ""}
@@ -206,9 +215,9 @@ const ReportsFilterPopover = ({
               />
             )}
             isOptionEqualToValue={(o, v) => o.id === v.id}
-            fullWidth
           />
 
+          {/* Payment Mode Dropdown */}
           <Autocomplete
             options={paymentModes}
             getOptionLabel={(option) => option.name || ""}
@@ -229,11 +238,12 @@ const ReportsFilterPopover = ({
           />
         </Stack>
 
+        {/* Buttons */}
         <Stack direction="row" spacing={2} justifyContent="flex-end" mt={2}>
-          <Button onClick={handleClear} variant="outlined" color="error">
+          <Button variant="outlined" color="error" onClick={handleClear}>
             Clear
           </Button>
-          <Button onClick={handleApply} variant="contained" color="primary">
+          <Button variant="contained" color="primary" onClick={handleApply}>
             Apply
           </Button>
         </Stack>

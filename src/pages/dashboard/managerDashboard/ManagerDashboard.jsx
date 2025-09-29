@@ -17,7 +17,7 @@ import {
   MistakesCount,
   WelcomeSection,
 } from "../../../components/dashboard";
-import { TrendingUp, FilterList } from "@mui/icons-material";
+import {  FilterList } from "@mui/icons-material";
 
 const ManagerDashboard = () => {
   const [filter, setFilter] = useState("weekly");
@@ -26,7 +26,7 @@ const ManagerDashboard = () => {
   return (
     <Box sx={{ p: { xs: 2, sm: 3 } }}>
       {/* Header Section */}
-      <Paper 
+      {/* <Paper 
         elevation={0}
         sx={{ 
           p: 3, 
@@ -35,7 +35,7 @@ const ManagerDashboard = () => {
           background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(theme.palette.primary.light, 0.1)} 100%)`,
           border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
         }}
-      >
+      > */}
         <Stack
           direction={{ xs: "column", sm: "row" }}
           justifyContent="space-between"
@@ -48,7 +48,7 @@ const ManagerDashboard = () => {
         
             
             <Stack direction="row" alignItems="center" spacing={1}>
-              <FilterList fontSize="small" sx={{ color: "text.secondary" }} />
+              {/* <FilterList fontSize="small" sx={{ color: "text.secondary" }} /> */}
               <Select
                 size="small"
                 value={filter}
@@ -74,7 +74,7 @@ const ManagerDashboard = () => {
             </Stack>
           </Stack>
         </Stack>
-      </Paper>
+      {/* </Paper> */}
 
       {/* Stats Cards Section */}
       <Box sx={{ mb: 4 }}>
@@ -84,7 +84,7 @@ const ManagerDashboard = () => {
       {/* Charts Section */}
       <Grid container spacing={3}>
         <Grid item xs={12} lg={8}>
-          <Paper 
+          {/* <Paper 
             elevation={0}
             sx={{ 
               p: 3, 
@@ -92,16 +92,16 @@ const ManagerDashboard = () => {
               borderRadius: 3,
               border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
             }}
-          >
-            <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
+          > */}
+            {/* <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
               Mistakes Overview
-            </Typography>
+            </Typography> */}
             <MistakesCount filter={filter} />
-          </Paper>
+          {/* </Paper> */}
         </Grid>
         
         <Grid item xs={12} lg={4}>
-          <Paper 
+          {/* <Paper 
             elevation={0}
             sx={{ 
               p: 3, 
@@ -109,12 +109,12 @@ const ManagerDashboard = () => {
               borderRadius: 3,
               border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
             }}
-          >
-            <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
+          > */}
+            {/* <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
               Recent Mistakes
-            </Typography>
+            </Typography> */}
             <MistakesLog filter={filter} />
-          </Paper>
+          {/* </Paper> */}
         </Grid>
       </Grid>
     </Box>

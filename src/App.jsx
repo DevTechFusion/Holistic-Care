@@ -21,6 +21,8 @@ import AppointmentsList from "./pages/appointmentList/AppointmentList";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import AuthLayout from "./layouts/AuthLayout";
 import ComplaintList from "./pages/complaintList/ComplaintList";
+import SourcesPage from "./pages/MetaSourceList/MetaSourceList";
+import StatusesPage from "./pages/StatusList/StatusList";
 import AgentDashboard from "./pages/dashboard/agentDashboard/AgentDashboard";
 import ManagerDashboard from "./pages/dashboard/managerDashboard/ManagerDashboard";
 import NoAuthLayout from "./layouts/NoAuth";
@@ -79,6 +81,16 @@ const routes = [
   {
     path: "/pharmacy",
     element: <PharmacyList />,
+    role: "super_admin",
+  },
+  {
+    path: "/sources",
+    element: <SourcesPage />,
+    role: "super_admin",
+  },
+  {
+    path: "/statuses",
+    element: <StatusesPage />,
     role: "super_admin",
   },
 

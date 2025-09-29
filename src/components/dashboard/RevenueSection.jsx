@@ -12,7 +12,7 @@ import { getAdminDashboard } from "../../DAL/dashboard";
 import RevenueTable from "./RevenueTable";
 import RevenueCharts from "./RevenueCharts";
 
-const RevenueSection = () => {
+const RevenueSection = ({ filter}) => {
   const [revenueData, setRevenueData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -32,7 +32,7 @@ const RevenueSection = () => {
         setLoading(true);
         setError(null);
 
-        const response = await getAdminDashboard();
+        const response = await getAdminDashboard(filter);
         const rows = response?.data?.revenue?.rows ?? [];
         setRevenueData(rows);
       } catch (err) {
@@ -43,7 +43,7 @@ const RevenueSection = () => {
     };
 
     fetchRevenueData();
-  }, []);
+  }, [filter]);
 
   const topFiveRevenue = useMemo(
     () => [...revenueData].sort((a, b) => (b.revenue ?? 0) - (a.revenue ?? 0)).slice(0, 5),

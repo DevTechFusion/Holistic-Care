@@ -145,7 +145,7 @@ const ReportsPage = () => {
     <Box p={3}>
       {/* Header */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Typography variant="h5">Reports</Typography>
+        <Typography variant="h5">Reports List</Typography>
         <Box display="flex" gap={2}>
           <Button
             variant="outlined"
@@ -214,7 +214,7 @@ const ReportsPage = () => {
                         <TableCell>{rep.appointment?.patient_name}</TableCell>
                         <TableCell>{rep.appointment?.contact_number}</TableCell>
                         <TableCell>{rep.appointment?.doctor?.name}</TableCell>
-                        <TableCell>{rep.appointment?.procedure?.name}</TableCell>
+                        <TableCell>{rep.appointment?.procedures?.map((p) => p.name).join(", ")}</TableCell>
                         <TableCell>{rep.appointment?.department?.name}</TableCell>
                         <TableCell>{rep.appointment?.agent?.name}</TableCell>
                         <TableCell>{rep.appointment?.source?.name}</TableCell>
