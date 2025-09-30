@@ -10,6 +10,7 @@ import {
   Alert,
   Autocomplete,
   TextField,
+  Paper,
 } from "@mui/material";
 import { getDoctors, getDoctorsByAvailability } from "../../DAL/doctors";
 
@@ -30,29 +31,29 @@ const DaySchedule = ({ day, schedule }) => {
   return (
     <Grid item xs={12} sm={6} md={4}>
       <Box
-        p={2}
-        border={1}
-        borderColor="grey.200"
-        borderRadius={2}
-        textAlign="center"
         sx={{
-          bgcolor: isAvailable ? "success.light" : "grey.100",
-          transition: "all 0.3s ease",
-          "&:hover": {
-            boxShadow: 3,
-          },
+          p: 2.5,
+          textAlign: "left",
+          minHeight: 80,
         }}
       >
         <Typography
-          variant="subtitle1"
-          fontWeight="bold"
-          color={isAvailable ? "success.dark" : "text.secondary"}
+          variant="body1"
+          sx={{
+            fontWeight: 600,
+            color: "#2c3e50",
+            mb: 0.5,
+            fontSize: "0.95rem",
+          }}
         >
           {day}
         </Typography>
         <Typography
           variant="body2"
-          color={isAvailable ? "success.dark" : "text.secondary"}
+          sx={{
+            color: isAvailable ? "#7f8c8d" : "#bdc3c7",
+            fontSize: "0.9rem",
+          }}
         >
           {displayTime}
         </Typography>
@@ -121,8 +122,17 @@ const DoctorAvailabilityCard = () => {
   }
 
   return (
-    <Card sx={{ maxWidth: 900, mx: "auto", borderRadius: 3, boxShadow: 3 }}>
-      <CardContent>
+    <Paper 
+      elevation={0}
+      sx={{ 
+        maxWidth: 900, 
+        mx: "auto", 
+        borderRadius: 2,
+        border: "1px solid #e0e0e0",
+        backgroundColor: "#ffffff",
+      }}
+    >
+      <CardContent sx={{ p: 3 }}>
         {/* Header */}
         <Box
           display="flex"
@@ -132,7 +142,14 @@ const DoctorAvailabilityCard = () => {
           flexWrap="wrap"
           gap={2}
         >
-          <Typography variant="h6" fontWeight="bold">
+          <Typography 
+            variant="h5" 
+            sx={{
+              fontWeight: 600,
+              color: "#2c3e50",
+              fontSize: "1.25rem",
+            }}
+          >
             Doctor Availability
           </Typography>
 
@@ -142,25 +159,80 @@ const DoctorAvailabilityCard = () => {
             value={selectedDoctor}
             onChange={(_, value) => setSelectedDoctor(value)}
             loading={loadingDoctors}
-            sx={{ minWidth: 250 }}
+            size="small"
+            sx={{ 
+              minWidth: 200,
+              "& .MuiOutlinedInput-root": {
+                borderRadius: 1,
+                backgroundColor: "#f8f9fa",
+                "& fieldset": {
+                  borderColor: "#dee2e6",
+                },
+                "&:hover fieldset": {
+                  borderColor: "#adb5bd",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "#6c757d",
+                },
+              },
+            }}
             renderInput={(params) => (
               <TextField
                 {...params}
-                size="small"
-                label="Select Doctor"
-                placeholder="Search doctor..."
+                placeholder="Select Doctor"
+                sx={{
+                  "& .MuiInputBase-input": {
+                    fontSize: "0.9rem",
+                  },
+                }}
               />
             )}
           />
         </Box>
 
-        {/* Loading Availability */}
+        {/* Availability Grid */}
         {loadingAvailability ? (
-          <Box display="flex" justifyContent="center" p={3}>
-            <CircularProgress size={28} />
+          <Box display="flex" justifyContent="center" p={4}>
+            <CircularProgress size={28} sx={{ color: "#6c757d" }} />
           </Box>
         ) : (
-          <Grid container spacing={2}>
+          <Grid 
+            container 
+            sx={{
+              "& .MuiGrid-item": {
+                borderRight: "1px solid #f0f0f0",
+                borderBottom: "1px solid #f0f0f0",
+                "&:nth-of-type(3n)": {
+                  borderRight: "none",
+                },
+                "&:nth-last-of-type(-n+3)": {
+                  borderBottom: "none",
+                },
+                // For small screens
+                "@media (max-width: 600px)": {
+                  borderRight: "none",
+                  "&:not(:last-child)": {
+                    borderBottom: "1px solid #f0f0f0",
+                  },
+                  "&:last-child": {
+                    borderBottom: "none",
+                  },
+                },
+                // For medium screens
+                "@media (min-width: 600px) and (max-width: 900px)": {
+                  "&:nth-of-type(2n)": {
+                    borderRight: "none",
+                  },
+                  "&:nth-of-type(2n+1)": {
+                    borderRight: "1px solid #f0f0f0",
+                  },
+                  "&:nth-last-of-type(-n+2)": {
+                    borderBottom: "none",
+                  },
+                },
+              },
+            }}
+          >
             {DAYS.map((day) => (
               <DaySchedule
                 key={day}
@@ -171,7 +243,7 @@ const DoctorAvailabilityCard = () => {
           </Grid>
         )}
       </CardContent>
-    </Card>
+    </Paper>
   );
 };
 

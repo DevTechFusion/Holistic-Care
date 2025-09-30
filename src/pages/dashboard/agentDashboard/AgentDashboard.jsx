@@ -80,17 +80,17 @@ const AgentDashboard = () => {
         </Stack>
 
         {/* Dashboard Content */}
-        <Grid container spacing={4}>
-          <Grid item xs={12} md={4}>
+        
+         <Box sx={{ mt: 4, mb: 4 }}>
             <AgentStatsCards filter={filter} />
-          </Grid>
+          </Box>
           <Grid item xs={12} md={5}>
             <AgentAppointmentLeaderboard filter={filter} />
           </Grid>
           <Grid item xs={12} md={8}>
             <DoctorsAvailabilityCard filter={filter} />
           </Grid>
-        </Grid>
+        
       </Box>
     </div>
   );

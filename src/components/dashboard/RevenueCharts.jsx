@@ -31,7 +31,7 @@ const RevenueCharts = ({ topFiveRevenue, topFiveBookings, topFiveIncentive }) =>
       {
         label: labelKey,
         data: dataset.map((row) => row[labelKey] ?? 0),
-        backgroundColor: ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"],
+        backgroundColor: ["#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#6366F1"],
         borderWidth: 1,
       },
     ],

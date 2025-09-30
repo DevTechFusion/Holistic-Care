@@ -43,7 +43,7 @@ const VALIDATION_RULES = {
 
 const PharmacyForm = ({ open, onClose, isEditing, data }) => {
   const { enqueueSnackbar } = useSnackbar();
-  const { user } = useAuth(); // <-- Add this line
+  const { user } = useAuth();
   const [formData, setFormData] = useState(DEFAULT_FORM_DATA);
   const [roles, setRoles] = useState([]);
   const [rolesLoading, setRolesLoading] = useState(false);
@@ -189,7 +189,7 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
     return () => {
       isMounted = false;
     };
-  }, [open]); // Remove rolesLoading dependency to prevent loops
+  }, [open]);
 
   // Handle form submission
   const handleSubmit = async () => {
@@ -208,6 +208,7 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
     try {
       const payload = {
         ...formData,
+        agent_id: isCurrentUserAgent ? String(user.id) : formData.agent_id,
         date: formData.date ? dayjs(formData.date).format("YYYY-MM-DD") : null,
       };
 
@@ -264,16 +265,6 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
     resetForm();
     onClose();
   };
-
-  // Memoized role options
-  const roleOptions = useMemo(
-    () => roles.map((role) => (
-      <MenuItem key={role.id} value={role.id}>
-        {role.name}
-      </MenuItem>
-    )),
-    [roles]
-  );
 
   return (
     <GenericFormModal
@@ -337,14 +328,6 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
                 }
               }}
             />
-            
-            {/* <TextField
-              label="Pharmacy MR Number"
-              fullWidth
-              value={formData.pharmacy_mr_number}
-              onChange={(e) => handleChange("pharmacy_mr_number", e.target.value)}
-              placeholder="MR-001234"
-            /> */}
           </Stack>
 
           <TextField
@@ -365,26 +348,32 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
           </Typography>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             {/* Agent Field */}
-            <FormControl fullWidth>
-              {/* <InputLabel>Agent</InputLabel> */}
-              {rolesLoading ? (
+            {rolesLoading ? (
+              <FormControl fullWidth>
+                <InputLabel>Agent</InputLabel>
                 <Stack direction="row" alignItems="center" spacing={1} p={2}>
                   <CircularProgress size={20} />
                   <Typography variant="body2">Loading agents...</Typography>
                 </Stack>
-              ) : rolesError ? (
+              </FormControl>
+            ) : rolesError ? (
+              <FormControl fullWidth>
+                <InputLabel>Agent</InputLabel>
                 <Typography color="error" variant="body2" p={2}>
                   {rolesError}
                 </Typography>
-              ) : isCurrentUserAgent && user ? (
-                <TextField
-                  label="Agent"
-                  fullWidth
-                  value={user.name || "Current User"}
-                  disabled
-                  helperText="Automatically set to current agent"
-                />
-              ) : (
+              </FormControl>
+            ) : isCurrentUserAgent && user ? (
+              <TextField
+                label="Agent"
+                fullWidth
+                value={user.name || "Current User"}
+                disabled
+                helperText="Automatically set to current agent"
+              />
+            ) : (
+              <FormControl fullWidth error={!!errors.agent_id}>
+                <InputLabel>Agent</InputLabel>
                 <Select
                   value={formData.agent_id}
                   onChange={(e) => handleChange("agent_id", e.target.value)}
@@ -403,8 +392,13 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
                     <MenuItem disabled>No agents available</MenuItem>
                   )}
                 </Select>
-              )}
-            </FormControl>
+                {errors.agent_id && (
+                  <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 2 }}>
+                    {errors.agent_id}
+                  </Typography>
+                )}
+              </FormControl>
+            )}
 
             <FormControl fullWidth>
               <InputLabel>Status</InputLabel>

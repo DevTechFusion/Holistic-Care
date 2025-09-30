@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Box, Grid, Card, CardContent, Typography } from "@mui/material";
-import { CalendarToday, Person, Update } from "@mui/icons-material";
+import { Box, Grid, Card, CardContent, Typography, CircularProgress } from "@mui/material";
+import { CalendarToday, Person, PersonOff, Update } from "@mui/icons-material";
 import { getAgentDashboard } from "../../DAL/dashboard";
 
 const AgentStatsCards = ({ filter }) => {
@@ -20,12 +20,28 @@ const AgentStatsCards = ({ filter }) => {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     fetchDashboard();
   }, [filter]);
 
-  if (loading) return <p>Loading...</p>;
-  if (!cards) return <p>No data available</p>;
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" p={4}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!cards) {
+    return (
+      <Box p={2}>
+        <Typography variant="body1" color="text.secondary">
+          No data available
+        </Typography>
+      </Box>
+    );
+  }
 
   const stats = [
     {
@@ -35,14 +51,14 @@ const AgentStatsCards = ({ filter }) => {
       color: "#23C7B7",
     },
     {
-      title: "Arrived ",
+      title: "Arrived",
       icon: Person,
       value: cards.arrived,
       color: "#23C7B7",
     },
     {
       title: "Not Arrived",
-      icon: Person,
+      icon: PersonOff,
       value: cards.not_arrived,
       color: "#23C7B7",
     },
@@ -55,36 +71,47 @@ const AgentStatsCards = ({ filter }) => {
   ];
 
   return (
-    <Grid container spacing={3}>
+    <Grid container maxWidth="sm" spacing={3}>
       {stats.map((stat, index) => {
         const IconComponent = stat.icon;
         return (
-          <Grid item xs={12} sm={6} md={3} key={index}>
+          <Grid key={index} size={{ xs: 12, md: 6 }}>
             <Card
               sx={{
-                height: "150px",
+                height: "100%",
+                minHeight: 150,
                 borderRadius: 3,
                 boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                transition: "all 0.3s ease",
                 "&:hover": {
                   transform: "translateY(-2px)",
                   boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
-                  transition: "all 0.3s ease",
                 },
               }}
             >
-              <CardContent sx={{ p: 2, position: "relative" }}>
+              <CardContent
+                sx={{
+                  p: 3,
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
                 {/* Icon */}
-                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                  <IconComponent sx={{ color: stat.color, fontSize: 32 }} />
+                <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                  <IconComponent sx={{ color: stat.color, fontSize: 36 }} />
                 </Box>
 
                 {/* Value */}
                 <Typography
                   variant="h4"
                   sx={{
-                    fontWeight: "bold",
+                    fontWeight: 700,
                     color: stat.color,
                     mb: 1,
+                    lineHeight: 1.2,
                   }}
                 >
                   {stat.value}
@@ -95,7 +122,8 @@ const AgentStatsCards = ({ filter }) => {
                   variant="body2"
                   sx={{
                     color: "text.secondary",
-                    fontWeight: "medium",
+                    fontWeight: 500,
+                    fontSize: "0.875rem",
                   }}
                 >
                   {stat.title}

@@ -19,6 +19,7 @@ import { getAllStatuses } from "../../DAL/status";
 import { useSnackbar } from "notistack";
 import dayjs from "dayjs";
 import ReportsFilterPopover from "./ReportsFilterPopover";
+import { useAuth } from "../../contexts/AuthContext"; 
 
 const statusColors = {
   "Already Taken": "#e7f2fe",
@@ -29,6 +30,7 @@ const statusColors = {
 };
 
 const ReportsPage = () => {
+  const { user } = useAuth(); // ✅ GET USER
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
@@ -53,7 +55,7 @@ const ReportsPage = () => {
     order_direction: "desc",
   });
 
-  // Fetch statuses for filter dropdown
+  // ✅ Fetch statuses
   const fetchStatuses = async () => {
     try {
       const res = await getAllStatuses();
@@ -63,23 +65,33 @@ const ReportsPage = () => {
     }
   };
 
+  // ✅ Fetch reports (pagination-aware & agent-specific)
   const fetchReports = async () => {
     try {
       setLoading(true);
+
+      let apiFilters = { ...filters };
+
+      // ✅ If agent, restrict reports
+      if (user?.roles?.[0]?.name === "agent") {
+        apiFilters.agent_id = user.id;
+      }
+
       const res = await getAllReports(
         page + 1,
         rowsPerPage,
-        filters.start_date,
-        filters.end_date,
-        filters.doctor_id,
-        filters.agent_id,
-        filters.department_id,
-        filters.procedure_id,
-        filters.status,
-        filters.payment_mode,
-        filters.order_by,
-        filters.order_direction
+        apiFilters.start_date,
+        apiFilters.end_date,
+        apiFilters.doctor_id,
+        apiFilters.agent_id,
+        apiFilters.department_id,
+        apiFilters.procedure_id,
+        apiFilters.status,
+        apiFilters.payment_mode,
+        apiFilters.order_by,
+        apiFilters.order_direction
       );
+
       setReports(res?.data?.data || []);
       setTotal(res?.data?.total || 0);
     } catch (err) {
@@ -92,23 +104,31 @@ const ReportsPage = () => {
   useEffect(() => {
     fetchReports();
     fetchStatuses();
-  }, [page, rowsPerPage, filters]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, rowsPerPage, filters, user]);
 
-  // Updated handleExport to include all=true
+  // ✅ Handle CSV export (agent-aware)
   const handleExport = async () => {
     try {
       setExporting(true);
+
+      let apiFilters = { ...filters };
+
+      if (user?.roles?.[0]?.name === "agent") {
+        apiFilters.agent_id = user.id;
+      }
+
       const res = await exportReports(
-        filters.start_date,
-        filters.end_date,
-        filters.doctor_id,
-        filters.agent_id,
-        filters.department_id,
-        filters.procedure_id,
-        filters.status,
-        filters.payment_mode,
-        filters.order_by,
-        filters.order_direction
+        apiFilters.start_date,
+        apiFilters.end_date,
+        apiFilters.doctor_id,
+        apiFilters.agent_id,
+        apiFilters.department_id,
+        apiFilters.procedure_id,
+        apiFilters.status,
+        apiFilters.payment_mode,
+        apiFilters.order_by,
+        apiFilters.order_direction
       );
 
       const blob =

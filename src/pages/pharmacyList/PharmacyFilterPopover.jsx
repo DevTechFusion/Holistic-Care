@@ -8,29 +8,53 @@ import {
   Divider,
   Autocomplete,
   MenuItem,
+  CircularProgress,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { getAgentList } from "../../DAL/users";
+import { getSelectStatuses } from "../../DAL/status";
 
 const PharmacyFilterPopover = ({ anchorEl, open, onClose, filters, setFilters }) => {
   const [localFilters, setLocalFilters] = useState(filters);
   const [agents, setAgents] = useState([]);
+  const [statuses, setStatuses] = useState([]);
+  const [loadingAgents, setLoadingAgents] = useState(false);
+  const [loadingStatuses, setLoadingStatuses] = useState(false);
 
   useEffect(() => {
     setLocalFilters(filters);
   }, [filters]);
 
   useEffect(() => {
-    if (open) fetchAgents();
+    if (open) {
+      fetchAgents();
+      fetchStatuses();
+    }
   }, [open]);
 
   const fetchAgents = async () => {
+    setLoadingAgents(true);
     try {
-      const res = await getAgentList(); // ✅ just like appointment filters
+      const res = await getAgentList(); 
       setAgents(Array.isArray(res?.data) ? res.data : []);
     } catch (err) {
       console.error("Failed to fetch agents:", err);
       setAgents([]);
+    } finally {
+      setLoadingAgents(false);
+    }
+  };
+
+  const fetchStatuses = async () => {
+    setLoadingStatuses(true);
+    try {
+      const res = await getSelectStatuses();
+      setStatuses(Array.isArray(res?.data) ? res.data : []);
+    } catch (err) {
+      console.error("Failed to fetch statuses:", err);
+      setStatuses([]);
+    } finally {
+      setLoadingStatuses(false);
     }
   };
 
@@ -96,13 +120,25 @@ const PharmacyFilterPopover = ({ anchorEl, open, onClose, filters, setFilters })
             value={localFilters.status}
             onChange={(e) => handleChange("status", e.target.value)}
             fullWidth
+            disabled={loadingStatuses}
+            InputProps={{
+              endAdornment: loadingStatuses ? (
+                <CircularProgress size={20} sx={{ mr: 2 }} />
+              ) : null,
+            }}
           >
             <MenuItem value="">
               <em>Select Status</em>
             </MenuItem>
-            <MenuItem value="pending">Pending</MenuItem>
-            <MenuItem value="completed">Completed</MenuItem>
-            <MenuItem value="cancelled">Cancelled</MenuItem>
+            {statuses.length > 0 ? (
+              statuses.map((status) => (
+                <MenuItem key={status.value} value={status.value}>
+                  {status.label}
+                </MenuItem>
+              ))
+            ) : (
+              <MenuItem disabled>No statuses available</MenuItem>
+            )}
           </TextField>
 
           {/* Agent Dropdown */}
@@ -112,9 +148,24 @@ const PharmacyFilterPopover = ({ anchorEl, open, onClose, filters, setFilters })
             value={agents.find((a) => a.id === localFilters.agent_id) || null}
             onChange={(e, value) => handleChange("agent_id", value?.id)}
             renderInput={(params) => (
-              <TextField {...params} label="Agent" placeholder="Select Agent" />
+              <TextField 
+                {...params} 
+                label="Agent" 
+                placeholder="Select Agent"
+                InputProps={{
+                  ...params.InputProps,
+                  endAdornment: (
+                    <>
+                      {loadingAgents ? <CircularProgress size={20} /> : null}
+                      {params.InputProps.endAdornment}
+                    </>
+                  ),
+                }}
+              />
             )}
             isOptionEqualToValue={(o, v) => o.id === v.id}
+            loading={loadingAgents}
+            disabled={loadingAgents}
             fullWidth
           />
 

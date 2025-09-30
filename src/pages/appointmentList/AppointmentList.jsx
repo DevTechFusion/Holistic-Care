@@ -16,16 +16,18 @@ import {
 import { getAppointments, deleteAppointment } from "../../DAL/appointments";
 import CreateAppointmentModal from "../../components/forms/AppointmentForm";
 import ActionButtons from "../../constants/actionButtons";
-import FilterPopover from "./FilterPopover"; 
+import FilterPopover from "./FilterPopover";
 import { useSnackbar } from "notistack";
 import ComplaintForm from "../../components/forms/ComplaintForm";
 import dayjs from "dayjs";
+import { useAuth } from "../../contexts/AuthContext"; // ✅ IMPORT AUTH CONTEXT
 
 const AppointmentsPage = () => {
+  const { user } = useAuth(); // ✅ GET USER FROM CONTEXT
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
-  const [filterAnchor, setFilterAnchor] = useState(null); 
+  const [filterAnchor, setFilterAnchor] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [total, setTotal] = useState(0);
@@ -45,32 +47,45 @@ const AppointmentsPage = () => {
   });
 
   const fetchAppointments = async () => {
-    setLoading(true);
-    try {
-      const res = await getAppointments(
-        page + 1,
-        rowsPerPage,
-        filters.start_date,
-        filters.end_date,
-        filters.doctor_id,
-        filters.agent_id,
-        filters.department_id,
-        filters.procedure_id,
-        filters.order_by,
-        filters.order_direction
-      );
-      setAppointments(res?.data?.data || []);
-      setTotal(res?.data?.total || 0);
-    } catch (err) {
-      console.error("Failed to fetch appointments", err);
-    } finally {
-      setLoading(false);
+  setLoading(true);
+  try {
+    let apiFilters = { ...filters };
+
+    // ✅ If user is agent, force their ID in filters
+    if (user?.roles?.[0]?.name === "agent") {
+      apiFilters.agent_id = user.id;
     }
-  };
+
+    const res = await getAppointments(
+      page + 1,
+      rowsPerPage,
+      apiFilters.start_date,
+      apiFilters.end_date,
+      apiFilters.doctor_id,
+      apiFilters.agent_id,
+      apiFilters.department_id,
+      apiFilters.procedure_id,
+      apiFilters.order_by,
+      apiFilters.order_direction
+    );
+
+    const data = res?.data?.data || [];
+    setAppointments(data);
+
+    // ✅ Total count now respects filters from API
+    setTotal(res?.data?.total || 0);
+  } catch (err) {
+    console.error("Failed to fetch appointments", err);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     fetchAppointments();
-  }, [page, rowsPerPage, filters]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, rowsPerPage, filters, user]);
 
   const handleDeleteAppointment = async (id) => {
     try {
@@ -149,7 +164,15 @@ const AppointmentsPage = () => {
                 <TableBody>
                   {appointments.map((appt, idx) => (
                     <TableRow key={appt.id}>
-                      <TableCell sx={{ position: "sticky", left: 0, zIndex: 1, backgroundColor: "#fff", fontWeight: 500 }}>
+                      <TableCell
+                        sx={{
+                          position: "sticky",
+                          left: 0,
+                          zIndex: 1,
+                          backgroundColor: "#fff",
+                          fontWeight: 500,
+                        }}
+                      >
                         {page * rowsPerPage + idx + 1}
                       </TableCell>
                       <TableCell>{dayjs(appt.date).format("DD-MM-YYYY")}</TableCell>
@@ -161,9 +184,8 @@ const AppointmentsPage = () => {
                       <TableCell>{appt.doctor?.name}</TableCell>
                       <TableCell>{appt.agent?.name}</TableCell>
                       <TableCell>
-                        {/* Show multiple procedures as comma separated or chips */}
                         {Array.isArray(appt.procedures) && appt.procedures.length > 0
-                          ? appt.procedures.map(p => p.name).join(", ")
+                          ? appt.procedures.map((p) => p.name).join(", ")
                           : appt.procedure?.name || "-"}
                       </TableCell>
                       <TableCell>{appt.department?.name}</TableCell>
@@ -209,7 +231,11 @@ const AppointmentsPage = () => {
         }}
       />
 
-      <ComplaintForm data={targetItem} open={complaintModalOpen} onClose={handleCloseComplaint} />
+      <ComplaintForm
+        data={targetItem}
+        open={complaintModalOpen}
+        onClose={handleCloseComplaint}
+      />
 
       {/* Filter Popover */}
       <FilterPopover

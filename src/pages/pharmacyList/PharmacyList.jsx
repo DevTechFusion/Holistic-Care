@@ -1,10 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useSnackbar } from "notistack";
-import {
-  getPharmacy,
-  getFilteredPharmacy,
-  deletePharmacy,
-} from "../../DAL/pharmacy";
+import { getPharmacy, deletePharmacy } from "../../DAL/pharmacy";
 import ActionButtons from "../../constants/actionButtons";
 import {
   Box,
@@ -29,9 +25,11 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import dayjs from "dayjs";
 import PharmacyForm from "../../components/forms/PharmacyForm";
 import PharmacyFilterPopover from "./PharmacyFilterPopover";
+import { useAuth } from "../../contexts/AuthContext";
 
 const PharmacyList = () => {
   const { enqueueSnackbar } = useSnackbar();
+  const { user } = useAuth();
 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +42,7 @@ const PharmacyList = () => {
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [total, setTotal] = useState(0);
 
-  // ✅ Filters
+  // Filters (from filter popover only)
   const [filters, setFilters] = useState({
     search: "",
     status: "",
@@ -55,7 +53,7 @@ const PharmacyList = () => {
 
   const [filterAnchor, setFilterAnchor] = useState(null);
 
-  // ✅ Description modal
+  // Description modal
   const [selectedDescription, setSelectedDescription] = useState("");
   const [descriptionModalOpen, setDescriptionModalOpen] = useState(false);
 
@@ -84,28 +82,26 @@ const PharmacyList = () => {
   const handleOpenFilters = (e) => setFilterAnchor(e.currentTarget);
   const handleCloseFilters = () => setFilterAnchor(null);
 
-  // Fetch Pharmacies
+  // Fetch Pharmacies (with pagination + filters + logged-in user)
   const fetchPharmacies = useCallback(async () => {
     setLoading(true);
     try {
-      let res;
-      if (filters.start_date || filters.end_date || filters.search) {
-        res = await getFilteredPharmacy(
-          filters.agent_id || "",
-          filters.start_date
-            ? dayjs(filters.start_date).format("YYYY-MM-DD")
-            : "",
-          filters.end_date ? dayjs(filters.end_date).format("YYYY-MM-DD") : "",
-          filters.search || ""
-        );
-      } else {
-        res = await getPharmacy(
-          page + 1,
-          rowsPerPage,
-          filters.agent_id || "",
-          filters.status || ""
-        );
+      let apiFilters = { ...filters };
+
+      // ✅ If user is agent, force their ID in filters
+      if (user?.roles?.[0]?.name?.toLowerCase() === "agent") {
+        apiFilters.agent_id = user.id;
       }
+
+      const res = await getPharmacy(
+        page + 1,
+        rowsPerPage,
+        apiFilters.agent_id || "",
+        apiFilters.status || "",
+        apiFilters.search || "",
+        apiFilters.start_date ? dayjs(apiFilters.start_date).format("YYYY-MM-DD") : "",
+        apiFilters.end_date ? dayjs(apiFilters.end_date).format("YYYY-MM-DD") : ""
+      );
 
       setData(res?.data?.data || []);
       setTotal(res?.data?.total || (res?.data?.data?.length ?? 0));
@@ -116,11 +112,11 @@ const PharmacyList = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, rowsPerPage, filters, enqueueSnackbar]);
+  }, [page, rowsPerPage, filters, enqueueSnackbar, user]);
 
   useEffect(() => {
     fetchPharmacies();
-  }, [fetchPharmacies, filters]);
+  }, [fetchPharmacies]);
 
   // Delete
   const handleDelete = async (id) => {
@@ -189,7 +185,7 @@ const PharmacyList = () => {
         filters={filters}
         setFilters={(newFilters) => {
           setFilters(newFilters);
-          setPage(0); // Reset pagination when filters change
+          setPage(0); // reset pagination when filters change
         }}
       />
 
@@ -252,7 +248,7 @@ const PharmacyList = () => {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={11} align="center">
+                    <TableCell colSpan={9} align="center">
                       No pharmacy records found
                     </TableCell>
                   </TableRow>

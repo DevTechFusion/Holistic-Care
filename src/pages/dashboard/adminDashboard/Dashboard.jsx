@@ -210,37 +210,41 @@ const Dashboard = () => {
       </Stack>
 
       {/* Stats Cards */}
-      <Box sx={{ mb: 4 }}>
+      <Box sx={{ mt: 4, mb: 4 }}>
         <StatsCards filter={filter} />
       </Box>
 
-     
+      <Box sx={{ mb: 4 }}>
+        <DoctorLeaderboard filter={filter} />
+      </Box>
       <Box sx={{ mb: 4 }}>
         <RevenueSection filter={filter} />
       </Box>
 
+             <div>
+      <Stack
+        direction="row"
+        divider={<Divider orientation="vertical" flexItem />}
+        spacing={2}
+      >
+        <Box sx={{ flex: 1 }}>
+          <AgentWiseBookings filter={filter} />
+        </Box>
+        <Box sx={{ flex: 1 }}>
+          <SourceWiseBookings filter={filter} />
+        </Box>
+        <Box sx={{ flex: 1 }}>
+          <DoctorWiseBooking filter={filter} />
+        </Box>
+      </Stack>
+    </div>
       
-      <Grid container spacing={3}>
-        
-        <Grid item xs={12} lg={8}>
-          <Box sx={{ mb: 4 }}>
-            <DoctorLeaderboard filter={filter} />
-          </Box>
+        {/* <AgentWiseBookings filter={filter} />
 
-          
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={4}>
-              <AgentWiseBookings filter={filter} />
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <SourceWiseBookings filter={filter} />
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <DoctorWiseBooking filter={filter} />
-            </Grid>
-          </Grid>
-        </Grid>
-      </Grid>
+        <SourceWiseBookings filter={filter} />
+
+        <DoctorWiseBooking filter={filter} /> */}
+      
     </Box>
   );
 };
