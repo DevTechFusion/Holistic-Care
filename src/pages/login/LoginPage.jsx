@@ -40,7 +40,7 @@ const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
-  const { setLoading } = useAuth();
+  const { setLoading, getUserDetail } = useAuth();
 
   const handleLogin = async () => {
     setLoading(true);
@@ -56,7 +56,10 @@ const LoginForm = () => {
       if (result?.status === "success") {
         enqueueSnackbar("Login successful", { variant: "success" });
         localStorage.setItem("token", result.data.token);
-        const { user } = result.data; // Make sure your login API returns user info
+        
+        // Wait for user profile to be fetched before navigating
+        await getUserDetail();
+        const { user } = result.data;
 
         let from = location.state?.from?.pathname;
         if (!from) {

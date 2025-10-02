@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Box, Grid, Card, CardContent, Typography, CircularProgress } from "@mui/material";
-import { CalendarToday, Person, Update } from "@mui/icons-material";
+import { CalendarToday, Person, MiscellaneousServicesOutlined, Update } from "@mui/icons-material";
 import { getManagerDashboard } from "../../DAL/dashboard";
 
 const StatsCards = ({ filter }) => {
@@ -46,7 +46,7 @@ const StatsCards = ({ filter }) => {
   const stats = [
     {
       title: "Total Mistakes",
-      icon: CalendarToday,
+      icon: MiscellaneousServicesOutlined,
       value: cards.total_mistakes,
       color: "#23C7B7",
     },

@@ -12,6 +12,7 @@ import {
   Select,
   useTheme,
   alpha,
+  Typography,
 } from "@mui/material";
 
 import MedicalServicesIcon from "@mui/icons-material/MedicalServices";
@@ -150,9 +151,10 @@ const Dashboard = () => {
 
       {/* Header Section */}
       <Stack
-        direction={{ xs: "column", sm: "row" }}
+        direction="row"
         justifyContent="space-between"
-        alignItems={{ xs: "flex-start", sm: "center" }}
+        alignItems="start"
+        flexWrap="wrap"
         spacing={2}
         sx={{ mb: 4 }}
       >
@@ -210,41 +212,40 @@ const Dashboard = () => {
       </Stack>
 
       {/* Stats Cards */}
-      <Box sx={{ mt: 4, mb: 4 }}>
-        <StatsCards filter={filter} />
-      </Box>
+      <Stack direction="row" spacing={6}>
+        <Box sx={{ mt: 4, mb: 4 }}>
+          <Typography variant="h4" sx={{ mb: 3, fontWeight: 700 }}>
+            Stat Cards
+          </Typography>
+          <StatsCards filter={filter} />
+        </Box>
 
-      <Box sx={{ mb: 4 }}>
-        <DoctorLeaderboard filter={filter} />
-      </Box>
-      <Box sx={{ mb: 4 }}>
+        <Box sx={{ mb: 4, width: "55%" }}>
+          <DoctorLeaderboard filter={filter} />
+        </Box>
+      </Stack>
+
+      <Box sx={{ mt: 4, mb: 4 }}>
         <RevenueSection filter={filter} />
       </Box>
 
-             <div>
-      <Stack
-        direction="row"
-        divider={<Divider orientation="vertical" flexItem />}
-        spacing={2}
-      >
-        <Box sx={{ flex: 1 }}>
-          <AgentWiseBookings filter={filter} />
-        </Box>
-        <Box sx={{ flex: 1 }}>
-          <SourceWiseBookings filter={filter} />
-        </Box>
-        <Box sx={{ flex: 1 }}>
-          <DoctorWiseBooking filter={filter} />
-        </Box>
-      </Stack>
-    </div>
-      
-        {/* <AgentWiseBookings filter={filter} />
-
-        <SourceWiseBookings filter={filter} />
-
-        <DoctorWiseBooking filter={filter} /> */}
-      
+      <div>
+        <Stack
+          direction="row"
+          divider={<Divider orientation="vertical" flexItem />}
+          spacing={2}
+        >
+          <Box sx={{ flex: 1 }}>
+            <AgentWiseBookings filter={filter} />
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <SourceWiseBookings filter={filter} />
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <DoctorWiseBooking filter={filter} />
+          </Box>
+        </Stack>
+      </div>
     </Box>
   );
 };

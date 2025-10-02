@@ -1,5 +1,14 @@
 import { useState, useEffect } from "react";
-import { Box, Grid, Stack, Select, MenuItem, Button, CircularProgress } from "@mui/material";
+import {
+  Box,
+  Grid,
+  Stack,
+  Select,
+  MenuItem,
+  Button,
+  CircularProgress,
+  Typography,
+} from "@mui/material";
 import {
   AgentStatsCards,
   AgentAppointmentLeaderboard,
@@ -33,7 +42,7 @@ const AgentDashboard = () => {
 
   return (
     <div>
-      <Box sx={{ mt: 2 }}>
+      <Box sx={{ minHeight: "100vh", p: { xs: 2, sm: 3 } }}>
         {/* Welcome Section */}
         <Stack
           direction="row"
@@ -41,7 +50,7 @@ const AgentDashboard = () => {
           alignItems="start"
           flexWrap="wrap"
           spacing={2}
-          mb={4}
+          sx={{ mb: 4 }}
         >
           <WelcomeSection />
 
@@ -66,12 +75,11 @@ const AgentDashboard = () => {
 
             <Button
               variant="contained"
-              color="success"
               sx={{ borderRadius: "12px", fontWeight: "bold", px: 3 }}
               disabled={loading}
             >
               {loading ? (
-                <CircularProgress size={18} color="inherit" />
+                <CircularProgress size={18} color="" />
               ) : (
                 `Incentive: ${incentive} Rs.`
               )}
@@ -80,20 +88,26 @@ const AgentDashboard = () => {
         </Stack>
 
         {/* Dashboard Content */}
-        
-         <Box sx={{ mt: 4, mb: 4 }}>
+        <Stack direction="row" spacing={6}>
+          <Box sx={{ mt: 4, mb: 4 }}>
+            <Typography variant="h4" sx={{ mb: 3, fontWeight: 700 }}>
+              Stat Cards
+            </Typography>
             <AgentStatsCards filter={filter} />
           </Box>
-          <Grid item xs={12} md={5}>
+          <Box sx={{ mb: 4, width: "55%" }}>
             <AgentAppointmentLeaderboard filter={filter} />
-          </Grid>
-          <Grid item xs={12} md={8}>
-            <DoctorsAvailabilityCard filter={filter} />
-          </Grid>
-        
+          </Box>
+        </Stack>
+        <div> 
+          <Box sx={{ mb: 4}}>
+          <DoctorsAvailabilityCard filter={filter} />
+        </Box>
+        </div>
+       
       </Box>
     </div>
-  );
+  );  
 };
 
 export default AgentDashboard;

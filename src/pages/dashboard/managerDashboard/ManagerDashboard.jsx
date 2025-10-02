@@ -24,14 +24,16 @@ const ManagerDashboard = () => {
   const theme = useTheme();
 
   return (
-    <Box sx={{ p: { xs: 2, sm: 3 } }}>
+    <Box sx={{ minHeight: "100vh", p: { xs: 2, sm: 3 } }}>
       {/* Header Section */}
 
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
+       <Stack
+          direction="row"
           justifyContent="space-between"
-          alignItems={{ xs: "flex-start", sm: "center" }}
+          alignItems="start"
+          flexWrap="wrap"
           spacing={2}
+          sx={{ mb: 4 }}
         >
           <WelcomeSection />
           
@@ -73,7 +75,7 @@ const ManagerDashboard = () => {
       </Box>
 
    
-      <Grid container spacing={3}>
+      
         <Grid item xs={12} lg={8}>
      
             <MistakesCount filter={filter} />
@@ -84,7 +86,7 @@ const ManagerDashboard = () => {
        
             <MistakesLog filter={filter} />
         </Grid>
-      </Grid>
+      
     </Box>
   );
 };
