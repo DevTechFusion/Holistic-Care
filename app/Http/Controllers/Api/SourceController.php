@@ -133,6 +133,18 @@ class SourceController extends Controller
                 ], 404);
             }
 
+            // Check if source is being used by appointments
+            $appointmentsCount = $this->sourceService->getAppointmentsCount($id);
+            
+            if ($appointmentsCount > 0) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => "Cannot delete source '{$source->name}'. It is being used by {$appointmentsCount} appointment(s). Please reassign or delete the appointments first.",
+                    'appointments_count' => $appointmentsCount,
+                    'source_name' => $source->name
+                ], 422);
+            }
+
             $this->sourceService->deleteSource($id);
 
             return response()->json([
@@ -143,6 +155,42 @@ class SourceController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to delete source',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Check if source can be deleted (not used by appointments)
+     */
+    public function canDelete($id)
+    {
+        try {
+            $source = $this->sourceService->getSourceById($id);
+
+            if (!$source) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Source not found'
+                ], 404);
+            }
+
+            $appointmentsCount = $this->sourceService->getAppointmentsCount($id);
+            $canDelete = $appointmentsCount === 0;
+
+            return response()->json([
+                'status' => 'success',
+                'can_delete' => $canDelete,
+                'appointments_count' => $appointmentsCount,
+                'source_name' => $source->name,
+                'message' => $canDelete 
+                    ? "Source '{$source->name}' can be deleted safely."
+                    : "Source '{$source->name}' cannot be deleted. It is being used by {$appointmentsCount} appointment(s)."
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to check source deletion status',
                 'error' => $e->getMessage()
             ], 500);
         }

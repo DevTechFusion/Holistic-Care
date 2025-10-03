@@ -133,6 +133,18 @@ class StatusController extends Controller
                 ], 404);
             }
 
+            // Check if status is being used by appointments
+            $appointmentsCount = $this->statusService->getAppointmentsCount($id);
+            
+            if ($appointmentsCount > 0) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => "Cannot delete status '{$status->name}'. It is being used by {$appointmentsCount} appointment(s). Please reassign or delete the appointments first.",
+                    'appointments_count' => $appointmentsCount,
+                    'status_name' => $status->name
+                ], 422);
+            }
+
             $this->statusService->deleteStatus($id);
 
             return response()->json([
@@ -143,6 +155,42 @@ class StatusController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to delete status',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Check if status can be deleted (not used by appointments)
+     */
+    public function canDelete($id)
+    {
+        try {
+            $status = $this->statusService->getStatusById($id);
+
+            if (!$status) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Status not found'
+                ], 404);
+            }
+
+            $appointmentsCount = $this->statusService->getAppointmentsCount($id);
+            $canDelete = $appointmentsCount === 0;
+
+            return response()->json([
+                'status' => 'success',
+                'can_delete' => $canDelete,
+                'appointments_count' => $appointmentsCount,
+                'status_name' => $status->name,
+                'message' => $canDelete 
+                    ? "Status '{$status->name}' can be deleted safely."
+                    : "Status '{$status->name}' cannot be deleted. It is being used by {$appointmentsCount} appointment(s)."
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to check status deletion status',
                 'error' => $e->getMessage()
             ], 500);
         }
