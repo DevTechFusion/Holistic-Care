@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import {
   Box,
-  Grid,
   Stack,
   Select,
   MenuItem,
@@ -41,72 +40,89 @@ const AgentDashboard = () => {
   }, [filter]);
 
   return (
-    <div>
-      <Box sx={{ minHeight: "100vh", p: { xs: 2, sm: 3 } }}>
-        {/* Welcome Section */}
+    <Box sx={{ minHeight: "100vh", backgroundColor: "background.default", p: { xs: 2, sm: 3 } }}>
+      {/* Header Section */}
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        justifyContent="space-between"
+        alignItems={{ xs: "stretch", sm: "start" }}
+        spacing={2}
+        sx={{ mb: 4 }}
+      >
+        <WelcomeSection />
+
+        {/* Filter & Incentive */}
         <Stack
-          direction="row"
-          justifyContent="space-between"
-          alignItems="start"
-          flexWrap="wrap"
+          direction={{ xs: "column", sm: "row" }}
           spacing={2}
-          sx={{ mb: 4 }}
+          alignItems="center"
+          sx={{ width: { xs: "100%", sm: "auto" } }}
         >
-          <WelcomeSection />
+          <Select
+            size="small"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            sx={{
+              minWidth: { xs: "100%", sm: 120 },
+              borderRadius: "12px",
+              fontWeight: "bold",
+              bgcolor: "#fff",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+              px: 2,
+            }}
+          >
+            <MenuItem value="daily">Daily</MenuItem>
+            <MenuItem value="weekly">Weekly</MenuItem>
+            <MenuItem value="monthly">Monthly</MenuItem>
+          </Select>
 
-          {/* Filter & Incentive */}
-          <Stack direction="row" spacing={2} alignItems="center">
-            <Select
-              size="small"
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              sx={{
-                borderRadius: "12px",
-                fontWeight: "bold",
-                bgcolor: "#fff",
-                boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
-                px: 2,
-              }}
-            >
-              <MenuItem value="daily">Daily</MenuItem>
-              <MenuItem value="weekly">Weekly</MenuItem>
-              <MenuItem value="monthly">Monthly</MenuItem>
-            </Select>
-
-            <Button
-              variant="contained"
-              sx={{ borderRadius: "12px", fontWeight: "bold", px: 3 }}
-              disabled={loading}
-            >
-              {loading ? (
-                <CircularProgress size={18} color="" />
-              ) : (
-                `Incentive: ${incentive} Rs.`
-              )}
-            </Button>
-          </Stack>
+          <Button
+            variant="contained"
+            sx={{
+              borderRadius: "12px",
+              fontWeight: "bold",
+              px: 3,
+              width: { xs: "100%", sm: "auto" },
+            }}
+            disabled={loading}
+          >
+            {loading ? (
+              <CircularProgress size={18} color="inherit" />
+            ) : (
+              `Incentive: ${incentive} Rs.`
+            )}
+          </Button>
         </Stack>
+      </Stack>
 
-        {/* Dashboard Content */}
-        <Stack direction="row" spacing={6}>
-          <Box sx={{ mt: 4, mb: 4 }}>
-            <Typography variant="h4" sx={{ mb: 3, fontWeight: 700 }}>
-              Stat Cards
-            </Typography>
-            <AgentStatsCards filter={filter} />
-          </Box>
-          <Box sx={{ mb: 4, width: "55%" }}>
-            <AgentAppointmentLeaderboard filter={filter} />
-          </Box>
-        </Stack>
-        <div> 
-          <Box sx={{ mb: 4}}>
-          <DoctorsAvailabilityCard filter={filter} />
+      {/* Stats Cards */}
+         <Stack
+        direction="row"
+        spacing={12}
+        sx={{
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+        }}
+      >
+        <Box sx={{ mt: 4, mb: 4, flex: { xs: "1", lg: "0 0 auto" } }}>
+          <Typography
+            variant="h4"
+            sx={{ mb: 3, fontWeight: 700, fontSize: { xs: "1.5rem", sm: "2rem" } }}
+          >
+            Stat Cards
+          </Typography>
+          <AgentStatsCards filter={filter} />
         </Box>
-        </div>
-       
+
+        <Box sx={{ mb: 4, width: { xs: "100%", lg: "55%" } }}>
+          <AgentAppointmentLeaderboard filter={filter} />
+        </Box>
+      </Stack>
+
+      <Box sx={{ mt: 4, mb: 4, pl: { xs: 0, lg: 8 }, width: { xs: "100%", lg: "95%" } }}>
+        <DoctorsAvailabilityCard filter={filter} />
       </Box>
-    </div>
+    </Box>
   );  
 };
 

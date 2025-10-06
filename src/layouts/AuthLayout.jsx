@@ -48,7 +48,7 @@ const AuthLayout = () => {
         }}
       >
         <Topbar />
-        <Box sx={{ p: 3 }}>
+        <Box sx={{ p: 0 }}>
           <Outlet />
         </Box>
       </Box>

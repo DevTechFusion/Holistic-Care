@@ -20,10 +20,10 @@ import FilterPopover from "./FilterPopover";
 import { useSnackbar } from "notistack";
 import ComplaintForm from "../../components/forms/ComplaintForm";
 import dayjs from "dayjs";
-import { useAuth } from "../../contexts/AuthContext"; // ✅ IMPORT AUTH CONTEXT
+import { useAuth } from "../../contexts/AuthContext";
 
 const AppointmentsPage = () => {
-  const { user } = useAuth(); // ✅ GET USER FROM CONTEXT
+  const { user } = useAuth(); 
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
@@ -50,8 +50,6 @@ const AppointmentsPage = () => {
   setLoading(true);
   try {
     let apiFilters = { ...filters };
-
-    // ✅ If user is agent, force their ID in filters
     if (user?.roles?.[0]?.name === "agent") {
       apiFilters.agent_id = user.id;
     }
@@ -72,7 +70,6 @@ const AppointmentsPage = () => {
     const data = res?.data?.data || [];
     setAppointments(data);
 
-    // ✅ Total count now respects filters from API
     setTotal(res?.data?.total || 0);
   } catch (err) {
     console.error("Failed to fetch appointments", err);
@@ -84,7 +81,6 @@ const AppointmentsPage = () => {
 
   useEffect(() => {
     fetchAppointments();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, rowsPerPage, filters, user]);
 
   const handleDeleteAppointment = async (id) => {
@@ -143,7 +139,7 @@ const AppointmentsPage = () => {
         ) : (
           <>
             <TableContainer sx={{ maxHeight: 700 }}>
-              <Table stickyHeader>
+              <Table fixed>
                 <TableHead>
                   <TableRow>
                     <TableCell>Sr#</TableCell>

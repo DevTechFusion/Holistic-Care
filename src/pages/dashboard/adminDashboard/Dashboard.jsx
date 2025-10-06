@@ -62,7 +62,13 @@ const Dashboard = () => {
   };
 
   return (
-    <Box sx={{ minHeight: "100vh", p: { xs: 2, sm: 3 } }}>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        backgroundColor: "background.default",
+        p: { xs: 2, sm: 4 },
+      }}
+    >
       {/* Dropdown Menu */}
       <Menu
         anchorEl={anchorEl}
@@ -151,10 +157,9 @@ const Dashboard = () => {
 
       {/* Header Section */}
       <Stack
-        direction="row"
+        direction={{ xs: "column", sm: "row" }}
         justifyContent="space-between"
-        alignItems="start"
-        flexWrap="wrap"
+        alignItems={{ xs: "stretch", sm: "start" }}
         spacing={2}
         sx={{ mb: 4 }}
       >
@@ -164,36 +169,36 @@ const Dashboard = () => {
           direction={{ xs: "column", sm: "row" }}
           spacing={2}
           alignItems="center"
+          sx={{ width: { xs: "100%", sm: "auto" } }}
         >
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <Select
-              size="small"
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              sx={{
-                minWidth: 120,
-                borderRadius: 2,
-                fontWeight: "medium",
-                bgcolor: "background.paper",
-                boxShadow: theme.shadows[1],
-                "& .MuiOutlinedInput-notchedOutline": {
-                  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                },
-                "&:hover": {
-                  bgcolor: alpha(theme.palette.primary.main, 0.03),
-                },
-              }}
-            >
-              <MenuItem value="daily">Daily</MenuItem>
-              <MenuItem value="weekly">Weekly</MenuItem>
-              <MenuItem value="monthly">Monthly</MenuItem>
-            </Select>
-          </Stack>
+          <Select
+            size="small"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            sx={{
+              minWidth: { xs: "100%", sm: 120 },
+              borderRadius: 2,
+              fontWeight: "medium",
+              bgcolor: "background.paper",
+              boxShadow: theme.shadows[1],
+              "& .MuiOutlinedInput-notchedOutline": {
+                border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+              },
+              "&:hover": {
+                bgcolor: alpha(theme.palette.primary.main, 0.03),
+              },
+            }}
+          >
+            <MenuItem value="daily">Daily</MenuItem>
+            <MenuItem value="weekly">Weekly</MenuItem>
+            <MenuItem value="monthly">Monthly</MenuItem>
+          </Select>
 
           <Button
             variant="contained"
             onClick={handleClick}
             startIcon={<AddIcon />}
+            fullWidth
             sx={{
               borderRadius: 2,
               textTransform: "none",
@@ -201,6 +206,7 @@ const Dashboard = () => {
               px: 3,
               py: 1,
               boxShadow: theme.shadows[2],
+              width: { xs: "100%", sm: "auto" },
               "&:hover": {
                 boxShadow: theme.shadows[4],
               },
@@ -212,15 +218,29 @@ const Dashboard = () => {
       </Stack>
 
       {/* Stats Cards */}
-      <Stack direction="row" spacing={6}>
-        <Box sx={{ mt: 4, mb: 4 }}>
-          <Typography variant="h4" sx={{ mb: 3, fontWeight: 700 }}>
+      <Stack
+        direction="row"
+        spacing={12}
+        sx={{
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+        }}
+      >
+        <Box sx={{ mt: 4, mb: 4, flex: { xs: "1", lg: "0 0 auto" } }}>
+          <Typography
+            variant="h4"
+            sx={{
+              mb: 6,
+              fontWeight: 700,
+              fontSize: { xs: "1.5rem", sm: "2rem" },
+            }}
+          >
             Stat Cards
           </Typography>
           <StatsCards filter={filter} />
         </Box>
-
-        <Box sx={{ mb: 4, width: "55%" }}>
+      
+        <Box sx={{ mb: 4, width: { xs: "100%", lg: "55%" } }}>
           <DoctorLeaderboard filter={filter} />
         </Box>
       </Stack>
@@ -229,23 +249,29 @@ const Dashboard = () => {
         <RevenueSection filter={filter} />
       </Box>
 
-      <div>
+      <Box sx={{ mt: 4, mb: 4 }}>
         <Stack
-          direction="row"
-          divider={<Divider orientation="vertical" flexItem />}
-          spacing={2}
+          direction={{ xs: "column", lg: "row" }}
+          divider={
+            <Divider
+              orientation="vertical"
+              flexItem
+              sx={{ display: { xs: "none", lg: "block" } }}
+            />
+          }
+          spacing={{ xs: 3, lg: 2 }}
         >
-          <Box sx={{ flex: 1 }}>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
             <AgentWiseBookings filter={filter} />
           </Box>
-          <Box sx={{ flex: 1 }}>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
             <SourceWiseBookings filter={filter} />
           </Box>
-          <Box sx={{ flex: 1 }}>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
             <DoctorWiseBooking filter={filter} />
           </Box>
         </Stack>
-      </div>
+      </Box>
     </Box>
   );
 };

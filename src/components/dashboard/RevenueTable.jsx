@@ -27,11 +27,11 @@ const RevenueTable = ({ data, formatCurrency, calculatePercentage }) => {
         boxShadow: "none",
         border: 1,
         borderColor: "divider",
-        maxHeight: 250, // shows ~5 rows before scrolling
+        maxHeight: 240, // shows ~5 rows before scrolling
         overflowY: "auto",
       }}
     >
-      <Table stickyHeader size="small">
+      <Table fixed size="small">
         <TableHead>
           <TableRow sx={{ backgroundColor: "#f9fafb" }}>
             {headers.map((header, idx) => (

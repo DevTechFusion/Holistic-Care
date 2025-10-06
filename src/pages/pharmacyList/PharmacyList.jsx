@@ -36,13 +36,9 @@ const PharmacyList = () => {
   const [selectedPharmacy, setSelectedPharmacy] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [totalIncentive, setTotalIncentive] = useState(0);
-
-  // Pagination
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [total, setTotal] = useState(0);
-
-  // Filters (from filter popover only)
   const [filters, setFilters] = useState({
     search: "",
     status: "",
@@ -53,7 +49,6 @@ const PharmacyList = () => {
 
   const [filterAnchor, setFilterAnchor] = useState(null);
 
-  // Description modal
   const [selectedDescription, setSelectedDescription] = useState("");
   const [descriptionModalOpen, setDescriptionModalOpen] = useState(false);
 
@@ -78,17 +73,14 @@ const PharmacyList = () => {
     }
   };
 
-  // Filter Popover
+ 
   const handleOpenFilters = (e) => setFilterAnchor(e.currentTarget);
   const handleCloseFilters = () => setFilterAnchor(null);
 
-  // Fetch Pharmacies (with pagination + filters + logged-in user)
   const fetchPharmacies = useCallback(async () => {
     setLoading(true);
     try {
       let apiFilters = { ...filters };
-
-      // ✅ If user is agent, force their ID in filters
       if (user?.roles?.[0]?.name?.toLowerCase() === "agent") {
         apiFilters.agent_id = user.id;
       }
@@ -118,7 +110,6 @@ const PharmacyList = () => {
     fetchPharmacies();
   }, [fetchPharmacies]);
 
-  // Delete
   const handleDelete = async (id) => {
     setLoading(true);
     try {
@@ -156,7 +147,7 @@ const PharmacyList = () => {
         alignItems="center"
         mb={2}
       >
-        <Typography variant="h4" fontWeight={600}>
+        <Typography variant="h5">
           Pharmacy List
         </Typography>
 
@@ -185,7 +176,7 @@ const PharmacyList = () => {
         filters={filters}
         setFilters={(newFilters) => {
           setFilters(newFilters);
-          setPage(0); // reset pagination when filters change
+          setPage(0); 
         }}
       />
 
@@ -197,7 +188,7 @@ const PharmacyList = () => {
           </Box>
         ) : (
           <>
-            <Table stickyHeader>
+            <Table fixed>
               <TableHead>
                 <TableRow>
                   <TableCell>Sr#</TableCell>

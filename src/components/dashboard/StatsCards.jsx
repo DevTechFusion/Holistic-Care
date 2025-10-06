@@ -71,7 +71,7 @@ const AdminStatsCards = ({ filter }) => {
   ];
 
   return (
-    <Grid container maxWidth="sm" spacing={3}>
+    <Grid container maxWidth="md" spacing={4}>
       {stats.map((stat, index) => {
         const IconComponent = stat.icon;
         return (

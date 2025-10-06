@@ -32,7 +32,7 @@ const palette = {
     contrastText: '#ffffff',
   },
   background: {
-    default: '#fafafa',
+    default: '#F0F2F5',
     paper: '#ffffff',
   },
   text: {

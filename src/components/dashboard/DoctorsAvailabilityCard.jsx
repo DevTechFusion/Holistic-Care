@@ -1,6 +1,5 @@
-
-// src/components/dashboard/DoctorAvailabilityCard.jsx
-import { useEffect, useState, useCallback } from "react"
+// src/components/DoctorAvailabilityCard.jsx
+import React, { useEffect, useState, useCallback } from "react"
 import {
   Card,
   CardContent,
@@ -35,30 +34,56 @@ const DayScheduleCard = ({ day, schedule }) => {
     <Card
       variant="outlined"
       sx={(theme) => ({
-        width: "100%",
-        borderRadius: 2,
-        transition: "all 0.2s ease",
-        "&:hover": { boxShadow: 3, transform: "translateY(-1px)" },
+        height: "100%",
+        minHeight: 140,
+        display: "flex",
+        flexDirection: "column",
+        borderRadius: 3,
+        transition: "all 0.3s ease",
+        "&:hover": {
+          boxShadow: isAvailable ? 6 : 2,
+          transform: "translateY(-4px)",
+          borderColor: isAvailable ? theme.palette.primary.dark : theme.palette.divider,
+        },
+        borderWidth: 2,
         borderColor: isAvailable ? theme.palette.primary.main : theme.palette.divider,
-        backgroundColor: isAvailable ? theme.palette.action.selected : theme.palette.background.paper,
+        backgroundColor: isAvailable
+          ? theme.palette.mode === "dark"
+            ? "rgba(25, 118, 210, 0.08)"
+            : "rgba(25, 118, 210, 0.04)"
+          : theme.palette.background.paper,
       })}
     >
-      <CardContent>
+      <CardContent
+        sx={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          p: 2.5,
+          "&:last-child": { pb: 2.5 },
+        }}
+      >
         <Typography
-          variant="h6"
+          variant="subtitle1"
           gutterBottom
           sx={{
             color: isAvailable ? "primary.main" : "text.secondary",
-            fontWeight: isAvailable ? 600 : 500,
+            fontWeight: 700,
+            fontSize: "1.1rem",
+            letterSpacing: "0.01em",
+            mb: 1.5,
           }}
         >
           {day.name}
         </Typography>
         <Typography
-          variant="body2"
+          variant="body1"
           sx={{
             color: isAvailable ? "text.primary" : "text.disabled",
-            fontWeight: 500,
+            fontWeight: 600,
+            fontSize: "0.95rem",
+            lineHeight: 1.5,
           }}
         >
           {displayTime}
@@ -131,19 +156,21 @@ const DoctorAvailabilityCard = () => {
     <Paper
       elevation={0}
       sx={{
-        maxWidth: "75%",
+        maxWidth: "90%",
         mx: "auto",
         mt: 4,
-        borderRadius: 2,
+        mb: 4,
+        borderRadius: 3,
         border: 1,
         borderColor: "divider",
         backgroundColor: "background.paper",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
       }}
     >
-      <Box p={3}>
+      <Box p={{ xs: 2, sm: 3, md: 4 }}>
         {/* Header */}
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3} flexWrap="wrap" gap={3}>
-          <Typography variant="h5" sx={{ fontWeight: 600, color: "text.primary" }}>
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={4} flexWrap="wrap" gap={3}>
+          <Typography variant="h4" sx={{ fontWeight: 700, color: "text.primary", letterSpacing: "-0.02em" }}>
             Doctor Availability
           </Typography>
 
@@ -154,41 +181,41 @@ const DoctorAvailabilityCard = () => {
             value={selectedDoctor}
             onChange={(_, value) => setSelectedDoctor(value)}
             loading={loadingDoctors}
-            size="small"
+            size="medium"
             disablePortal
             noOptionsText="No doctors found"
             sx={{
-              minWidth: 240,
+              minWidth: 280,
               "& .MuiOutlinedInput-root": {
-                borderRadius: 1.5,
+                borderRadius: 2,
                 backgroundColor: (theme) => theme.palette.action.hover,
                 "& fieldset": { borderColor: "divider" },
                 "&:hover fieldset": { borderColor: "text.secondary" },
-                "&.Mui-focused fieldset": { borderColor: "primary.main" },
+                "&.Mui-focused fieldset": { borderColor: "primary.main", borderWidth: 2 },
               },
             }}
-            renderInput={(params) => <TextField {...params} label="Doctor" placeholder="Select doctor" />}
+            renderInput={(params) => <TextField {...params} label="Select Doctor" placeholder="Choose a doctor" />}
           />
         </Box>
 
         {/* Availability Grid */}
         {loadingAvailability ? (
-          <Grid container spacing={3} aria-busy>
+          <Grid container spacing={{ xs: 2, sm: 2.5, md: 3 }} aria-busy>
             {Array.from({ length: 7 }).map((_, idx) => (
-              <Grid key={idx} xs={12} sm={6} md={4} lg={3}>
-                <Card variant="outlined" sx={{ borderRadius: 2 }}>
+              <Grid item xs={12} sm={6} md={4} lg={3} key={idx}>
+                <Card variant="outlined" sx={{ borderRadius: 3, minHeight: 140 }}>
                   <CardContent>
-                    <Skeleton width="50%" height={28} sx={{ mb: 1 }} />
-                    <Skeleton width="70%" height={20} />
+                    <Skeleton width="50%" height={28} sx={{ mb: 1.5 }} />
+                    <Skeleton width="70%" height={24} />
                   </CardContent>
                 </Card>
               </Grid>
             ))}
           </Grid>
         ) : (
-          <Grid container spacing={3}>
+          <Grid container spacing={{ xs: 2, sm: 2.5, md: 3 }}>
             {DAYS.map((day) => (
-              <Grid xs={12} sm={6} md={4} lg={3} key={day.key}>
+              <Grid item xs={12} sm={6} md={4} lg={3} key={day.key}>
                 <DayScheduleCard day={day} schedule={availability[day.key]} />
               </Grid>
             ))}
