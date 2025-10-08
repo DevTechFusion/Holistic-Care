@@ -516,6 +516,13 @@ class AppointmentTimeConflictTest extends TestCase
             'remarks_2_id' => $this->testData['remarks2']->id,
         ]);
 
-        $response->assertStatus(422);
+        $response->assertStatus(422)
+                ->assertJsonValidationErrors(['end_time'])
+                ->assertJsonFragment([
+                    'end_time' => ['The end time must be after the start time.']
+                ])
+                ->assertJsonFragment([
+                    'message' => 'Failed to create appointment: The end time must be after the start time.'
+                ]);
     }
 }

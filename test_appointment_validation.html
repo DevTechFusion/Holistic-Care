@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Appointment Validation</title>
+</head>
+<body>
+    <h1>Test Appointment Creation with Invalid Time</h1>
+    <button onclick="testAppointment()">Test Invalid Time</button>
+    <div id="result"></div>
+
+    <script>
+        async function testAppointment() {
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                const response = await fetch('/api/appointments', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': 'Bearer YOUR_TOKEN_HERE' // Replace with actual token
+                    },
+                    body: JSON.stringify({
+                        date: '2024-01-15',
+                        start_time: '14:00:00',
+                        end_time: '13:00:00', // Invalid: end time before start time
+                        patient_name: 'Test Patient',
+                        contact_number: '1234567890',
+                        agent_id: 1,
+                        doctor_id: 1,
+                        category_id: 1,
+                        department_id: 1,
+                        source_id: 1
+                    })
+                });
+
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <h3>Response Status: ${response.status}</h3>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+                
+                if (data.message && data.message.includes('end time must be after')) {
+                    resultDiv.innerHTML += '<p style="color: green;">✅ Custom error message is working in main message field!</p>';
+                } else if (data.errors && data.errors.end_time && data.errors.end_time[0].includes('end time must be after')) {
+                    resultDiv.innerHTML += '<p style="color: orange;">⚠️ Custom error message found in errors field but not in main message</p>';
+                } else {
+                    resultDiv.innerHTML += '<p style="color: red;">❌ Custom error message not found</p>';
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
