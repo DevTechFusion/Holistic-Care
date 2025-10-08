@@ -196,11 +196,11 @@ const LoginPage = () => {
             Holistic Care CRM
           </Typography>
 
-          <Typography variant="body1" className="welcome-description">
+          {/* <Typography variant="body1" className="welcome-description">
             Lorem Ipsum is simply dummy text of the printing and typesetting
             industry. Lorem Ipsum has been the industry's standard dummy text
             ever since the 1500s.
-          </Typography>
+          </Typography> */}
         </Grid>
 
         {/* Right panel */}

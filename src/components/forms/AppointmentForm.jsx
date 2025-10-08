@@ -50,7 +50,7 @@ const DEFAULT_FORM_DATA = {
 
 const VALIDATION_RULES = {
   PHONE_MAX_LENGTH: 11,
-  PHONE_MIN_LENGTH: 10,
+  PHONE_MIN_LENGTH: 11,
   NAME_MIN_LENGTH: 2,
   NAME_MAX_LENGTH: 100,
   REQUIRED_FIELDS: [
@@ -378,7 +378,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
       if (error.response?.data) {
         const apiError = error.response.data;
         if (apiError.status === "error")
-          errorMessage = apiError.message || apiError.error || errorMessage;
+          errorMessage = apiError.error || apiError.message ||  errorMessage;
         else if (apiError.message) errorMessage = apiError.message;
         else if (apiError.error) errorMessage = apiError.error;
       } else if (error.message) {

@@ -14,6 +14,8 @@ import { getProceduresList } from "../../DAL/procedure";
 import { getDepartmentsList } from "../../DAL/departments";
 import { getAgentList } from "../../DAL/users";
 import { getSelectStatuses } from "../../DAL/status";
+import { getSelectRemarks1 } from "../../DAL/remarks1";
+import { getSelectRemarks2 } from "../../DAL/remarks2";
 
 const paymentModes = [
   { id: "cash", name: "Cash" },
@@ -27,6 +29,8 @@ const ReportsFilterPopover = ({ anchorEl, open, onClose, filters, setFilters }) 
   const [departments, setDepartments] = useState([]);
   const [procedures, setProcedures] = useState([]);
   const [statuses, setStatuses] = useState([]);
+  const [remarks1, setRemarks1] = useState([]);
+  const [remarks2, setRemarks2] = useState([]);
   const [localFilters, setLocalFilters] = useState(filters);
 
   useEffect(() => {
@@ -39,12 +43,14 @@ const ReportsFilterPopover = ({ anchorEl, open, onClose, filters, setFilters }) 
 
   const fetchData = async () => {
     try {
-      const [docRes, agentRes, deptRes, procRes, statusRes] = await Promise.all([
+      const [docRes, agentRes, deptRes, procRes, statusRes, remarks1Res, remarks2Res] = await Promise.all([
         getDoctorsList(),
         getAgentList(),
         getDepartmentsList(),
         getProceduresList(),
         getSelectStatuses(),
+        getSelectRemarks1(),
+        getSelectRemarks2(),
       ]);
 
       setDoctors(Array.isArray(docRes?.data) ? docRes.data : []);
@@ -56,6 +62,16 @@ const ReportsFilterPopover = ({ anchorEl, open, onClose, filters, setFilters }) 
         ? statusRes.data.map((s) => ({ id: s.value, name: s.label }))
         : []
       );
+      setRemarks1(
+      Array.isArray(remarks1Res?.data)
+        ? remarks1Res.data.map((r) => ({ id: r.value, name: r.label }))
+        : []
+    );
+    setRemarks2(
+      Array.isArray(remarks2Res?.data)
+        ? remarks2Res.data.map((r) => ({ id: r.value, name: r.label }))
+        : []
+    );
     } catch (error) {
       console.error("Error fetching filter data:", error);
       setDoctors([]);
@@ -63,6 +79,8 @@ const ReportsFilterPopover = ({ anchorEl, open, onClose, filters, setFilters }) 
       setDepartments([]);
       setProcedures([]);
       setStatuses([]);
+      setRemarks1([]);
+      setRemarks2([]);
     }
   };
 
@@ -84,6 +102,8 @@ const ReportsFilterPopover = ({ anchorEl, open, onClose, filters, setFilters }) 
       department_id: "",
       procedure_id: "",
       status: "",
+      remarks_1_id: "",
+      remarks_2_id: "",
       payment_mode: "",
       order_by: "created_at",
       order_direction: "desc",
@@ -212,6 +232,38 @@ const ReportsFilterPopover = ({ anchorEl, open, onClose, filters, setFilters }) 
                 {...params}
                 label="Status"
                 placeholder="Select Status"
+              />
+            )}
+            isOptionEqualToValue={(o, v) => o.id === v.id}
+          />
+
+          { /* Remarks */}
+          <Autocomplete
+            options={remarks1}
+            getOptionLabel={(option) => option.name || ""}
+            value={remarks1.find((r) => r.id === localFilters.remarks_1_id) || null}
+            onChange={(e, value) => handleChange("remarks_1_id", value?.id)}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Remark 1"
+                placeholder="Select Remark 1"
+              />
+            )}
+            isOptionEqualToValue={(o, v) => o.id === v.id}
+          />
+
+          { /* Remarks */}
+          <Autocomplete
+            options={remarks2}
+            getOptionLabel={(option) => option.name || ""}
+            value={remarks2.find((r) => r.id === localFilters.remarks_2_id) || null}
+            onChange={(e, value) => handleChange("remarks_2_id", value?.id)}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Remark 2"
+                placeholder="Select Remark 2"
               />
             )}
             isOptionEqualToValue={(o, v) => o.id === v.id}

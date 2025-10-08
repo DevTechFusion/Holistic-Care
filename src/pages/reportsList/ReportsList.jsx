@@ -30,7 +30,7 @@ const statusColors = {
 };
 
 const ReportsPage = () => {
-  const { user } = useAuth(); // ✅ GET USER
+  const { user } = useAuth(); 
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
@@ -50,6 +50,8 @@ const ReportsPage = () => {
     department_id: "",
     procedure_id: "",
     status: "",
+    remarks_1_id: "",
+    remarks_2_id: "",
     payment_mode: "",
     order_by: "created_at",
     order_direction: "desc",
@@ -87,6 +89,8 @@ const ReportsPage = () => {
         apiFilters.department_id,
         apiFilters.procedure_id,
         apiFilters.status,
+        apiFilters.remarks_1_id,
+        apiFilters.remarks_2_id,
         apiFilters.payment_mode,
         apiFilters.order_by,
         apiFilters.order_direction
@@ -126,6 +130,8 @@ const ReportsPage = () => {
         apiFilters.department_id,
         apiFilters.procedure_id,
         apiFilters.status,
+        apiFilters.remarks_1_id,
+        apiFilters.remarks_2_id,
         apiFilters.payment_mode,
         apiFilters.order_by,
         apiFilters.order_direction
