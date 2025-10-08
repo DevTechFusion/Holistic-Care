@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Appointment\CreateAppointmentRequest;
+use App\Http\Requests\Appointment\UpdateAppointmentRequest;
 use App\Services\AppointmentService;
 use Illuminate\Http\Request;
 
@@ -102,33 +104,9 @@ class AppointmentController extends Controller
     /**
      * Store a newly created appointment
      */
-    public function store(Request $request)
+    public function store(CreateAppointmentRequest $request)
     {
         try {
-            $request->validate([
-                'date' => 'required|date',
-                'start_time' => 'required|date_format:H:i:s',
-                'end_time' => 'required|date_format:H:i:s|after:start_time',
-                'patient_name' => 'required|string|max:255',
-                'contact_number' => 'required|string|max:255',
-                'agent_id' => 'required|exists:users,id',
-                'payment_mode' => 'nullable|string|max:100',
-                'amount' => 'nullable|numeric|min:0',
-                'doctor_id' => 'required|exists:doctors,id',
-                'procedure_ids' => 'nullable|array',
-                'procedure_ids.*' => 'exists:procedures,id',
-                'category_id' => 'required|exists:categories,id',
-                'department_id' => 'required|exists:departments,id',
-                'source_id' => 'required|exists:sources,id',
-                'remarks_1_id' => 'nullable|exists:remarks_1,id',
-                'remarks_2_id' => 'nullable|exists:remarks_2,id',
-                'status_id' => 'nullable|exists:statuses,id',
-                'notes' => 'nullable|string',
-                'mr_number' => 'nullable|string|max:255',
-                // Report creation flag
-                'create_report' => 'nullable|boolean',
-            ]);
-
             $appointment = $this->appointmentService->createAppointment($request->all());
 
             $message = 'Appointment created successfully';
@@ -193,34 +171,9 @@ class AppointmentController extends Controller
     /**
      * Update the specified appointment
      */
-    public function update(Request $request, $id)
+    public function update(UpdateAppointmentRequest $request, $id)
     {
         try {
-            $request->validate([
-                'date' => 'sometimes|required|date',
-                'start_time' => 'sometimes|required|date_format:H:i:s',
-                'end_time' => 'sometimes|required|date_format:H:i:s|after:start_time',
-                'duration' => 'sometimes|nullable|integer|min:1',
-                'patient_name' => 'sometimes|required|string|max:255',
-                'contact_number' => 'sometimes|required|string|max:255',
-                'agent_id' => 'sometimes|required|exists:users,id',
-                'payment_mode' => 'sometimes|nullable|string|max:100',
-                'amount' => 'sometimes|nullable|numeric|min:0',
-                'doctor_id' => 'sometimes|required|exists:doctors,id',
-                'procedure_ids' => 'sometimes|nullable|array',
-                'procedure_ids.*' => 'exists:procedures,id',
-                'category_id' => 'sometimes|required|exists:categories,id',
-                'department_id' => 'sometimes|required|exists:departments,id',
-                'source_id' => 'sometimes|required|exists:sources,id',
-                'remarks_1_id' => 'nullable|exists:remarks_1,id',
-                'remarks_2_id' => 'nullable|exists:remarks_2,id',
-                'status_id' => 'nullable|exists:statuses,id',
-                'notes' => 'nullable|string',
-                'mr_number' => 'nullable|string|max:255',
-                // Report update flag
-                'update_reports' => 'nullable|boolean',
-            ]);
-
             $appointment = $this->appointmentService->updateAppointment($id, $request->all());
 
             $message = 'Appointment updated successfully';
