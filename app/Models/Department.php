@@ -16,6 +16,16 @@ class Department extends Model
      */
     protected $fillable = [
         'name',
+        'incentive_percentage',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'incentive_percentage' => 'decimal:2',
     ];
 
     /**
