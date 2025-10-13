@@ -76,7 +76,7 @@ const AgentDashboard = () => {
             <MenuItem value="monthly">Monthly</MenuItem>
           </Select>
 
-          <Button
+          {/* <Button
             variant="contained"
             sx={{
               borderRadius: "12px",
@@ -91,7 +91,7 @@ const AgentDashboard = () => {
             ) : (
               `Incentive: ${incentive} Rs.`
             )}
-          </Button>
+          </Button> */}
         </Stack>
       </Stack>
 

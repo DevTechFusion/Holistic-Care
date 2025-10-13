@@ -155,6 +155,21 @@ const routes = [
     role: "managerly",
   },
   {
+    path: "/manager/agents",
+    element: <AgentList />,
+    role: "managerly",
+  },
+  {
+    path: "/manager/procedures",
+    element: <ProceduresPage />,
+    role: "managerly",
+  },
+  {
+    path: "/manager/departments",
+    element: <DepartmentsPage />,
+    role: "managerly",
+  },
+  {
     path: "/manager/reports",
     element: <ReportsPage />,
     role: "managerly",
@@ -165,10 +180,11 @@ const routes = [
     role: "managerly",
   },
   {
-    path: "/agents",
-    element: <AgentList />,
+    path: "/manager/pharmacy",
+    element: <PharmacyList />,
     role: "managerly",
-  }
+  },
+ 
 ];
 // Protected Route Component
 const ProtectedRoute = () => {

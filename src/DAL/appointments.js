@@ -32,5 +32,9 @@ export const updateAppointment = (id, data) => {
     return invokeApi(reqObj);
 };
  
-
+export const getAppointmentsByDoctor = (start_date = "",end_date = "", doctor_id = "") => {
+  return invokeApi({
+    path: `api/appointments?start_date=${start_date}&end_date=${end_date}&doctor_id=${doctor_id}`,
+  });
+};
 

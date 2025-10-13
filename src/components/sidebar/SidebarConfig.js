@@ -145,12 +145,27 @@ const SidebarConfig = {
         {
           title: "Agent List",
           icon: AgentIcon,
-          path: "/agents",
+          path: "/manager/agents",
         },
         {
           title: "Doctor List",
           icon: DoctorIcon,
           path: "/manager/doctors",
+        },
+        {
+          title: "Department List",
+          icon: DepartmentIcon,
+          path: "/manager/departments",
+        },
+        {
+          title: "Pharmacy List",
+          icon: PharmacyIcon,
+          path: "/manager/pharmacy",
+        },
+        {
+          title: "Procedures List",
+          icon: ProcedureIcon,
+          path: "/manager/procedures",
         },
       ],
     },

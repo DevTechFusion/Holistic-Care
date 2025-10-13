@@ -29,8 +29,6 @@ import { useAuth } from "../../contexts/AuthContext";
 
 const PharmacyList = () => {
   const { enqueueSnackbar } = useSnackbar();
-  const { user } = useAuth();
-
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedPharmacy, setSelectedPharmacy] = useState(null);
@@ -51,6 +49,10 @@ const PharmacyList = () => {
 
   const [selectedDescription, setSelectedDescription] = useState("");
   const [descriptionModalOpen, setDescriptionModalOpen] = useState(false);
+
+  const { user } = useAuth();
+  const isSuperAdmin = user?.roles?.[0]?.name === "super_admin";
+  const isManager = user?.roles?.[0]?.name === "managerly";
 
   const handleOpenDescription = (desc) => {
     setSelectedDescription(desc || "");
@@ -152,18 +154,19 @@ const PharmacyList = () => {
         </Typography>
 
         <Stack direction="row" spacing={2} alignItems="center">
-          <Button
+           <Button variant="outlined" onClick={handleOpenFilters}>
+            Filters
+          </Button>
+          {(isSuperAdmin || isManager) && <Button
             variant="contained"
             sx={{ fontWeight: "bold" }}
             disableElevation
           >
             Total Incentive: {Number(totalIncentive).toFixed(2)}
           </Button>
+          }
           <Button variant="contained" onClick={() => setOpenModal(true)}>
             + Add Pharmacy Record
-          </Button>
-          <Button variant="outlined" onClick={handleOpenFilters}>
-            Filters
           </Button>
         </Stack>
       </Box>

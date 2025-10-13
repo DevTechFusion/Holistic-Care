@@ -30,7 +30,6 @@ const statusColors = {
 };
 
 const ReportsPage = () => {
-  const { user } = useAuth(); 
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
@@ -41,6 +40,11 @@ const ReportsPage = () => {
   const [statuses, setStatuses] = useState([]);
 
   const { enqueueSnackbar } = useSnackbar();
+
+  const { user } = useAuth(); 
+  const role = user?.roles?.[0]?.name;
+  const isSuperAdmin = role === "super_admin";
+  const isManager = role === "managerly";
 
   const [filters, setFilters] = useState({
     start_date: "",
@@ -56,6 +60,8 @@ const ReportsPage = () => {
     order_by: "created_at",
     order_direction: "desc",
   });
+
+  
 
   // ✅ Fetch statuses
   const fetchStatuses = async () => {
@@ -179,9 +185,12 @@ const ReportsPage = () => {
           >
             Filters
           </Button>
-          <Button variant="contained" color="primary" onClick={handleExport} disabled={exporting}>
+          { (isSuperAdmin || isManager) && (
+            <Button variant="contained" color="primary" onClick={handleExport} disabled={exporting}>
             {exporting ? "Exporting..." : "Export CSV"}
           </Button>
+            
+          )}
         </Box>
       </Box>
 

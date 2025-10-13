@@ -23,7 +23,7 @@ const WelcomeSection = () => {
           fontSize: '1.1rem'
         }}
       >
-        How are you today?
+        Let's get started!
       </Typography>
     </Box>
   );

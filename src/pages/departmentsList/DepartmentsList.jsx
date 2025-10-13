@@ -16,6 +16,7 @@ import { getAllDepartments, deleteDepartment } from "../../DAL/departments";
 import CreateDepartmentModal from "../../components/forms/DepartmentForm";
 import ActionButtons from "../../constants/actionButtons";
 import { useAuth } from "../../contexts/AuthContext";
+
 const DepartmentsPage = () => {
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -29,6 +30,7 @@ const DepartmentsPage = () => {
   const { user } = useAuth();
   const role = user?.roles?.[0]?.name ?? null;
   const isSuperAdmin = role === "super_admin";
+  const isManager = role === "managerly";
 
   const fetchDepartments = async () => {
     setLoading(true);
@@ -70,8 +72,8 @@ const DepartmentsPage = () => {
         alignItems="center"
         mb={2}
       >
-        <Typography variant="h5">Departments</Typography>
-        {isSuperAdmin && (
+        <Typography variant="h5">Pharmacy Departments</Typography>
+        {(isSuperAdmin || isManager) && (
           <Button variant="contained" onClick={() => setOpenModal(true)}>
             + Add Department
           </Button>
@@ -90,25 +92,37 @@ const DepartmentsPage = () => {
               <TableHead>
                 <TableRow>
                   <TableCell>Sr#</TableCell>
-                  <TableCell>Name</TableCell>
-                  {isSuperAdmin && <TableCell>Actions</TableCell>}
+                  <TableCell>Department Name</TableCell>
+                  <TableCell>Incentive %</TableCell>
+                  {(isSuperAdmin || isManager) && <TableCell>Actions</TableCell>}
                 </TableRow>
               </TableHead>
               <TableBody>
-                {departments.map((dept, idx) => (
-                  <TableRow key={dept.id}>
-                    <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
-                    <TableCell>{dept.name}</TableCell>
-                    {isSuperAdmin && (
-                      <TableCell>
-                        <ActionButtons
-                          onEdit={() => handleEdit(dept)}
-                          onDelete={() => handleDelete(dept.id)}
-                        />
-                      </TableCell>
-                    )}
+                {departments.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={isSuperAdmin || isManager ? 4 : 3} align="center">
+                      <Typography variant="body2" color="textSecondary" py={3}>
+                        No departments found
+                      </Typography>
+                    </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  departments.map((dept, idx) => (
+                    <TableRow key={dept.id}>
+                      <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
+                      <TableCell>{dept.name}</TableCell>
+                      <TableCell>{dept.incentive_percentage}%</TableCell>
+                      {(isSuperAdmin || isManager) && (
+                        <TableCell>
+                          <ActionButtons
+                            onEdit={() => handleEdit(dept)}
+                            onDelete={() => handleDelete(dept.id)}
+                          />
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
 

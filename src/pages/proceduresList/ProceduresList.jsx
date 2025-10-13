@@ -32,6 +32,7 @@ const ProceduresPage = () => {
   const { user } = useAuth();
   const role = user?.roles?.[0]?.name ?? null;
   const isSuperAdmin = role === "super_admin";
+  const isManager = role === "managerly";
 
   const fetchProcedures = async () => {
     setLoading(true);
@@ -77,7 +78,7 @@ const ProceduresPage = () => {
         mb={2}
       >
         <Typography variant="h5">Procedures</Typography>
-        {isSuperAdmin && (
+        {(isSuperAdmin || isManager) && (
            <Button variant="contained" onClick={() => setOpenModal(true)}>
           + Add Procedure
         </Button>
@@ -98,7 +99,7 @@ const ProceduresPage = () => {
                 <TableRow>
                   <TableCell>Sr#</TableCell>
                   <TableCell>Procedure Name</TableCell>
-                  {isSuperAdmin && <TableCell>Actions</TableCell>}
+                  {(isSuperAdmin || isManager) && <TableCell>Actions</TableCell>}
               
                 </TableRow>
               </TableHead>
@@ -108,7 +109,7 @@ const ProceduresPage = () => {
                     <TableRow key={proc.id || idx}>
                       <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
                       <TableCell>{proc.name}</TableCell>
-                      {isSuperAdmin && (
+                      {(isSuperAdmin || isManager) &&  (
                         <TableCell>
                         <ActionButtons
                           onEdit={() => handleUpdateProcedure(proc)}

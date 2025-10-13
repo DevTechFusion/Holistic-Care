@@ -33,6 +33,7 @@ const DoctorsPage = () => {
   const { user } = useAuth();
   const role = user?.roles?.[0]?.name ?? null;
   const isSuperAdmin = role === "super_admin";
+  const isManager = role === "managerly";
 
   const fetchDoctors = useCallback(async () => {
     setLoading(true);
@@ -78,7 +79,7 @@ const DoctorsPage = () => {
         mb={2}
       >
         <Typography variant="h5">Doctors</Typography>
-        {isSuperAdmin && (
+        {(isSuperAdmin || isManager) && (
           <Button variant="contained" onClick={() => setOpenModal(true)}>
             + Add Doctor
           </Button>
@@ -133,7 +134,7 @@ const DoctorsPage = () => {
                           </Box>
                         ))}
                     </TableCell>
-                    {isSuperAdmin && (
+                    {(isSuperAdmin || isManager) && (
                       <TableCell>
                         <ActionButtons
                           onEdit={() => handleEdit(doctor)}
