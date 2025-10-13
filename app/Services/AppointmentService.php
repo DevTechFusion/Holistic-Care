@@ -792,7 +792,8 @@ class AppointmentService extends CrudeService
     }
 
     /**
-     * Create or update incentive (1%) for an appointment when amount is present and status is "Arrived".
+     * Create or update incentive for an appointment when amount is present and status is "Arrived".
+     * Uses the department's incentive percentage or defaults to 1%.
      */
     protected function upsertIncentiveForAppointment(Appointment $appointment): void
     {
@@ -803,7 +804,7 @@ class AppointmentService extends CrudeService
         }
 
         $amount = (float) $appointment->amount;
-        $percentage = 1.00; // 1%
+        $percentage = $appointment->department->incentive_percentage ?? 1.00; // Use department percentage or default to 1%
         $incentiveAmount = round(($amount * $percentage) / 100, 2);
 
         Incentive::updateOrCreate(

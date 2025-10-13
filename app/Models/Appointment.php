@@ -369,7 +369,7 @@ class Appointment extends Model
         static::created(function ($appointment) {
             if (!empty($appointment->amount) && !empty($appointment->agent_id) && $appointment->isStatusArrived()) {
                 $amount = (float) $appointment->amount;
-                $percentage = 1.00; // 1%
+                $percentage = $appointment->department->incentive_percentage ?? 1.00; // Use department percentage or default to 1%
                 $incentiveAmount = round(($amount * $percentage) / 100, 2);
 
                 \App\Models\Incentive::create([
@@ -384,10 +384,10 @@ class Appointment extends Model
 
         // Update incentive when appointment is updated
         static::updated(function ($appointment) {
-            if ($appointment->wasChanged('amount') || $appointment->wasChanged('agent_id') || $appointment->wasChanged('status_id')) {
+            if ($appointment->wasChanged('amount') || $appointment->wasChanged('agent_id') || $appointment->wasChanged('status_id') || $appointment->wasChanged('department_id')) {
                 if (!empty($appointment->amount) && !empty($appointment->agent_id) && $appointment->isStatusArrived()) {
                     $amount = (float) $appointment->amount;
-                    $percentage = 1.00; // 1%
+                    $percentage = $appointment->department->incentive_percentage ?? 1.00; // Use department percentage or default to 1%
                     $incentiveAmount = round(($amount * $percentage) / 100, 2);
 
                     \App\Models\Incentive::updateOrCreate(

@@ -43,4 +43,12 @@ class Department extends Model
     {
         return $this->hasMany(Doctor::class);
     }
+
+    /**
+     * Get the appointments for the department.
+     */
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class);
+    }
 }
