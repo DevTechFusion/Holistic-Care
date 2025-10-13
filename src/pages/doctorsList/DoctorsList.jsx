@@ -13,12 +13,13 @@ import {
   TableBody,
   TablePagination,
 } from "@mui/material";
-  import { useCallback } from "react";
+import { useCallback } from "react";
 import { getDoctors, deleteDoctor } from "../../DAL/doctors";
 import CreateDoctorModal from "../../components/forms/DoctorForm";
 import { useSnackbar } from "notistack";
 import ActionButtons from "../../constants/actionButtons";
 import { useAuth } from "../../contexts/AuthContext";
+import dayjs from "dayjs";
 
 const DoctorsPage = () => {
   const [doctors, setDoctors] = useState([]);
@@ -128,12 +129,17 @@ const DoctorsPage = () => {
                               style={{ color: a.available ? "green" : "red" }}
                             >
                               {a.available
-                                ? `${a.start_time} - ${a.end_time}`
+                                ? `${dayjs(a.start_time, "HH:mm").format(
+                                    "hh:mm A"
+                                  )} - ${dayjs(a.end_time, "HH:mm").format(
+                                    "hh:mm A"
+                                  )}`
                                 : "Unavailable"}
                             </span>
                           </Box>
                         ))}
                     </TableCell>
+
                     {(isSuperAdmin || isManager) && (
                       <TableCell>
                         <ActionButtons
