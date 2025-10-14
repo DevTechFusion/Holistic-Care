@@ -129,15 +129,25 @@ class RoleController extends Controller
 
     /**
      * Assign permissions to role
+     * Supports both legacy format (permission names) and enhanced format (permission objects with module)
      */
     public function assignPermissions(AssignPermissionsRequest $request, $id)
     {
         try {
-            $this->roleService->assignPermissions($id, $request->validated()['permissions']);
+            $normalizedPermissions = $request->getNormalizedPermissions();
+            $this->roleService->assignPermissions($id, $normalizedPermissions);
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Permissions assigned successfully'
+                'message' => 'Permissions assigned successfully',
+                'assigned_permissions' => collect($normalizedPermissions)->map(function($permission) {
+                    return [
+                        'id' => $permission->id,
+                        'name' => $permission->name,
+                        'module' => $permission->module,
+                        'display_name' => $permission->display_name
+                    ];
+                })
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -150,15 +160,25 @@ class RoleController extends Controller
 
     /**
      * Remove permissions from role
+     * Supports both legacy format (permission names) and enhanced format (permission objects with module)
      */
     public function removePermissions(AssignPermissionsRequest $request, $id)
     {
         try {
-            $this->roleService->removePermissions($id, $request->validated()['permissions']);
+            $normalizedPermissions = $request->getNormalizedPermissions();
+            $this->roleService->removePermissions($id, $normalizedPermissions);
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Permissions removed successfully'
+                'message' => 'Permissions removed successfully',
+                'removed_permissions' => collect($normalizedPermissions)->map(function($permission) {
+                    return [
+                        'id' => $permission->id,
+                        'name' => $permission->name,
+                        'module' => $permission->module,
+                        'display_name' => $permission->display_name
+                    ];
+                })
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -171,15 +191,25 @@ class RoleController extends Controller
 
     /**
      * Sync permissions for role
+     * Supports both legacy format (permission names) and enhanced format (permission objects with module)
      */
     public function syncPermissions(AssignPermissionsRequest $request, $id)
     {
         try {
-            $this->roleService->syncPermissions($id, $request->validated()['permissions']);
+            $normalizedPermissions = $request->getNormalizedPermissions();
+            $this->roleService->syncPermissions($id, $normalizedPermissions);
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Permissions synced successfully'
+                'message' => 'Permissions synced successfully',
+                'synced_permissions' => collect($normalizedPermissions)->map(function($permission) {
+                    return [
+                        'id' => $permission->id,
+                        'name' => $permission->name,
+                        'module' => $permission->module,
+                        'display_name' => $permission->display_name
+                    ];
+                })
             ], 200);
         } catch (\Exception $e) {
             return response()->json([

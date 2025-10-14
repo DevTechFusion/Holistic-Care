@@ -1,0 +1,486 @@
+{
+    "info": {
+        "name": "RBAC API Collection",
+        "description": "Complete collection for Role-Based Access Control APIs",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{auth_token}}",
+                "type": "string"
+            }
+        ]
+    },
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:8000/api",
+            "type": "string"
+        },
+        {
+            "key": "auth_token",
+            "value": "",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "Authentication",
+            "item": [
+                {
+                    "name": "Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"superadmin@example.com\",\n    \"password\": \"admin123!\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/login",
+                            "host": ["{{base_url}}"],
+                            "path": ["login"]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.collectionVariables.set('auth_token', response.data.token);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Roles",
+            "item": [
+                {
+                    "name": "Get All Roles",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/roles",
+                            "host": ["{{base_url}}"],
+                            "path": ["roles"]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Role",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"test_role\",\n    \"guard_name\": \"sanctum\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/roles",
+                            "host": ["{{base_url}}"],
+                            "path": ["roles"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Single Role",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/roles/1",
+                            "host": ["{{base_url}}"],
+                            "path": ["roles", "1"]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Role",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"updated_role\",\n    \"guard_name\": \"sanctum\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/roles/1",
+                            "host": ["{{base_url}}"],
+                            "path": ["roles", "1"]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Role",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/roles/1",
+                            "host": ["{{base_url}}"],
+                            "path": ["roles", "1"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Permissions",
+            "item": [
+                {
+                    "name": "Get All Permissions",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/permissions",
+                            "host": ["{{base_url}}"],
+                            "path": ["permissions"]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Permission",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"custom_action\",\n    \"module\": \"CustomModule\",\n    \"display_name\": \"Custom Action\",\n    \"guard_name\": \"sanctum\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/permissions",
+                            "host": ["{{base_url}}"],
+                            "path": ["permissions"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Single Permission",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/permissions/1",
+                            "host": ["{{base_url}}"],
+                            "path": ["permissions", "1"]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Permission",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"updated_permission\",\n    \"module\": \"UpdatedModule\",\n    \"display_name\": \"Updated Permission\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/permissions/1",
+                            "host": ["{{base_url}}"],
+                            "path": ["permissions", "1"]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Permission",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/permissions/1",
+                            "host": ["{{base_url}}"],
+                            "path": ["permissions", "1"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Users",
+            "item": [
+                {
+                    "name": "Get All Users",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/users",
+                            "host": ["{{base_url}}"],
+                            "path": ["users"]
+                        }
+                    }
+                },
+                {
+                    "name": "Create User",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"test@example.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/users",
+                            "host": ["{{base_url}}"],
+                            "path": ["users"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Single User",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/users/1",
+                            "host": ["{{base_url}}"],
+                            "path": ["users", "1"]
+                        }
+                    }
+                },
+                {
+                    "name": "Update User",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Updated User\",\n    \"email\": \"updated@example.com\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/users/1",
+                            "host": ["{{base_url}}"],
+                            "path": ["users", "1"]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete User",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/users/1",
+                            "host": ["{{base_url}}"],
+                            "path": ["users", "1"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Permission Assignment",
+            "item": [
+                {
+                    "name": "Assign Permissions to Role",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"permissions\": [\"view\", \"create\", \"edit\", \"delete\"]\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/roles/1/assign-permissions",
+                            "host": ["{{base_url}}"],
+                            "path": ["roles", "1", "assign-permissions"]
+                        }
+                    }
+                },
+                {
+                    "name": "Remove Permissions from Role",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"permissions\": [\"delete\", \"edit\"]\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/roles/1/remove-permissions",
+                            "host": ["{{base_url}}"],
+                            "path": ["roles", "1", "remove-permissions"]
+                        }
+                    }
+                },
+                {
+                    "name": "Sync Permissions (Replace All)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"permissions\": [\"view\", \"create\", \"search\"]\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/roles/1/sync-permissions",
+                            "host": ["{{base_url}}"],
+                            "path": ["roles", "1", "sync-permissions"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Role Permissions",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/roles/1/permissions",
+                            "host": ["{{base_url}}"],
+                            "path": ["roles", "1", "permissions"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Available Permissions",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/roles-permissions/all-permissions",
+                            "host": ["{{base_url}}"],
+                            "path": ["roles-permissions", "all-permissions"]
+                        }
+                    }
+                },
+                {
+                    "name": "Check Role Permissions",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"role_id\": 1,\n    \"permissions\": [\"view\", \"create\", \"edit\"]\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/roles/check-permissions",
+                            "host": ["{{base_url}}"],
+                            "path": ["roles", "check-permissions"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Available Permissions for Role",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/roles/1/available-permissions",
+                            "host": ["{{base_url}}"],
+                            "path": ["roles", "1", "available-permissions"]
+                        }
+                    }
+                },
+                {
+                    "name": "Assign Role to User",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"role_id\": 2\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/users/1/assign-role",
+                            "host": ["{{base_url}}"],
+                            "path": ["users", "1", "assign-role"]
+                        }
+                    }
+                },
+                {
+                    "name": "Remove Role from User",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"role_id\": 2\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/users/1/remove-role",
+                            "host": ["{{base_url}}"],
+                            "path": ["users", "1", "remove-role"]
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

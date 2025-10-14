@@ -14,15 +14,17 @@ class CheckPermission
      * Handle an incoming request.
      *
      * @param  string|array  $permissions
-     *
-     * @throws \Spatie\Permission\Exceptions\UnauthorizedException
      */
     public function handle(Request $request, Closure $next, $permissions, ?string $module = null, ?string $guard = null): Response
     {
         $authGuard = app('auth')->guard($guard);
 
         if ($authGuard->guest()) {
-            throw UnauthorizedException::notLoggedIn();
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Authentication required.',
+                'code' => 'UNAUTHENTICATED'
+            ], 401);
         }
 
         $requiredPermissions = is_array($permissions) ? $permissions : explode('|', $permissions);
@@ -33,7 +35,14 @@ class CheckPermission
             }
         }
 
-        throw UnauthorizedException::forPermissions($requiredPermissions);
+        // Return 403 Forbidden with clean error message
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Access denied. You do not have permission to perform this action.',
+            'code' => 'FORBIDDEN',
+            'required_permission' => $requiredPermissions[0],
+            'module' => $module
+        ], 403);
     }
 
     /**

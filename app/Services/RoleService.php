@@ -115,28 +115,52 @@ class RoleService extends CrudeService
 
     /**
      * Assign permissions to role
+     * Supports both legacy format (permission names) and enhanced format (permission objects)
      */
     public function assignPermissions($roleId, $permissions)
     {
         $role = $this->_find($roleId);
+        
+        // If permissions are already Permission models (from enhanced request), use them directly
+        if (is_array($permissions) && !empty($permissions) && $permissions[0] instanceof \Spatie\Permission\Models\Permission) {
+            return $role->givePermissionTo($permissions);
+        }
+        
+        // Legacy format: permission names as strings
         return $role->givePermissionTo($permissions);
     }
 
     /**
      * Remove permissions from role
+     * Supports both legacy format (permission names) and enhanced format (permission objects)
      */
     public function removePermissions($roleId, $permissions)
     {
         $role = $this->_find($roleId);
+        
+        // If permissions are already Permission models (from enhanced request), use them directly
+        if (is_array($permissions) && !empty($permissions) && $permissions[0] instanceof \Spatie\Permission\Models\Permission) {
+            return $role->revokePermissionTo($permissions);
+        }
+        
+        // Legacy format: permission names as strings
         return $role->revokePermissionTo($permissions);
     }
 
     /**
      * Sync permissions for role
+     * Supports both legacy format (permission names) and enhanced format (permission objects)
      */
     public function syncPermissions($roleId, $permissions)
     {
         $role = $this->_find($roleId);
+        
+        // If permissions are already Permission models (from enhanced request), use them directly
+        if (is_array($permissions) && !empty($permissions) && $permissions[0] instanceof \Spatie\Permission\Models\Permission) {
+            return $role->syncPermissions($permissions);
+        }
+        
+        // Legacy format: permission names as strings
         return $role->syncPermissions($permissions);
     }
 
