@@ -22,6 +22,15 @@ class RoleService extends CrudeService
     }
 
     /**
+     * Get all roles without pagination
+     */
+    public function getAllRolesWithoutPagination()
+    {
+        // return $this->_all(null, ['permissions']);
+        return $this->_all();
+    }
+
+    /**
      * Get role by ID
      */
     public function getRoleById($id)

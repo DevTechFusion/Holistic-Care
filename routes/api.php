@@ -121,6 +121,7 @@ Route::middleware(['sanctum.token', 'auth:sanctum'])->group(function () {
 
     // Role management routes
     Route::apiResource('roles', App\Http\Controllers\Api\RoleController::class)->middleware(PermissionHelper::resourcePermissions('Roles'));
+    Route::get('roles-all', [App\Http\Controllers\Api\RoleController::class, 'getAll'])->middleware(PermissionHelper::actionPermission('view', 'Roles'));
     Route::post('roles/{id}/assign-permissions', [App\Http\Controllers\Api\RoleController::class, 'assignPermissions'])->middleware(PermissionHelper::actionPermission('assign', 'Roles'));
     Route::post('roles/{id}/remove-permissions', [App\Http\Controllers\Api\RoleController::class, 'removePermissions'])->middleware(PermissionHelper::actionPermission('assign', 'Roles'));
     Route::post('roles/{id}/sync-permissions', [App\Http\Controllers\Api\RoleController::class, 'syncPermissions'])->middleware(PermissionHelper::actionPermission('assign', 'Roles'));
