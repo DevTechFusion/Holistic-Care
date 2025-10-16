@@ -29,6 +29,7 @@ class UpdateDepartmentRequest extends FormRequest
                 'max:255',
                 Rule::unique('departments', 'name')->ignore($this->department),
             ],
+            'incentive_percentage' => 'nullable|numeric|min:0|max:100',
         ];
     }
 
@@ -44,6 +45,9 @@ class UpdateDepartmentRequest extends FormRequest
             'name.string' => 'Department name must be a string.',
             'name.max' => 'Department name cannot exceed 255 characters.',
             'name.unique' => 'A department with this name already exists.',
+            'incentive_percentage.numeric' => 'Incentive percentage must be a number.',
+            'incentive_percentage.min' => 'Incentive percentage cannot be less than 0.',
+            'incentive_percentage.max' => 'Incentive percentage cannot exceed 100.',
         ];
     }
 }

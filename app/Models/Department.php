@@ -16,6 +16,16 @@ class Department extends Model
      */
     protected $fillable = [
         'name',
+        'incentive_percentage',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'incentive_percentage' => 'decimal:2',
     ];
 
     /**
@@ -32,5 +42,13 @@ class Department extends Model
     public function doctors()
     {
         return $this->hasMany(Doctor::class);
+    }
+
+    /**
+     * Get the appointments for the department.
+     */
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class);
     }
 }
