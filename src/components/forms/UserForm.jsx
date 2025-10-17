@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   TextField,
   Select,
@@ -10,18 +10,13 @@ import {
   IconButton,
   InputAdornment,
   Box,
+  CircularProgress,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useSnackbar } from "notistack";
 import { createUser, updateUser } from "../../DAL/users";
+import { getSelectRoles } from "../../DAL/roles";
 import GenericFormModal from "./GenericForm";
-
-// Constants moved outside component for better performance
-const ROLE_OPTIONS = [
-  { value: "agent", label: "Agent" },
-  { value: "managerly", label: "Manager" },
-  { value: "admin", label: "Admin" },
-];
 
 const DEFAULT_FORM_DATA = {
   name: "",
@@ -37,20 +32,34 @@ const VALIDATION_RULES = {
   REQUIRED_FIELDS_CREATE: ['name', 'email', 'password']
 };
 
-const UserForm = ({ open, onClose, isEditing = false, data = {}, defaultRole }) => {
+const UserForm = ({ open, onClose, isEditing = false, data = {} }) => {
   const { enqueueSnackbar } = useSnackbar();
   const [formData, setFormData] = useState(DEFAULT_FORM_DATA);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [roles, setRoles] = useState([]);
+  const [loadingRoles, setLoadingRoles] = useState(false);
 
-  // Memoized options to prevent unnecessary re-renders
-  const formOptions = useMemo(() => ({
-    roleOptions: ROLE_OPTIONS.map(role => ({
-      value: role.value,
-      label: role.label
-    }))
-  }), []);
+  // Fetch roles from API
+  useEffect(() => {
+    if (open) {
+      setLoadingRoles(true);
+      getSelectRoles()
+        .then((res) => {
+          const rolesData = res?.data || [];
+          setRoles(rolesData);
+        })
+        .catch((err) => {
+          console.error("Failed to fetch roles", err);
+          enqueueSnackbar("Failed to load roles", { variant: "error" });
+          setRoles([]);
+        })
+        .finally(() => {
+          setLoadingRoles(false);
+        });
+    }
+  }, [open, enqueueSnackbar]);
 
   // Validation functions
   const validateField = useCallback((field, value) => {
@@ -95,7 +104,7 @@ const UserForm = ({ open, onClose, isEditing = false, data = {}, defaultRole }) 
       if (error) newErrors[field] = error;
     });
 
-    // Role validation - always required for creation, but auto-selected when defaultRole is provided
+    // Role validation - always required for creation
     if (!isEditing) {
       const roleError = validateField('role', formData.role);
       if (roleError) newErrors.role = roleError;
@@ -124,22 +133,32 @@ const UserForm = ({ open, onClose, isEditing = false, data = {}, defaultRole }) 
   useEffect(() => {
     if (open) {
       if (isEditing && data) {
+        // Extract role name - handle different API response formats
+        let roleName = "";
+        if (typeof data.role === "string") {
+          roleName = data.role;
+        } else if (data.role?.name) {
+          roleName = data.role.name;
+        } else if (data.roles && Array.isArray(data.roles) && data.roles.length > 0) {
+          roleName = data.roles[0].name;
+        }
+        
+        console.log("Edit user data:", data); // Debug log
+        console.log("Extracted role name:", roleName); // Debug log
+        
         setFormData({
           name: data.name || "",
           email: data.email || "",
           password: "", // Always blank in edit mode for security
-          role: data.role || "",
+          role: roleName,
         });
       } else {
-        setFormData({
-          ...DEFAULT_FORM_DATA,
-          role: defaultRole || "", // Auto-select role when creating
-        });
+        setFormData(DEFAULT_FORM_DATA);
       }
       setErrors({});
       setShowPassword(false);
     }
-  }, [open, isEditing, data, defaultRole]);
+  }, [open, isEditing, data]);
 
   // Handle form submission
   const handleSubmit = async () => {
@@ -228,6 +247,16 @@ const UserForm = ({ open, onClose, isEditing = false, data = {}, defaultRole }) 
   const togglePasswordVisibility = useCallback(() => {
     setShowPassword(prev => !prev);
   }, []);
+
+  // Format role name for display
+  const formatRoleName = (name) => {
+    if (!name) return "";
+    // Convert snake_case or any case to Title Case
+    return name
+      .split(/[_\s]+/)
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  };
 
   return (
     <GenericFormModal
@@ -319,21 +348,28 @@ const UserForm = ({ open, onClose, isEditing = false, data = {}, defaultRole }) 
               Role Assignment
             </Typography>
             
-            {/* Show role field when creating without defaultRole */}
-            {!isEditing && !defaultRole && (
-              <FormControl fullWidth error={!!errors.role}>
+            {/* Show role dropdown when creating */}
+            {!isEditing && (
+              <FormControl fullWidth error={!!errors.role} disabled={loadingRoles}>
                 <InputLabel>Role *</InputLabel>
                 <Select
                   value={formData.role}
                   onChange={(e) => handleChange("role", e.target.value)}
                   label="Role *"
+                  startAdornment={
+                    loadingRoles ? (
+                      <InputAdornment position="start">
+                        <CircularProgress size={20} />
+                      </InputAdornment>
+                    ) : null
+                  }
                 >
                   <MenuItem value="">
                     <em>Select a role</em>
                   </MenuItem>
-                  {formOptions.roleOptions.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      {option.label}
+                  {roles.map((role) => (
+                    <MenuItem key={role.id} value={role.name}>
+                      {formatRoleName(role.name)}
                     </MenuItem>
                   ))}
                 </Select>
@@ -343,29 +379,6 @@ const UserForm = ({ open, onClose, isEditing = false, data = {}, defaultRole }) 
                   </Typography>
                 )}
               </FormControl>
-            )}
-
-            {/* Show auto-selected role when defaultRole is provided */}
-            {!isEditing && defaultRole && (
-              <Box sx={{ 
-                p: 2, 
-                backgroundColor: 'primary.50', 
-                borderRadius: 1,
-                border: '1px solid',
-                borderColor: 'primary.200'
-              }}>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <Typography variant="body2" color="primary.main" sx={{ fontWeight: 600 }}>
-                    Role:
-                  </Typography>
-                  <Typography variant="body2" color="text.primary" sx={{ fontWeight: 500 }}>
-                    {defaultRole.charAt(0).toUpperCase() + defaultRole.slice(1)}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    (automatically assigned)
-                  </Typography>
-                </Stack>
-              </Box>
             )}
 
             {/* Show current role when editing */}
@@ -382,7 +395,7 @@ const UserForm = ({ open, onClose, isEditing = false, data = {}, defaultRole }) 
                     Current Role:
                   </Typography>
                   <Typography variant="body2" color="text.primary" sx={{ fontWeight: 500 }}>
-                    {formData.role ? formData.role.charAt(0).toUpperCase() + formData.role.slice(1) : 'Not assigned'}
+                    {formData.role ? formatRoleName(formData.role) : 'Not assigned'}
                   </Typography>
                 </Stack>
               </Box>

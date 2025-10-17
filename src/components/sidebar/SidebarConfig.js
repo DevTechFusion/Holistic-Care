@@ -66,10 +66,20 @@ const SidebarConfig = {
           path: "/sources",
         },
         {
+          title: "Roles List",
+          icon: UserIcon,
+          path: "/roles",
+        },
+        {
           title: "Status List",
           icon: StatusIcon,
           path: "/statuses",
         },
+        {
+          title: "Users List",
+          icon: UserIcon,
+          path: "/users",
+        }
       ],
     },
     {

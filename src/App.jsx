@@ -22,7 +22,9 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import AuthLayout from "./layouts/AuthLayout";
 import ComplaintList from "./pages/complaintList/ComplaintList";
 import SourcesPage from "./pages/MetaSourceList/MetaSourceList";
+import RolesList from "./pages/roleList/RoleList";
 import StatusesPage from "./pages/StatusList/StatusList";
+import UsersList from "./pages/usersList/UsersList";
 import AgentDashboard from "./pages/dashboard/agentDashboard/AgentDashboard";
 import ManagerDashboard from "./pages/dashboard/managerDashboard/ManagerDashboard";
 import NoAuthLayout from "./layouts/NoAuth";
@@ -91,6 +93,16 @@ const routes = [
   {
     path: "/statuses",
     element: <StatusesPage />,
+    role: "super_admin",
+  },
+  {
+    path: "/roles",
+    element: <RolesList />,
+    role: "super_admin",
+  },
+  {
+    path: "/users",
+    element: <UsersList />,
     role: "super_admin",
   },
 

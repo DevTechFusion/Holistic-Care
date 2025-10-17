@@ -73,7 +73,7 @@ const UsersPage = () => {
         alignItems="center"
         mb={2}
       >
-        <Typography variant="h5">Users</Typography>
+        <Typography variant="h5">Agents</Typography>
         <Button variant="contained" onClick={() => setOpenModal(true)}>
           + Add Agent
         </Button>
