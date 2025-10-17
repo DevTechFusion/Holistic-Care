@@ -84,6 +84,20 @@ All API responses follow this standard format:
 | POST | `/api/users/{id}/assign-role` | Assign role to user |
 | POST | `/api/users/{id}/remove-role` | Remove role from user |
 
+### User Role Filtering
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/users/by-roles` | Get users filtered by role(s) or all users |
+
+**Query Parameters:**
+- `roles` (required): Role name(s) or "all"
+  - Single role: `agent`
+  - Multiple roles: `agent,manager`
+  - All users: `all`
+- `per_page` (optional): Number of users per page (default: 15)
+- `page` (optional): Page number (default: 1)
+
 ### User Permission Management
 
 | Method | Endpoint | Description |
