@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Pharmacy;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdatePharmacyRequest extends FormRequest
 {
@@ -21,11 +22,18 @@ class UpdatePharmacyRequest extends FormRequest
      */
     public function rules(): array
     {
+        $pharmacyId = request()->route('id');
+
         return [
             'patient_name' => 'nullable|string|max:255',
             'date' => 'nullable|date',
             'phone_number' => 'nullable|string|max:20',
-            'pharmacy_mr_number' => 'nullable|string|max:255|unique:pharmacy,pharmacy_mr_number,' . $this->route('pharmacy'),
+            'pharmacy_mr_number' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::unique('pharmacy', 'pharmacy_mr_number')->ignore($pharmacyId)
+            ],
             'agent_id' => 'nullable|exists:users,id',
             'status' => 'nullable|string|max:255',
             'amount' => 'nullable|numeric|min:0|max:99999999.99',
