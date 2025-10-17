@@ -312,12 +312,17 @@ class UserController extends Controller
                 ], 400);
             }
 
-            // Handle comma-separated roles
-            if (is_string($roles)) {
-                $roles = array_map('trim', explode(',', $roles));
-            }
+            // Handle "all" option to show all users regardless of role
+            if ($roles === 'all') {
+                $users = $this->userService->getAllUsers($perPage, $page);
+            } else {
+                // Handle comma-separated roles
+                if (is_string($roles)) {
+                    $roles = array_map('trim', explode(',', $roles));
+                }
 
-            $users = $this->userService->getUsersByRoles($roles, $perPage, $page);
+                $users = $this->userService->getUsersByRoles($roles, $perPage, $page);
+            }
 
             return response()->json([
                 'status' => 'success',

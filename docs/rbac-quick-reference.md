@@ -35,6 +35,12 @@ Content-Type: application/json
 | GET | `/api/users/{id}` | `view` (Users) | Get single user |
 | PUT/PATCH | `/api/users/{id}` | `edit` (Users) | Update user |
 | DELETE | `/api/users/{id}` | `delete` (Users) | Delete user |
+| GET | `/api/users/by-roles` | `view` (Users) | Get users by role(s) or all users |
+
+**User Role Filtering:**
+- `roles=agent` - Single role
+- `roles=agent,manager` - Multiple roles  
+- `roles=all` - All users regardless of role
 
 ## 🔗 Permission Assignment
 

@@ -403,7 +403,50 @@ GET /api/users/{id}
 
 **Required Permission:** `view` for `Users` module
 
-### 4. Update User
+### 4. Get Users by Roles
+```http
+GET /api/users/by-roles
+```
+
+**Query Parameters:**
+- `roles` (required): Role name(s) or "all"
+  - Single role: `agent`
+  - Multiple roles: `agent,manager`
+  - All users: `all`
+- `per_page` (optional): Number of users per page (default: 15)
+- `page` (optional): Page number (default: 1)
+
+**Response:**
+```json
+{
+    "status": "success",
+    "data": {
+        "data": [
+            {
+                "id": 1,
+                "name": "Agent User",
+                "email": "agent@example.com",
+                "created_at": "2024-01-01T00:00:00.000000Z",
+                "updated_at": "2024-01-01T00:00:00.000000Z",
+                "roles": [
+                    {
+                        "id": 2,
+                        "name": "agent"
+                    }
+                ],
+                "incentives_sum": 1500.00
+            }
+        ],
+        "current_page": 1,
+        "per_page": 15,
+        "total": 1
+    }
+}
+```
+
+**Required Permission:** `view` for `Users` module
+
+### 5. Update User
 ```http
 PUT /api/users/{id}
 PATCH /api/users/{id}
@@ -433,7 +476,7 @@ PATCH /api/users/{id}
 
 **Required Permission:** `edit` for `Users` module
 
-### 5. Delete User
+### 6. Delete User
 ```http
 DELETE /api/users/{id}
 ```

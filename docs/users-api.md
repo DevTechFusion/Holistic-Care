@@ -27,9 +27,12 @@ curl -s "http://localhost:8000/api/users/5" \
 ```
 
 #### GET /api/users/by-roles
-- Lists users filtered by specific role(s)
+- Lists users filtered by specific role(s) or all users
 - Query params: `roles` (required), `per_page`, `page`
-- `roles` can be a single role name or comma-separated role names
+- `roles` can be:
+  - A single role name: `agent`
+  - Comma-separated role names: `agent,manager`
+  - `all` to show all users regardless of role
 - Includes `incentives_sum` for each user
 
 Example:
@@ -41,6 +44,11 @@ curl -s "http://localhost:8000/api/users/by-roles?roles=agent" \
 
 # Multiple roles
 curl -s "http://localhost:8000/api/users/by-roles?roles=agent,manager" \
+  -H "Authorization: Bearer {token}" \
+  -H "Accept: application/json" | jq .
+
+# All users regardless of role
+curl -s "http://localhost:8000/api/users/by-roles?roles=all" \
   -H "Authorization: Bearer {token}" \
   -H "Accept: application/json" | jq .
 ```
