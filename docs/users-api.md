@@ -26,6 +26,25 @@ curl -s "http://localhost:8000/api/users/5" \
   -H "Accept: application/json" | jq '.data.incentives_sum'
 ```
 
+#### GET /api/users/by-roles
+- Lists users filtered by specific role(s)
+- Query params: `roles` (required), `per_page`, `page`
+- `roles` can be a single role name or comma-separated role names
+- Includes `incentives_sum` for each user
+
+Example:
+```bash
+# Single role
+curl -s "http://localhost:8000/api/users/by-roles?roles=agent" \
+  -H "Authorization: Bearer {token}" \
+  -H "Accept: application/json" | jq .
+
+# Multiple roles
+curl -s "http://localhost:8000/api/users/by-roles?roles=agent,manager" \
+  -H "Authorization: Bearer {token}" \
+  -H "Accept: application/json" | jq .
+```
+
 #### GET /api/users/{id}/incentives
 - Lists incentives for a user with optional date range filters
 - Query params: `start_date`, `end_date`, `per_page`, `page`

@@ -178,6 +178,64 @@ Authorization: Bearer {token}
 }
 ```
 
+### Get All Roles Without Pagination
+```http
+GET /api/roles-all
+```
+
+This endpoint returns all roles from the database without pagination, making it ideal for dropdowns, selects, and other UI components that need the complete list of roles.
+
+#### Example Request
+```http
+GET /api/roles-all
+Authorization: Bearer {token}
+```
+
+#### Success Response (200)
+```json
+{
+    "status": "success",
+    "data": [
+        {
+            "id": 1,
+            "name": "super_admin",
+            "guard_name": "sanctum",
+            "created_at": "2024-01-01T00:00:00.000000Z",
+            "updated_at": "2024-01-01T00:00:00.000000Z",
+            "permissions": [
+                {
+                    "id": 1,
+                    "name": "view",
+                    "module": "Users",
+                    "display_name": "View Users"
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "name": "agent",
+            "guard_name": "sanctum",
+            "created_at": "2024-01-01T00:00:00.000000Z",
+            "updated_at": "2024-01-01T00:00:00.000000Z",
+            "permissions": [
+                {
+                    "id": 2,
+                    "name": "create",
+                    "module": "Users",
+                    "display_name": "Create Users"
+                }
+            ]
+        }
+    ]
+}
+```
+
+#### Use Cases
+- **Dropdown Lists**: Populate role selection dropdowns in forms
+- **UI Components**: Load all roles for frontend components
+- **Data Export**: Get complete role list for reporting
+- **Role Assignment**: Display all available roles when assigning roles to users
+
 ### Get Single Role
 ```http
 GET /api/roles/{id}

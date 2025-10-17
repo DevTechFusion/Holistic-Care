@@ -42,6 +42,27 @@ class RoleController extends Controller
     }
 
     /**
+     * Get all roles without pagination
+     */
+    public function getAll()
+    {
+        try {
+            $roles = $this->roleService->getAllRolesWithoutPagination();
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $roles
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch roles',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Store a newly created role
      */
     public function store(CreateRoleRequest $request)
