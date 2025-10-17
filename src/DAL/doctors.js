@@ -32,8 +32,21 @@ export const updateDoctor = (id, data) => {
   return invokeApi(reqObj);
 };
 
-export const deleteDoctor = (id) => {
-  return invokeApi({ method: "DELETE", path: `api/doctors/${id}` });
+export const deleteDoctor = async (id) => {
+  const response = await invokeApi({ 
+    method: "DELETE", 
+    path: `api/doctors/${id}` 
+  });
+  
+  // Check if backend returned an error in the response body
+  if (response?.status === "error" || response?.data?.status === "error") {
+    const errorData = response?.data || response;
+    const error = new Error(errorData.message || "Failed to delete doctor");
+    error.response = { data: errorData }; // Preserve error data structure
+    throw error;
+  }
+  
+  return response;
 };
 
 // getDoctorsByDepartment

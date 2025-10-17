@@ -13,7 +13,7 @@ import {
   Typography,
   CircularProgress,
 } from "@mui/material";
-import FilterListIcon from "@mui/icons-material/FilterList";
+
 import { getUsers, deleteUser } from "../../DAL/users";
 import UsersFilterPopover from "./UsersFilterPopover";
 import UserForm from "../../components/forms/UserForm";
@@ -28,7 +28,7 @@ const UsersList = () => {
   const [openModal, setOpenModal] = useState(false);
   const [targetItem, setTargetItem] = useState(null);
   const [filters, setFilters] = useState({
-    role_id: "",
+    role: "all",
   });
 
   const [filterAnchor, setFilterAnchor] = useState(null);
@@ -38,7 +38,7 @@ const UsersList = () => {
     setLoading(true);
     try {
       // adapt getUsers params to your DAL signature; here we pass page, perPage, role_id
-      const res = await getUsers(page + 1, rowsPerPage, filters.role_id || "");
+      const res = await getUsers(page + 1, rowsPerPage, filters.role || "all");
       const data = res?.data?.data ?? res?.data ?? [];
       const totalCount = res?.data?.total ?? (Array.isArray(data) ? data.length : 0);
       setUsers(data);
@@ -59,7 +59,7 @@ const UsersList = () => {
   // when role filter changes reset to first page
   useEffect(() => {
     setPage(0);
-  }, [filters.role_id]);
+  }, [filters]);
 
   // Handle delete user - same behaviour as ManagerList
   const handleDeleteUser = async (id) => {
@@ -85,10 +85,10 @@ const UsersList = () => {
     setOpenModal(true);
   };
 
-  const handleCloseModal = (refresh = false) => {
+  const handleCloseModal = () => {
     setOpenModal(false);
     setTargetItem(null);
-    if (refresh) fetchUsers();
+    fetchUsers();
   };
 
   return (
@@ -104,11 +104,10 @@ const UsersList = () => {
 
         <Stack direction="row" spacing={2} alignItems="center">
           <Button
-            startIcon={<FilterListIcon />}
             onClick={(e) => setFilterAnchor(e.currentTarget)}
             variant="outlined"
           >
-            Role Filter
+            Filter
           </Button>
           <Button variant="contained" onClick={handleOpenCreateUser}>
             + Add User

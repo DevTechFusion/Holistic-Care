@@ -73,17 +73,11 @@ const ReportsPage = () => {
     }
   };
 
-  // ✅ Fetch reports (pagination-aware & agent-specific)
   const fetchReports = async () => {
     try {
       setLoading(true);
 
       let apiFilters = { ...filters };
-
-      // ✅ If agent, restrict reports
-      if (user?.roles?.[0]?.name === "agent") {
-        apiFilters.agent_id = user.id;
-      }
 
       const res = await getAllReports(
         page + 1,
@@ -114,19 +108,14 @@ const ReportsPage = () => {
   useEffect(() => {
     fetchReports();
     fetchStatuses();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, rowsPerPage, filters, user]);
 
-  // ✅ Handle CSV export (agent-aware)
+
   const handleExport = async () => {
     try {
       setExporting(true);
 
       let apiFilters = { ...filters };
-
-      if (user?.roles?.[0]?.name === "agent") {
-        apiFilters.agent_id = user.id;
-      }
 
       const res = await exportReports(
         apiFilters.start_date,
@@ -185,12 +174,12 @@ const ReportsPage = () => {
           >
             Filters
           </Button>
-          { (isSuperAdmin || isManager) && (
+          
             <Button variant="contained" color="primary" onClick={handleExport} disabled={exporting}>
             {exporting ? "Exporting..." : "Export CSV"}
           </Button>
             
-          )}
+        
         </Box>
       </Box>
 

@@ -196,6 +196,21 @@ const routes = [
     element: <PharmacyList />,
     role: "managerly",
   },
+  {
+    path: "/manager/sources",
+    element: <SourcesPage />,
+    role: "managerly",
+  },
+  {
+    path: "/manager/statuses",
+    element: <StatusesPage />,
+    role: "managerly",
+  },
+  {
+    path: "/manager/users",
+    element: <UsersList />,
+    role: "managerly",
+  },
  
 ];
 // Protected Route Component

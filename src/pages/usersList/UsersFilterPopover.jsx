@@ -12,12 +12,12 @@ import {
 import { getSelectRoles } from "../../DAL/roles";
 
 const UsersFilterPopover = ({ anchorEl, open, onClose, filters, setFilters }) => {
-  const [localFilters, setLocalFilters] = useState(filters || { role_id: "" });
+  const [localFilters, setLocalFilters] = useState(filters || { role: "all" });
   const [roles, setRoles] = useState([]);
   const [loadingRoles, setLoadingRoles] = useState(false);
 
   useEffect(() => {
-    setLocalFilters(filters || { role_id: "" });
+    setLocalFilters(filters || { role: "all" });
   }, [filters]);
 
   useEffect(() => {
@@ -41,7 +41,7 @@ const UsersFilterPopover = ({ anchorEl, open, onClose, filters, setFilters }) =>
   };
 
   const handleChange = (field, value) => {
-    setLocalFilters((prev) => ({ ...prev, [field]: value ?? "" }));
+    setLocalFilters((prev) => ({ ...prev, [field]: value ?? "all" }));
   };
 
   const handleApply = () => {
@@ -50,7 +50,7 @@ const UsersFilterPopover = ({ anchorEl, open, onClose, filters, setFilters }) =>
   };
 
   const handleClear = () => {
-    const cleared = { role_id: "" };
+    const cleared = { role: "all" };
     setLocalFilters(cleared);
     setFilters(cleared);
     onClose();
@@ -75,9 +75,9 @@ const UsersFilterPopover = ({ anchorEl, open, onClose, filters, setFilters }) =>
         <Autocomplete
           options={roles}
           loading={loadingRoles}
-          getOptionLabel={(option) => option.name || option.display_name || ""}
-          value={roles.find((r) => r.id === localFilters.role_id) || null}
-          onChange={(e, value) => handleChange("role_id", value?.id)}
+          getOptionLabel={(option) => option.name || ""}
+          value={roles.find((r) => r.name === localFilters.role) || null}
+          onChange={(e, value) => handleChange("role", value?.name || "all")}
           renderInput={(params) => (
             <TextField
               {...params}
@@ -94,9 +94,8 @@ const UsersFilterPopover = ({ anchorEl, open, onClose, filters, setFilters }) =>
               }}
             />
           )}
-          isOptionEqualToValue={(o, v) => o?.id === v?.id}
+          isOptionEqualToValue={(o, v) => o?.name === v?.name}
           fullWidth
-          filterOptions={(x) => x}
         />
 
         <Stack direction="row" spacing={2} justifyContent="flex-end" mt={1}>

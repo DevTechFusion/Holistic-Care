@@ -15,26 +15,22 @@ import {
 import { getSources, deleteSource } from "../../DAL/source";
 import CreateSourceModal from "../../components/forms/MetaSourceForm";
 import ActionButtons from "../../constants/actionButtons";
-import { useAuth } from "../../contexts/AuthContext";
 
 const SourcesPage = () => {
   const [sources, setSources] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
 
-  const [page, setPage] = useState(0); // TablePagination is 0-based
+  const [page, setPage] = useState(0); 
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [total, setTotal] = useState(0);
   const [targetItem, setTargetItem] = useState(null);
 
-  const { user } = useAuth();
-  const role = user?.roles?.[0]?.name ?? null;
-  const isSuperAdmin = role === "super_admin";
 
   const fetchSources = async () => {
     setLoading(true);
     try {
-      const res = await getSources(page + 1, rowsPerPage); // API expects 1-based page
+      const res = await getSources(page + 1, rowsPerPage); 
       setSources(res?.data?.data || []);
       setTotal(res?.data?.total || 0);
     } catch (err) {
@@ -72,11 +68,11 @@ const SourcesPage = () => {
         mb={2}
       >
         <Typography variant="h5">Meta Ads Sources List</Typography>
-        {isSuperAdmin && (
+       
           <Button variant="contained" onClick={() => setOpenModal(true)}>
             + Add Source
           </Button>
-        )}
+      
       </Box>
 
       {/* Table */}
@@ -92,7 +88,7 @@ const SourcesPage = () => {
                 <TableRow>
                   <TableCell>Sr#</TableCell>
                   <TableCell>Name</TableCell>
-                  {isSuperAdmin && <TableCell>Actions</TableCell>}
+                  <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -100,14 +96,12 @@ const SourcesPage = () => {
                   <TableRow key={src.id}>
                     <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
                     <TableCell>{src.name}</TableCell>
-                    {isSuperAdmin && (
                       <TableCell>
                         <ActionButtons
                           onEdit={() => handleEdit(src)}
                           onDelete={() => handleDelete(src.id)}
                         />
                       </TableCell>
-                    )}
                   </TableRow>
                 ))}
               </TableBody>

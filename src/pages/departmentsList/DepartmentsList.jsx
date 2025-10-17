@@ -15,7 +15,7 @@ import {
 import { getAllDepartments, deleteDepartment } from "../../DAL/departments";
 import CreateDepartmentModal from "../../components/forms/DepartmentForm";
 import ActionButtons from "../../constants/actionButtons";
-import { useAuth } from "../../contexts/AuthContext";
+// import { useAuth } from "../../contexts/AuthContext";
 
 const DepartmentsPage = () => {
   const [departments, setDepartments] = useState([]);
@@ -27,10 +27,10 @@ const DepartmentsPage = () => {
   const [total, setTotal] = useState(0);
   const [targetItem, setTargetItem] = useState(null);
 
-  const { user } = useAuth();
-  const role = user?.roles?.[0]?.name ?? null;
-  const isSuperAdmin = role === "super_admin";
-  const isManager = role === "managerly";
+  // const { user } = useAuth();
+  // const role = user?.roles?.[0]?.name ?? null;
+  // const isSuperAdmin = role === "super_admin";
+  // const isManager = role === "managerly";
 
   const fetchDepartments = async () => {
     setLoading(true);
@@ -53,8 +53,8 @@ const DepartmentsPage = () => {
     try {
       await deleteDepartment(id);
       fetchDepartments();
-    } catch (err) {
-      console.error("Delete failed", err);
+    } catch (error) {
+      console.error("Delete failed", error);
     }
   };
 
@@ -73,7 +73,7 @@ const DepartmentsPage = () => {
         mb={2}
       >
         <Typography variant="h5">Pharmacy Departments</Typography>
-        {(isSuperAdmin || isManager) && (
+        {(
           <Button variant="contained" onClick={() => setOpenModal(true)}>
             + Add Department
           </Button>
@@ -94,13 +94,13 @@ const DepartmentsPage = () => {
                   <TableCell>Sr#</TableCell>
                   <TableCell>Department Name</TableCell>
                   <TableCell>Incentive %</TableCell>
-                  {(isSuperAdmin || isManager) && <TableCell>Actions</TableCell>}
+                  {<TableCell>Actions</TableCell>}
                 </TableRow>
               </TableHead>
               <TableBody>
                 {departments.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={isSuperAdmin || isManager ? 4 : 3} align="center">
+                    <TableCell colSpan={4} align="center">
                       <Typography variant="body2" color="textSecondary" py={3}>
                         No departments found
                       </Typography>
@@ -112,7 +112,7 @@ const DepartmentsPage = () => {
                       <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
                       <TableCell>{dept.name}</TableCell>
                       <TableCell>{dept.incentive_percentage}%</TableCell>
-                      {(isSuperAdmin || isManager) && (
+                      {(
                         <TableCell>
                           <ActionButtons
                             onEdit={() => handleEdit(dept)}

@@ -50,10 +50,6 @@ const AppointmentsPage = () => {
   setLoading(true);
   try {
     let apiFilters = { ...filters };
-    if (user?.roles?.[0]?.name === "agent") {
-      apiFilters.agent_id = user.id;
-    }
-
     const res = await getAppointments(
       page + 1,
       rowsPerPage,

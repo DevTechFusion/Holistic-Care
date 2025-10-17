@@ -379,7 +379,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
     );
 
     if (isCurrentUserAgent && user) return (
-      <TextField label="Agent *" fullWidth value={user.name || "Current User"} disabled helperText="Automatically set to current agent" />
+      <TextField label="Agent *" fullWidth value={user.name || "Current User"} helperText="Automatically set to current agent" />
     );
 
     return (

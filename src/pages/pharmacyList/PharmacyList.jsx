@@ -25,7 +25,6 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import dayjs from "dayjs";
 import PharmacyForm from "../../components/forms/PharmacyForm";
 import PharmacyFilterPopover from "./PharmacyFilterPopover";
-import { useAuth } from "../../contexts/AuthContext";
 
 const PharmacyList = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -46,13 +45,8 @@ const PharmacyList = () => {
   });
 
   const [filterAnchor, setFilterAnchor] = useState(null);
-
   const [selectedDescription, setSelectedDescription] = useState("");
   const [descriptionModalOpen, setDescriptionModalOpen] = useState(false);
-
-  const { user } = useAuth();
-  const isSuperAdmin = user?.roles?.[0]?.name === "super_admin";
-  const isManager = user?.roles?.[0]?.name === "managerly";
 
   const handleOpenDescription = (desc) => {
     setSelectedDescription(desc || "");
@@ -83,10 +77,6 @@ const PharmacyList = () => {
     setLoading(true);
     try {
       let apiFilters = { ...filters };
-      if (user?.roles?.[0]?.name?.toLowerCase() === "agent") {
-        apiFilters.agent_id = user.id;
-      }
-
       const res = await getPharmacy(
         page + 1,
         rowsPerPage,
@@ -106,7 +96,7 @@ const PharmacyList = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, rowsPerPage, filters, enqueueSnackbar, user]);
+  }, [page, rowsPerPage, filters, enqueueSnackbar]);
 
   useEffect(() => {
     fetchPharmacies();
@@ -157,14 +147,13 @@ const PharmacyList = () => {
            <Button variant="outlined" onClick={handleOpenFilters}>
             Filters
           </Button>
-          {(isSuperAdmin || isManager) && <Button
+          <Button
             variant="contained"
             sx={{ fontWeight: "bold" }}
             disableElevation
           >
             Total Incentive: {Number(totalIncentive).toFixed(2)}
           </Button>
-          }
           <Button variant="contained" onClick={() => setOpenModal(true)}>
             + Add Pharmacy Record
           </Button>

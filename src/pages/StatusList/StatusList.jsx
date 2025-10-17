@@ -15,7 +15,7 @@ import {
 import { getAllStatuses, deleteStatus } from "../../DAL/status";
 import CreateStatusModal from "../../components/forms/StatusForm";
 import ActionButtons from "../../constants/actionButtons";
-import { useAuth } from "../../contexts/AuthContext";
+
 
 const StatusesPage = () => {
   const [statuses, setStatuses] = useState([]);
@@ -27,14 +27,10 @@ const StatusesPage = () => {
   const [total, setTotal] = useState(0);
   const [targetItem, setTargetItem] = useState(null);
 
-  const { user } = useAuth();
-  const role = user?.roles?.[0]?.name ?? null;
-  const isSuperAdmin = role === "super_admin";
-
   const fetchStatuses = async () => {
     setLoading(true);
     try {
-      const res = await getAllStatuses(page + 1, rowsPerPage); // API expects 1-based page
+      const res = await getAllStatuses(page + 1, rowsPerPage); 
       setStatuses(res?.data?.data || []);
       setTotal(res?.data?.total || 0);
     } catch (err) {
@@ -72,11 +68,11 @@ const StatusesPage = () => {
         mb={2}
       >
         <Typography variant="h5">Statuses List</Typography>
-        {isSuperAdmin && (
+        
           <Button variant="contained" onClick={() => setOpenModal(true)}>
             + Add Status
           </Button>
-        )}
+        
       </Box>
 
       {/* Table */}
@@ -92,7 +88,7 @@ const StatusesPage = () => {
                 <TableRow>
                   <TableCell>Sr#</TableCell>
                   <TableCell>Name</TableCell>
-                  {isSuperAdmin && <TableCell>Actions</TableCell>}
+                  <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -100,14 +96,14 @@ const StatusesPage = () => {
                   <TableRow key={status.id}>
                     <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
                     <TableCell>{status.name}</TableCell>
-                    {isSuperAdmin && (
+                    
                       <TableCell>
                         <ActionButtons
                           onEdit={() => handleEdit(status)}
                           onDelete={() => handleDelete(status.id)}
                         />
                       </TableCell>
-                    )}
+                    
                   </TableRow>
                 ))}
               </TableBody>

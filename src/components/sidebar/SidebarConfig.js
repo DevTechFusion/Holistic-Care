@@ -30,11 +30,11 @@ const SidebarConfig = {
       title: "Management",
       icon: UserIcon,
       children: [
-        {
-          title: "Agent List",
-          icon: AgentIcon,
-          path: "/agents",
-        },
+        // {
+        //   title: "Agent List",
+        //   icon: AgentIcon,
+        //   path: "/agents",
+        // },
         {
           title: "Doctor List",
           icon: DoctorIcon,
@@ -45,11 +45,11 @@ const SidebarConfig = {
           icon: DepartmentIcon,
           path: "/departments",
         },
-        {
-          title: "Manager List",
-          icon: ManagerIcon,
-          path: "/managers",
-        },
+        // {
+        //   title: "Manager List",
+        //   icon: ManagerIcon,
+        //   path: "/managers",
+        // },
         {
           title: "Procedures List",
           icon: ProcedureIcon,
@@ -152,11 +152,11 @@ const SidebarConfig = {
       title: "Management",
       icon: UserIcon,
       children: [
-        {
-          title: "Agent List",
-          icon: AgentIcon,
-          path: "/manager/agents",
-        },
+        // {
+        //   title: "Agent List",
+        //   icon: AgentIcon,
+        //   path: "/manager/agents",
+        // },
         {
           title: "Doctor List",
           icon: DoctorIcon,
@@ -177,6 +177,21 @@ const SidebarConfig = {
           icon: ProcedureIcon,
           path: "/manager/procedures",
         },
+        {
+          title: "Meta Ads Source List",
+          icon: SourceIcon,
+          path: "/manager/sources",
+        },
+        {
+          title: "Status List",
+          icon: StatusIcon,
+          path: "/manager/statuses",
+        },
+        {
+          title: "Users List",
+          icon: UserIcon,
+          path: "/manager/users",
+        }
       ],
     },
     {

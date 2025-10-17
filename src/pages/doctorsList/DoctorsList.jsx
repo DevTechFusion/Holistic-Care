@@ -18,7 +18,6 @@ import { getDoctors, deleteDoctor } from "../../DAL/doctors";
 import CreateDoctorModal from "../../components/forms/DoctorForm";
 import { useSnackbar } from "notistack";
 import ActionButtons from "../../constants/actionButtons";
-import { useAuth } from "../../contexts/AuthContext";
 import dayjs from "dayjs";
 
 const DoctorsPage = () => {
@@ -30,11 +29,6 @@ const DoctorsPage = () => {
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [total, setTotal] = useState(0);
   const [targetItem, setTargetItem] = useState(null);
-
-  const { user } = useAuth();
-  const role = user?.roles?.[0]?.name ?? null;
-  const isSuperAdmin = role === "super_admin";
-  const isManager = role === "managerly";
 
   const fetchDoctors = useCallback(async () => {
     setLoading(true);
@@ -54,16 +48,20 @@ const DoctorsPage = () => {
   }, [fetchDoctors]);
 
   const handleDelete = async (id) => {
-    try {
-      await deleteDoctor(id);
-      fetchDoctors();
-      enqueueSnackbar("Doctor deleted successfully", { variant: "success" });
-    } catch (err) {
-      console.error("Failed to delete doctor", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  
+  setLoading(true);
+  try {
+    await deleteDoctor(id);
+    enqueueSnackbar("Doctor deleted successfully", { variant: "success" });
+    fetchDoctors();
+  } catch (err) {
+    console.error("Failed to delete doctor", err);
+    const message = err?.response?.data?.message || err?.message || "Failed to delete doctor";
+    enqueueSnackbar(message, { variant: "error" });
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleEdit = (doc) => {
     setTargetItem(doc);
@@ -80,7 +78,7 @@ const DoctorsPage = () => {
         mb={2}
       >
         <Typography variant="h5">Doctors</Typography>
-        {(isSuperAdmin || isManager) && (
+        { (
           <Button variant="contained" onClick={() => setOpenModal(true)}>
             + Add Doctor
           </Button>
@@ -104,7 +102,7 @@ const DoctorsPage = () => {
                   <TableCell>Department</TableCell>
                   <TableCell>Procedures</TableCell>
                   <TableCell>Availability</TableCell>
-                  {isSuperAdmin && <TableCell>Actions</TableCell>}
+                  <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -140,14 +138,14 @@ const DoctorsPage = () => {
                         ))}
                     </TableCell>
 
-                    {(isSuperAdmin || isManager) && (
+                  
                       <TableCell>
                         <ActionButtons
                           onEdit={() => handleEdit(doctor)}
                           onDelete={() => handleDelete(doctor.id)}
                         />
                       </TableCell>
-                    )}
+                    
                   </TableRow>
                 ))}
               </TableBody>
@@ -171,7 +169,7 @@ const DoctorsPage = () => {
       </Paper>
 
       {/* Modal */}
-      {isSuperAdmin && (
+      
         <CreateDoctorModal
           isEditing={!!targetItem}
           data={targetItem}
@@ -182,7 +180,7 @@ const DoctorsPage = () => {
             setTargetItem(null);
           }}
         />
-      )}
+      
     </Box>
   );
 };
