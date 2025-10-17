@@ -71,6 +71,11 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'view', 'module' => 'ComplaintTypes'],
             ['name' => 'view', 'module' => 'Remarks1'],
             ['name' => 'view', 'module' => 'Remarks2'],
+
+            ['name' => 'view', 'module' => 'Roles'],
+            // ['name' => 'create', 'module' => 'Roles'],
+            // ['name' => 'edit', 'module' => 'Roles'],
+            // ['name' => 'delete', 'module' => 'Roles'],
         ];
 
         if ($agentRole) {
@@ -177,6 +182,11 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'create', 'module' => 'Remarks2'],
             ['name' => 'edit', 'module' => 'Remarks2'],
             ['name' => 'delete', 'module' => 'Remarks2'],
+
+            ['name' => 'view', 'module' => 'Roles'],
+            // ['name' => 'create', 'module' => 'Roles'],
+            // ['name' => 'edit', 'module' => 'Roles'],
+            // ['name' => 'delete', 'module' => 'Roles'],
         ];
 
         if ($managerlyRole) {

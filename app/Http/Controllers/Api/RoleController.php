@@ -27,6 +27,16 @@ class RoleController extends Controller
             $perPage = request()->get('per_page', 15);
             $page = request()->get('page', 1);
             $roles = $this->roleService->getAllRoles($perPage, $page);
+            
+            // Get current authenticated user
+            $user = auth()->user();
+            
+            // If user is not super_admin, filter out super_admin role
+            if (!$user->hasRole('super_admin')) {
+                $roles['data'] = $roles['data']->filter(function($role) {
+                    return $role->name !== 'super_admin';
+                });
+            }
 
             return response()->json([
                 'status' => 'success',
@@ -48,6 +58,16 @@ class RoleController extends Controller
     {
         try {
             $roles = $this->roleService->getAllRolesWithoutPagination();
+            
+            // Get current authenticated user
+            $user = auth()->user();
+            
+            // If user is not super_admin, filter out super_admin role
+            if (!$user->hasRole('super_admin')) {
+                $roles = $roles->filter(function($role) {
+                    return $role->name !== 'super_admin';
+                });
+            }
 
             return response()->json([
                 'status' => 'success',
