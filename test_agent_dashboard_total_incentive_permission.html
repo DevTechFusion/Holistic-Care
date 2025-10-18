@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Dashboard Total Incentive Permission Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .response {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success {
+            color: #28a745;
+        }
+        .error {
+            color: #dc3545;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .permission-info {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .range-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .range-selector button {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <h1>Agent Dashboard Total Incentive Permission Test</h1>
+    
+    <div class="info">
+        <h3>Test Overview</h3>
+        <p>This test demonstrates the permission system for the Agent Dashboard API's <code>total_incentive</code> field.</p>
+        <p>The <code>total_incentive</code> field will only be included in API responses if the authenticated user has the <code>total_incentive</code> permission for the <code>AgentDashboard</code> module.</p>
+    </div>
+
+    <div class="permission-info">
+        <h3>Permission Details</h3>
+        <p><strong>Permission Name:</strong> <code>total_incentive</code></p>
+        <p><strong>Module:</strong> <code>AgentDashboard</code></p>
+        <p><strong>Display Name:</strong> View Total Incentive</p>
+        <p><strong>Assigned Roles:</strong> agent, managerly, super_admin</p>
+    </div>
+
+    <div class="container">
+        <h2>Authentication</h2>
+        <div class="form-group">
+            <label for="token">Bearer Token:</label>
+            <input type="text" id="token" placeholder="Enter your authentication token">
+        </div>
+        
+        <h3>Test Range</h3>
+        <div class="range-selector">
+            <button onclick="testDashboard('daily')">Daily</button>
+            <button onclick="testDashboard('weekly')">Weekly</button>
+            <button onclick="testDashboard('monthly')">Monthly</button>
+            <button onclick="testDashboard('yearly')">Yearly</button>
+        </div>
+        
+        <div class="form-group">
+            <label for="department">Department ID (optional):</label>
+            <input type="number" id="department" placeholder="Enter department ID">
+        </div>
+        
+        <button onclick="testDashboard('daily')">Test Agent Dashboard</button>
+    </div>
+
+    <div class="container">
+        <h2>API Response</h2>
+        <div id="response" class="response" style="display: none;"></div>
+    </div>
+
+    <div class="container">
+        <h2>Test Instructions</h2>
+        <ol>
+            <li>Login with a user account that has the <code>total_incentive</code> permission (agent, managerly, or super_admin role)</li>
+            <li>Copy the Bearer token from the login response</li>
+            <li>Paste the token in the "Bearer Token" field above</li>
+            <li>Select a time range (daily, weekly, monthly, yearly)</li>
+            <li>Optionally enter a department ID to filter results</li>
+            <li>Click "Test Agent Dashboard" or use the range buttons</li>
+            <li>Check if the response includes the <code>total_incentive</code> field in the cards object</li>
+        </ol>
+        
+        <h3>Expected Behavior:</h3>
+        <ul>
+            <li><strong>With Permission:</strong> Response should include <code>"total_incentive": 45.50</code> (or similar value) in the cards object</li>
+            <li><strong>Without Permission:</strong> Response should NOT include the <code>total_incentive</code> field in the cards object</li>
+        </ul>
+        
+        <h3>API Endpoint:</h3>
+        <p><code>GET /api/agent/dashboard?range={range}&department_id={id}</code></p>
+    </div>
+
+    <script>
+        async function testDashboard(range) {
+            const token = document.getElementById('token').value;
+            const departmentId = document.getElementById('department').value;
+            const responseDiv = document.getElementById('response');
+            
+            if (!token) {
+                responseDiv.innerHTML = '<span class="error">Please enter a Bearer token</span>';
+                responseDiv.style.display = 'block';
+                return;
+            }
+
+            try {
+                responseDiv.innerHTML = 'Loading...';
+                responseDiv.style.display = 'block';
+
+                let url = `/api/agent/dashboard?range=${range}`;
+                if (departmentId) {
+                    url += `&department_id=${departmentId}`;
+                }
+
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const hasTotalIncentive = data.data && data.data.cards && 'total_incentive' in data.data.cards;
+                    const statusClass = hasTotalIncentive ? 'success' : 'error';
+                    const statusText = hasTotalIncentive ? '✓ total_incentive field is present in cards' : '✗ total_incentive field is missing from cards';
+                    
+                    responseDiv.innerHTML = `
+                        <div class="${statusClass}">
+                            <strong>Permission Check Result:</strong> ${statusText}
+                        </div>
+                        <br>
+                        <strong>Range:</strong> ${range}
+                        <br>
+                        <strong>Department ID:</strong> ${departmentId || 'All departments'}
+                        <br><br>
+                        <strong>Full Response:</strong>
+                        ${JSON.stringify(data, null, 2)}
+                    `;
+                } else {
+                    responseDiv.innerHTML = `
+                        <span class="error">Error: ${response.status} ${response.statusText}</span>
+                        <br><br>
+                        <strong>Response:</strong>
+                        ${JSON.stringify(data, null, 2)}
+                    `;
+                }
+            } catch (error) {
+                responseDiv.innerHTML = `
+                    <span class="error">Network Error: ${error.message}</span>
+                `;
+            }
+        }
+
+        // Auto-fill with example token for testing (remove in production)
+        document.getElementById('token').placeholder = 'Enter your Bearer token (e.g., 1|abc123...)';
+    </script>
+</body>
+</html>

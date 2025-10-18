@@ -31,6 +31,7 @@ class RolePermissionSeeder extends Seeder
         $agentPermissions = [
             // Dashboard
             ['name' => 'view', 'module' => 'AgentDashboard'],
+            ['name' => 'total_incentive', 'module' => 'AgentDashboard'],
             
             // Appointments - view, create, edit, delete and search
             ['name' => 'view', 'module' => 'Appointments'],
@@ -55,6 +56,7 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'edit', 'module' => 'Pharmacy'],
             ['name' => 'delete', 'module' => 'Pharmacy'],
             ['name' => 'view-stats', 'module' => 'Pharmacy'],
+            ['name' => 'total_incentive', 'module' => 'Pharmacy'],
             
             // Files - upload and view own files
             ['name' => 'view', 'module' => 'Files'],
@@ -98,6 +100,8 @@ class RolePermissionSeeder extends Seeder
             // Dashboard
             ['name' => 'view', 'module' => 'ManagerDashboard'],
             ['name' => 'view', 'module' => 'AdminDashboard'],
+            ['name' => 'view', 'module' => 'AgentDashboard'],
+            ['name' => 'total_incentive', 'module' => 'AgentDashboard'],
             
             // Appointments - full access
             ['name' => 'view', 'module' => 'Appointments'],
@@ -130,6 +134,7 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'edit', 'module' => 'Pharmacy'],
             ['name' => 'delete', 'module' => 'Pharmacy'],
             ['name' => 'view-stats', 'module' => 'Pharmacy'],
+            ['name' => 'total_incentive', 'module' => 'Pharmacy'],
             
             // Files - full access
             ['name' => 'view', 'module' => 'Files'],

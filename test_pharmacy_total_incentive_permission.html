@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharmacy Total Incentive Permission Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .response {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success {
+            color: #28a745;
+        }
+        .error {
+            color: #dc3545;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .permission-info {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Pharmacy Total Incentive Permission Test</h1>
+    
+    <div class="info">
+        <h3>Test Overview</h3>
+        <p>This test demonstrates the new permission system for the Pharmacy API's <code>total_incentive</code> field.</p>
+        <p>The <code>total_incentive</code> field will only be included in API responses if the authenticated user has the <code>total_incentive</code> permission for the Pharmacy module.</p>
+    </div>
+
+    <div class="permission-info">
+        <h3>Permission Details</h3>
+        <p><strong>Permission Name:</strong> <code>total_incentive</code></p>
+        <p><strong>Module:</strong> <code>Pharmacy</code></p>
+        <p><strong>Display Name:</strong> View Total Incentive</p>
+        <p><strong>Assigned Roles:</strong> agent, managerly, super_admin</p>
+    </div>
+
+    <div class="container">
+        <h2>Authentication</h2>
+        <div class="form-group">
+            <label for="token">Bearer Token:</label>
+            <input type="text" id="token" placeholder="Enter your authentication token">
+        </div>
+        <button onclick="testPermission()">Test Pharmacy API with Permission Check</button>
+    </div>
+
+    <div class="container">
+        <h2>API Response</h2>
+        <div id="response" class="response" style="display: none;"></div>
+    </div>
+
+    <div class="container">
+        <h2>Test Instructions</h2>
+        <ol>
+            <li>Login with a user account that has the <code>total_incentive</code> permission (agent, managerly, or super_admin role)</li>
+            <li>Copy the Bearer token from the login response</li>
+            <li>Paste the token in the "Bearer Token" field above</li>
+            <li>Click "Test Pharmacy API with Permission Check"</li>
+            <li>Check if the response includes the <code>total_incentive</code> field</li>
+        </ol>
+        
+        <h3>Expected Behavior:</h3>
+        <ul>
+            <li><strong>With Permission:</strong> Response should include <code>"total_incentive": "1250.50"</code> (or similar value)</li>
+            <li><strong>Without Permission:</strong> Response should NOT include the <code>total_incentive</code> field</li>
+        </ul>
+    </div>
+
+    <script>
+        async function testPermission() {
+            const token = document.getElementById('token').value;
+            const responseDiv = document.getElementById('response');
+            
+            if (!token) {
+                responseDiv.innerHTML = '<span class="error">Please enter a Bearer token</span>';
+                responseDiv.style.display = 'block';
+                return;
+            }
+
+            try {
+                responseDiv.innerHTML = 'Loading...';
+                responseDiv.style.display = 'block';
+
+                const response = await fetch('/api/pharmacy', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const hasTotalIncentive = 'total_incentive' in data;
+                    const statusClass = hasTotalIncentive ? 'success' : 'error';
+                    const statusText = hasTotalIncentive ? '✓ total_incentive field is present' : '✗ total_incentive field is missing';
+                    
+                    responseDiv.innerHTML = `
+                        <div class="${statusClass}">
+                            <strong>Permission Check Result:</strong> ${statusText}
+                        </div>
+                        <br>
+                        <strong>Full Response:</strong>
+                        ${JSON.stringify(data, null, 2)}
+                    `;
+                } else {
+                    responseDiv.innerHTML = `
+                        <span class="error">Error: ${response.status} ${response.statusText}</span>
+                        <br><br>
+                        <strong>Response:</strong>
+                        ${JSON.stringify(data, null, 2)}
+                    `;
+                }
+            } catch (error) {
+                responseDiv.innerHTML = `
+                    <span class="error">Network Error: ${error.message}</span>
+                `;
+            }
+        }
+
+        // Auto-fill with example token for testing (remove in production)
+        document.getElementById('token').placeholder = 'Enter your Bearer token (e.g., 1|abc123...)';
+    </script>
+</body>
+</html>
