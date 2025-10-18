@@ -37,6 +37,9 @@ class RoleController extends Controller
                     return $role->name !== 'super_admin';
                 });
             }
+            
+            // Always ensure proper array indexing
+            $roles['data'] = $roles['data']->values();
 
             return response()->json([
                 'status' => 'success',
@@ -68,6 +71,9 @@ class RoleController extends Controller
                     return $role->name !== 'super_admin';
                 });
             }
+            
+            // Always ensure proper array indexing
+            $roles = $roles->values();
 
             return response()->json([
                 'status' => 'success',
