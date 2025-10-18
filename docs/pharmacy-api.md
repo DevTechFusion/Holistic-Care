@@ -31,6 +31,19 @@ Accept: application/json
 Content-Type: application/json
 ```
 
+## Permissions
+
+The Pharmacy API uses role-based access control (RBAC) with the following permissions:
+
+- `view`: View pharmacy records
+- `create`: Create new pharmacy records
+- `edit`: Update existing pharmacy records
+- `delete`: Delete pharmacy records
+- `view-stats`: View pharmacy statistics
+- `total_incentive`: View total incentive information (only included in responses if user has this permission)
+
+**Note:** The `total_incentive` field in API responses is only included if the authenticated user has the `total_incentive` permission for the Pharmacy module.
+
 ## API Endpoints
 
 ### 1. Create Pharmacy Record
@@ -142,9 +155,12 @@ GET /api/pharmacy?agent_id=1&start_date=2025-09-01&end_date=2025-09-30&search=ca
         "prev_page_url": null,
         "to": 1,
         "total": 1
-    }
+    },
+    "total_incentive": "1250.50"
 }
 ```
+
+**Note:** The `total_incentive` field is only included in the response if the user has the `total_incentive` permission for the Pharmacy module.
 
 ### 3. Get Specific Pharmacy Record
 

@@ -18,6 +18,26 @@ class AgentDashboardController extends Controller
     }
 
     /**
+     * Check if the user has the given permission for the specified module.
+     */
+    private function hasPermission(string $permission, string $module): bool
+    {
+        $userPermissions = auth()->user()->getAllPermissions();
+
+        foreach ($userPermissions as $userPermission) {
+            if (
+                $userPermission->name === $permission &&
+                $userPermission->module === $module &&
+                (!property_exists($userPermission, 'account_type_id') || $userPermission->account_type_id === auth()->user()->account_type_id)
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Agent dashboard with date range and department filters.
      * Query: 
      * - range = daily|weekly|monthly|yearly (default: daily)
@@ -46,13 +66,25 @@ class AgentDashboardController extends Controller
         [$startDate, $endDate] = $this->resolveDateRange($range);
 
         $counters = $this->appointmentService->getAgentCounters($agent->id, $startDate, $endDate);
-        $totalIncentive = $this->appointmentService->getAgentTotalIncentive($agent->id, $startDate, $endDate);
         $leaderboardToday = $this->appointmentService->getAgentTodayLeaderboard($agent->id, 5, $departmentId);
         $todayAppointments = $this->appointmentService->getAgentTodayAppointments($agent->id, 10, $departmentId);
 
         $perPage = (int) $request->query('per_page', 20);
         $page = (int) $request->query('page', 1);
         $table = $this->appointmentService->getAgentAppointmentsComplaintsTable($agent->id, $startDate, $endDate, $perPage, $page);
+
+        $cards = [
+            'total_bookings' => $counters['total_bookings'],
+            'arrived' => $counters['arrived'],
+            'not_arrived' => $counters['not_arrived'],
+            'rescheduled' => $counters['rescheduled'],
+        ];
+
+        // Only include total_incentive if user has permission
+        if ($this->hasPermission('total_incentive', 'AgentDashboard')) {
+            $totalIncentive = $this->appointmentService->getAgentTotalIncentive($agent->id, $startDate, $endDate);
+            $cards['total_incentive'] = $totalIncentive;
+        }
 
         return response()->json([
             'status' => 'success',
@@ -63,13 +95,7 @@ class AgentDashboardController extends Controller
                     'end_date' => $endDate,
                     'department_id' => $departmentId,
                 ],
-                'cards' => [
-                    'total_bookings' => $counters['total_bookings'],
-                    'arrived' => $counters['arrived'],
-                    'not_arrived' => $counters['not_arrived'],
-                    'rescheduled' => $counters['rescheduled'],
-                    'total_incentive' => $totalIncentive,
-                ],
+                'cards' => $cards,
                 'today_leaderboard' => $leaderboardToday,
                 'today_appointments' => $todayAppointments,
                 'appointments_complaints_table' => $table,

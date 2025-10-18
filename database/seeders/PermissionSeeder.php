@@ -118,6 +118,7 @@ class PermissionSeeder extends Seeder
             ['guard_name' => 'sanctum', 'name' => 'edit', 'module' => 'Pharmacy', 'display_name' => 'Edit'],
             ['guard_name' => 'sanctum', 'name' => 'delete', 'module' => 'Pharmacy', 'display_name' => 'Delete'],
             ['guard_name' => 'sanctum', 'name' => 'view-stats', 'module' => 'Pharmacy', 'display_name' => 'View Statistics'],
+            ['guard_name' => 'sanctum', 'name' => 'total_incentive', 'module' => 'Pharmacy', 'display_name' => 'View Total Incentive'],
 
             // File Management
             ['guard_name' => 'sanctum', 'name' => 'view', 'module' => 'Files', 'display_name' => 'View'],
@@ -129,6 +130,7 @@ class PermissionSeeder extends Seeder
             // Dashboard Access
             ['guard_name' => 'sanctum', 'name' => 'view', 'module' => 'AdminDashboard', 'display_name' => 'View'],
             ['guard_name' => 'sanctum', 'name' => 'view', 'module' => 'AgentDashboard', 'display_name' => 'View'],
+            ['guard_name' => 'sanctum', 'name' => 'total_incentive', 'module' => 'AgentDashboard', 'display_name' => 'View Total Incentive'],
             ['guard_name' => 'sanctum', 'name' => 'view', 'module' => 'ManagerDashboard', 'display_name' => 'View Dashboard'],
 
         ];

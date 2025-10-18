@@ -18,6 +18,26 @@ class PharmacyController extends Controller
     }
 
     /**
+     * Check if the user has the given permission for the specified module.
+     */
+    private function hasPermission(string $permission, string $module): bool
+    {
+        $userPermissions = auth()->user()->getAllPermissions();
+
+        foreach ($userPermissions as $userPermission) {
+            if (
+                $userPermission->name === $permission &&
+                $userPermission->module === $module &&
+                (!property_exists($userPermission, 'account_type_id') || $userPermission->account_type_id === auth()->user()->account_type_id)
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Display a listing of pharmacy records
      */
     public function index(Request $request)
@@ -37,11 +57,17 @@ class PharmacyController extends Controller
                 $totalIncentive = $this->pharmacyService->getTotalPharmacyIncentivesAll();
             }
 
-            return response()->json([
+            $response = [
                 'status' => 'success',
-                'data' => $pharmacyRecords,
-                'total_incentive' => $totalIncentive
-            ], 200);
+                'data' => $pharmacyRecords
+            ];
+
+            // Only include total_incentive if user has permission
+            if ($this->hasPermission('total_incentive', 'Pharmacy')) {
+                $response['total_incentive'] = $totalIncentive;
+            }
+
+            return response()->json($response, 200);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
