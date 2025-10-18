@@ -32,14 +32,16 @@ class RoleController extends Controller
             $user = auth()->user();
             
             // If user is not super_admin, filter out super_admin role
-            if (!$user->hasRole('super_admin')) {
+            if (!$user->hasRole('super_admin') && $roles['data'] !== null) {
                 $roles['data'] = $roles['data']->filter(function($role) {
                     return $role->name !== 'super_admin';
                 });
             }
             
             // Always ensure proper array indexing
-            $roles['data'] = $roles['data']->values();
+            if ($roles['data'] !== null) {
+                $roles['data'] = $roles['data']->values();
+            }
 
             return response()->json([
                 'status' => 'success',
@@ -66,14 +68,16 @@ class RoleController extends Controller
             $user = auth()->user();
             
             // If user is not super_admin, filter out super_admin role
-            if (!$user->hasRole('super_admin')) {
+            if (!$user->hasRole('super_admin') && $roles !== null) {
                 $roles = $roles->filter(function($role) {
                     return $role->name !== 'super_admin';
                 });
             }
             
             // Always ensure proper array indexing
-            $roles = $roles->values();
+            if ($roles !== null) {
+                $roles = $roles->values();
+            }
 
             return response()->json([
                 'status' => 'success',
