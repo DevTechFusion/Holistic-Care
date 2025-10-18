@@ -77,6 +77,7 @@ abstract class CrudeService
      */
     public function _all(?array $where = null, ?array $with = null, $orderBy = null, $format = 'asc', $limit = null)
     {
+        // dd($where, $with, $orderBy, $format, $limit, $this->model);
         $query = $where ? $this->model->where($where) : $this->model;
         $query = $orderBy ? $query->orderBy($orderBy, $format) : $query;
         $query = $limit ? $query->limit($limit) : $query;
