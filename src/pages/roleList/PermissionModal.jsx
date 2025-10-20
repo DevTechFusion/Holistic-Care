@@ -39,15 +39,12 @@ const PermissionModal = ({ open, onClose, role }) => {
           const perms = res?.data || [];
           setPermissions(perms);
           
-          // Group by module
           const groupedObj = {};
           perms.forEach((perm) => {
             if (!groupedObj[perm.module]) groupedObj[perm.module] = [];
             groupedObj[perm.module].push(perm);
           });
           setGrouped(groupedObj);
-
-          // Initialize selected permissions from role
           const rolePermissions = role?.permissions || [];
           const initialPerms = rolePermissions.map(p => ({
             name: p.name,
@@ -65,67 +62,56 @@ const PermissionModal = ({ open, onClose, role }) => {
     }
   }, [open, role, enqueueSnackbar]);
 
-  // Check if a permission is selected
   const isSelected = (perm) => {
     return selected.some(
       (p) => p.name === perm.name && p.module === perm.module
     );
   };
 
-  // Handle checkbox toggle
   const handleToggle = (perm) => {
     const exists = selected.find(
       (p) => p.name === perm.name && p.module === perm.module
     );
     
     if (exists) {
-      // Remove permission
       setSelected(selected.filter(
         (p) => !(p.name === perm.name && p.module === perm.module)
       ));
     } else {
-      // Add permission
       setSelected([...selected, { name: perm.name, module: perm.module }]);
     }
   };
 
-  // Select all permissions in a module
   const handleSelectAllModule = (module) => {
     const modulePerms = grouped[module] || [];
     const allSelected = modulePerms.every(perm => isSelected(perm));
     
     if (allSelected) {
-      // Deselect all in this module
       setSelected(selected.filter(
         (p) => p.module !== module
       ));
     } else {
-      // Select all in this module
       const newPerms = modulePerms.map(perm => ({
         name: perm.name,
         module: perm.module
       }));
       
-      // Remove existing permissions from this module and add all
       const filtered = selected.filter(p => p.module !== module);
       setSelected([...filtered, ...newPerms]);
     }
   };
 
-  // Check if all permissions in a module are selected
   const isModuleFullySelected = (module) => {
     const modulePerms = grouped[module] || [];
     return modulePerms.length > 0 && modulePerms.every(perm => isSelected(perm));
   };
 
-  // Check if some (but not all) permissions in a module are selected
   const isModulePartiallySelected = (module) => {
     const modulePerms = grouped[module] || [];
     const selectedCount = modulePerms.filter(perm => isSelected(perm)).length;
     return selectedCount > 0 && selectedCount < modulePerms.length;
   };
 
-  // Calculate changes from initial state
   const changes = useMemo(() => {
     const toAdd = selected.filter(
       (sel) =>
@@ -144,10 +130,9 @@ const PermissionModal = ({ open, onClose, role }) => {
     return { toAdd, toRemove };
   }, [selected, initialSelected]);
 
-  // Check if there are any changes
+ 
   const hasChanges = changes.toAdd.length > 0 || changes.toRemove.length > 0;
 
-  // Submit permissions changes
   const handleSubmit = async () => {
     if (!hasChanges) {
       enqueueSnackbar("No changes to save", { variant: "info" });
@@ -159,7 +144,7 @@ const PermissionModal = ({ open, onClose, role }) => {
     const errors = [];
 
     try {
-      // Assign new permissions
+  
       if (changes.toAdd.length > 0) {
         const assignPayload = { permissions: changes.toAdd };
         const assignRes = await assignPermission(assignPayload, role.id);
@@ -169,7 +154,6 @@ const PermissionModal = ({ open, onClose, role }) => {
         }
       }
 
-      // Remove unchecked permissions
       if (changes.toRemove.length > 0) {
         const removePayload = { permissions: changes.toRemove };
         const removeRes = await removePermission(removePayload, role.id);
@@ -179,7 +163,6 @@ const PermissionModal = ({ open, onClose, role }) => {
         }
       }
 
-      // Show results
       if (errors.length > 0) {
         enqueueSnackbar(errors.join('. '), { variant: "error" });
       } else {
@@ -209,7 +192,7 @@ const PermissionModal = ({ open, onClose, role }) => {
     }
   };
 
-  // Handle cancel - reset to initial state
+ 
   const handleCancel = () => {
     setSelected(initialSelected);
     onClose();

@@ -3,6 +3,7 @@ export const PERMISSIONS = {
   CREATE: "create",
   UPDATE: "update",
   DELETE: "delete",
+  ASSIGN: "assign",
   ASSIGN_ROLES: "assign-roles",
   EXPORT: "export",
   VIEW_STATS: "view-stats",

@@ -566,9 +566,6 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
           <Typography variant="h6" color="primary" sx={{ fontWeight: 600, mb: 1 }}>Additional Information</Typography>
           <TextField label="Notes" fullWidth multiline rows={3} value={formData.notes} onChange={(e) => handleChange("notes", e.target.value)} placeholder="Enter any additional notes or special instructions..." />
         </Stack>
-
-        {/* Status & Payment - Only in Edit Mode */}
-        {isEditing && (
           <Stack spacing={2}>
             <Typography variant="h6" color="primary" sx={{ fontWeight: 600, mb: 1 }}>Status & Payment</Typography>
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
@@ -588,7 +585,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
               </FormControl>
             </Stack>
           </Stack>
-        )}
+      
       </Stack>
     </GenericFormModal>
   );
