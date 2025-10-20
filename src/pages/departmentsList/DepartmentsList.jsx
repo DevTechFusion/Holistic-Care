@@ -85,7 +85,7 @@ const DepartmentsPage = () => {
         alignItems="center"
         mb={2}
       >
-        <Typography variant="h5">Pharmacy Departments</Typography>
+        <Typography variant="h5">Departments List</Typography>
         {(
           <Button variant="contained" onClick={() => setOpenModal(true)}>
             + Add Department
