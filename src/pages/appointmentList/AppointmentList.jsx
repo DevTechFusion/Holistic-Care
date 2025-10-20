@@ -124,7 +124,9 @@ const AppointmentsPage = () => {
     try {
       await deleteAppointment(id);
       fetchAppointments();
-      enqueueSnackbar("Appointment deleted successfully", { variant: "success" });
+      enqueueSnackbar("Appointment deleted successfully", {
+        variant: "success",
+      });
     } catch (err) {
       console.error("Failed to delete appointment", err);
       enqueueSnackbar("Failed to delete appointment", { variant: "error" });
@@ -173,7 +175,12 @@ const AppointmentsPage = () => {
 
   return (
     <Box p={3}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
         <Typography variant="h5">Appointments</Typography>
         <Box display="flex" gap={2}>
           <Button variant="contained" onClick={handleCreateAppointment}>
@@ -184,78 +191,123 @@ const AppointmentsPage = () => {
 
       {/* Inline Filters */}
       <Paper sx={{ mb: 2, p: 2 }}>
-        <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems="center">
-          <TextField
-            label="Start Date"
-            type="date"
-            value={filters.start_date}
-            onChange={(e) => handleFilterChange("start_date", e.target.value)}
-            InputLabelProps={{ shrink: true }}
-            size="small"
-          />
-          <TextField
-            label="End Date"
-            type="date"
-            value={filters.end_date}
-            onChange={(e) => handleFilterChange("end_date", e.target.value)}
-            InputLabelProps={{ shrink: true }}
-            size="small"
-          />
-
-          <Autocomplete
-            options={doctors}
-            getOptionLabel={(option) => option.name || ""}
-            value={doctors.find((d) => d.id === filters.doctor_id) || null}
-            onChange={(e, value) => handleFilterChange("doctor_id", value?.id)}
-            renderInput={(params) => <TextField {...params} label="Doctor" size="small" />}
-            isOptionEqualToValue={(o, v) => o?.id === v?.id}
-            sx={{ minWidth: 200 }}
-            disablePortal
-          />
-
-          <Autocomplete
-            options={agents}
-            getOptionLabel={(option) => option.name || ""}
-            value={agents.find((a) => a.id === filters.agent_id) || null}
-            onChange={(e, value) => handleFilterChange("agent_id", value?.id)}
-            renderInput={(params) => <TextField {...params} label="Agent" size="small" />}
-            isOptionEqualToValue={(o, v) => o?.id === v?.id}
-            sx={{ minWidth: 200 }}
-            disablePortal
-          />
-
-          <TextField
-            select
-            label="Department"
-            value={filters.department_id}
-            onChange={(e) => handleFilterChange("department_id", e.target.value)}
-            size="small"
-            sx={{ minWidth: 180 }}
+        <Stack spacing={2}>
+          {/* First Row */}
+          <Stack
+            direction={{ xs: "column", md: "row" }}
+            spacing={2}
+            alignItems="center"
           >
-            <MenuItem value="">All Departments</MenuItem>
-            {departments.map((d) => (
-              <MenuItem key={d.id} value={d.id}>
-                {d.name}
-              </MenuItem>
-            ))}
-          </TextField>
+            <TextField
+              label="Start Date"
+              type="date"
+              value={filters.start_date}
+              onChange={(e) => handleFilterChange("start_date", e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              size="small"
+              sx={{ flex: 1, minWidth: 200 }}
+            />
 
-          <Autocomplete
-            options={procedures}
-            getOptionLabel={(option) => option.name || ""}
-            value={procedures.find((p) => p.id === filters.procedure_id) || null}
-            onChange={(e, value) => handleFilterChange("procedure_id", value?.id)}
-            renderInput={(params) => <TextField {...params} label="Procedure" size="small" />}
-            isOptionEqualToValue={(o, v) => o?.id === v?.id}
-            sx={{ minWidth: 200 }}
-            disablePortal
-          />
+            <TextField
+              label="End Date"
+              type="date"
+              value={filters.end_date}
+              onChange={(e) => handleFilterChange("end_date", e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              size="small"
+              sx={{ flex: 1, minWidth: 200 }}
+            />
 
-          <Box ml="auto" display="flex" gap={1}>
-            <Button variant="outlined" color="error" onClick={clearFilters} size="small">
-              Clear
-            </Button>
-          </Box>
+            <Autocomplete
+              options={doctors}
+              getOptionLabel={(option) => option.name || ""}
+              value={doctors.find((d) => d.id === filters.doctor_id) || null}
+              onChange={(e, value) =>
+                handleFilterChange("doctor_id", value?.id)
+              }
+              renderInput={(params) => (
+                <TextField {...params} label="Doctor" size="small" />
+              )}
+              isOptionEqualToValue={(o, v) => o?.id === v?.id}
+              disablePortal
+              sx={{ flex: 1, minWidth: 200 }}
+            />
+          </Stack>
+
+          {/* Second Row */}
+          <Stack
+            direction={{ xs: "column", md: "row" }}
+            spacing={2}
+            alignItems="center"
+          >
+            <Autocomplete
+              options={agents}
+              getOptionLabel={(option) => option.name || ""}
+              value={agents.find((a) => a.id === filters.agent_id) || null}
+              onChange={(e, value) => handleFilterChange("agent_id", value?.id)}
+              renderInput={(params) => (
+                <TextField {...params} label="Agent" size="small" />
+              )}
+              isOptionEqualToValue={(o, v) => o?.id === v?.id}
+              disablePortal
+              sx={{ flex: 1, minWidth: 200 }}
+            />
+
+            <TextField
+              select
+              label="Department"
+              value={filters.department_id}
+              onChange={(e) =>
+                handleFilterChange("department_id", e.target.value)
+              }
+              size="small"
+              sx={{ flex: 1, minWidth: 200 }}
+            >
+              <MenuItem value="">All Departments</MenuItem>
+              {departments.map((d) => (
+                <MenuItem key={d.id} value={d.id}>
+                  {d.name}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            <Stack
+              direction="row"
+              spacing={2}
+              alignItems="center"
+              sx={{ flex: 1, minWidth: 200 }}
+            >
+              <Autocomplete
+                options={procedures}
+                getOptionLabel={(option) => option.name || ""}
+                value={
+                  procedures.find((p) => p.id === filters.procedure_id) || null
+                }
+                onChange={(e, value) =>
+                  handleFilterChange("procedure_id", value?.id)
+                }
+                renderInput={(params) => (
+                  <TextField {...params} label="Procedure" size="small" />
+                )}
+                isOptionEqualToValue={(o, v) => o?.id === v?.id}
+                disablePortal
+                sx={{ flex: 1 }}
+              />
+
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={clearFilters}
+                size="small"
+                sx={{
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
+                }}
+              >
+                Clear
+              </Button>
+            </Stack>
+          </Stack>
         </Stack>
       </Paper>
 
@@ -299,7 +351,9 @@ const AppointmentsPage = () => {
                       >
                         {page * rowsPerPage + idx + 1}
                       </TableCell>
-                      <TableCell>{dayjs(appt.date).format("DD-MM-YYYY")}</TableCell>
+                      <TableCell>
+                        {dayjs(appt.date).format("DD-MM-YYYY")}
+                      </TableCell>
                       <TableCell>{appt.start_time}</TableCell>
                       <TableCell>{appt.end_time}</TableCell>
                       <TableCell>{appt.id}</TableCell>
@@ -308,7 +362,8 @@ const AppointmentsPage = () => {
                       <TableCell>{appt.doctor?.name}</TableCell>
                       <TableCell>{appt.agent?.name}</TableCell>
                       <TableCell>
-                        {Array.isArray(appt.procedures) && appt.procedures.length > 0
+                        {Array.isArray(appt.procedures) &&
+                        appt.procedures.length > 0
                           ? appt.procedures.map((p) => p.name).join(", ")
                           : appt.procedure?.name || "-"}
                       </TableCell>
@@ -355,7 +410,11 @@ const AppointmentsPage = () => {
         }}
       />
 
-      <ComplaintForm data={targetItem} open={complaintModalOpen} onClose={handleCloseComplaint} />
+      <ComplaintForm
+        data={targetItem}
+        open={complaintModalOpen}
+        onClose={handleCloseComplaint}
+      />
     </Box>
   );
 };

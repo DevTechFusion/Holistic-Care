@@ -39,7 +39,7 @@ const statusColors = {
   Rescheduled: "#FFFEE0",
 };
 
-const paymentModes = [{ id: "not_paid", name: "Not Paid" }];
+const paymentModes = [{ id: "cash", name: "Cash" }, { id: "card", name: "Card" }, { id: "online", name: "Online" }, { id: "not_paid", name: "Not Paid" }];
 
 const ReportsPage = () => {
   const [reports, setReports] = useState([]);
@@ -277,166 +277,208 @@ const ReportsPage = () => {
 
       {/* Inline Filters */}
       <Paper sx={{ mb: 2, p: 2 }}>
-        <Stack
-          direction={{ xs: "column", md: "row" }}
-          spacing={2}
-          alignItems="center"
-        >
-          <TextField
-            label="Start Date"
-            type="date"
-            value={filters.start_date}
-            onChange={(e) => handleFilterChange("start_date", e.target.value)}
-            InputLabelProps={{ shrink: true }}
-            size="small"
-          />
-          <TextField
-            label="End Date"
-            type="date"
-            value={filters.end_date}
-            onChange={(e) => handleFilterChange("end_date", e.target.value)}
-            InputLabelProps={{ shrink: true }}
-            size="small"
-          />
-
-          <Autocomplete
-            options={doctors}
-            getOptionLabel={(option) => option.name || ""}
-            value={doctors.find((d) => d.id === filters.doctor_id) || null}
-            onChange={(e, value) => handleFilterChange("doctor_id", value?.id)}
-            renderInput={(params) => (
-              <TextField {...params} label="Doctor" size="small" />
-            )}
-            isOptionEqualToValue={(o, v) => o?.id === v?.id}
-            sx={{ minWidth: 200 }}
-            disablePortal
-          />
-
-          <Autocomplete
-            options={agents}
-            getOptionLabel={(option) => option.name || ""}
-            value={agents.find((a) => a.id === filters.agent_id) || null}
-            onChange={(e, value) => handleFilterChange("agent_id", value?.id)}
-            renderInput={(params) => (
-              <TextField {...params} label="Agent" size="small" />
-            )}
-            isOptionEqualToValue={(o, v) => o?.id === v?.id}
-            sx={{ minWidth: 200 }}
-            disablePortal
-          />
-
-          <TextField
-            select
-            label="Department"
-            value={filters.department_id}
-            onChange={(e) =>
-              handleFilterChange("department_id", e.target.value)
-            }
-            size="small"
-            sx={{ minWidth: 180 }}
+        <Stack spacing={2}>
+          {/* === Row 1: 3 Fields === */}
+          <Stack
+            direction={{ xs: "column", md: "row" }}
+            spacing={2}
+            alignItems="center"
           >
-            <MenuItem value="">All Departments</MenuItem>
-            {departments.map((d) => (
-              <MenuItem key={d.id} value={d.id}>
-                {d.name}
-              </MenuItem>
-            ))}
-          </TextField>
-
-          <Autocomplete
-            options={procedures}
-            getOptionLabel={(option) => option.name || ""}
-            value={
-              procedures.find((p) => p.id === filters.procedure_id) || null
-            }
-            onChange={(e, value) =>
-              handleFilterChange("procedure_id", value?.id)
-            }
-            renderInput={(params) => (
-              <TextField {...params} label="Procedure" size="small" />
-            )}
-            isOptionEqualToValue={(o, v) => o?.id === v?.id}
-            sx={{ minWidth: 200 }}
-            disablePortal
-          />
-          </Stack>
-            <Stack
-          direction={{ xs: "column", md: "row", lg: "row" }}
-          spacing={2}
-          mt={2}
-          alignItems="center"
-        >
-
-          <Autocomplete
-            options={statuses}
-            getOptionLabel={(option) => option.name || ""}
-            value={statuses.find((s) => s.id === filters.status) || null}
-            onChange={(e, value) => handleFilterChange("status", value?.id)}
-            renderInput={(params) => (
-              <TextField {...params} label="Status" size="small" />
-            )}
-            isOptionEqualToValue={(o, v) => o?.id === v?.id}
-            sx={{ minWidth: 200 }}
-            disablePortal
-          />
-
-          <Autocomplete
-            options={remarks1}
-            getOptionLabel={(option) => option.name || ""}
-            value={remarks1.find((r) => r.id === filters.remarks_1_id) || null}
-            onChange={(e, value) =>
-              handleFilterChange("remarks_1_id", value?.id)
-            }
-            renderInput={(params) => (
-              <TextField {...params} label="Remark 1" size="small" />
-            )}
-            isOptionEqualToValue={(o, v) => o?.id === v?.id}
-            sx={{ minWidth: 200 }}
-            disablePortal
-          />
-
-          <Autocomplete
-            options={remarks2}
-            getOptionLabel={(option) => option.name || ""}
-            value={remarks2.find((r) => r.id === filters.remarks_2_id) || null}
-            onChange={(e, value) =>
-              handleFilterChange("remarks_2_id", value?.id)
-            }
-            renderInput={(params) => (
-              <TextField {...params} label="Remark 2" size="small" />
-            )}
-            isOptionEqualToValue={(o, v) => o?.id === v?.id}
-            sx={{ minWidth: 200 }}
-            disablePortal
-          />
-
-          <Autocomplete
-            options={paymentModes}
-            getOptionLabel={(option) => option.name || ""}
-            value={
-              paymentModes.find((p) => p.id === filters.payment_mode) || null
-            }
-            onChange={(e, value) =>
-              handleFilterChange("payment_mode", value?.id)
-            }
-            renderInput={(params) => (
-              <TextField {...params} label="Payment Mode" size="small" />
-            )}
-            isOptionEqualToValue={(o, v) => o?.id === v?.id}
-            sx={{ minWidth: 180 }}
-            disablePortal
-          />
-
-          <Box ml="auto" display="flex" gap={1}>
-            <Button
-              variant="outlined"
-              color="error"
-              onClick={clearFilters}
+            <TextField
+              label="Start Date"
+              type="date"
+              value={filters.start_date}
+              onChange={(e) => handleFilterChange("start_date", e.target.value)}
+              InputLabelProps={{ shrink: true }}
               size="small"
+              sx={{ flex: 1, minWidth: 200 }}
+            />
+
+            <TextField
+              label="End Date"
+              type="date"
+              value={filters.end_date}
+              onChange={(e) => handleFilterChange("end_date", e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              size="small"
+              sx={{ flex: 1, minWidth: 200 }}
+            />
+
+            <Autocomplete
+              options={doctors}
+              getOptionLabel={(option) => option.name || ""}
+              value={doctors.find((d) => d.id === filters.doctor_id) || null}
+              onChange={(e, value) =>
+                handleFilterChange("doctor_id", value?.id)
+              }
+              renderInput={(params) => (
+                <TextField {...params} label="Doctor" size="small" />
+              )}
+              isOptionEqualToValue={(o, v) => o?.id === v?.id}
+              disablePortal
+              sx={{ flex: 1, minWidth: 200 }}
+            />
+          </Stack>
+
+          {/* === Row 2: 3 Fields === */}
+          <Stack
+            direction={{ xs: "column", md: "row" }}
+            spacing={2}
+            alignItems="center"
+          >
+            <Autocomplete
+              options={agents}
+              getOptionLabel={(option) => option.name || ""}
+              value={agents.find((a) => a.id === filters.agent_id) || null}
+              onChange={(e, value) => handleFilterChange("agent_id", value?.id)}
+              renderInput={(params) => (
+                <TextField {...params} label="Agent" size="small" />
+              )}
+              isOptionEqualToValue={(o, v) => o?.id === v?.id}
+              disablePortal
+              sx={{ flex: 1, minWidth: 200 }}
+            />
+
+            <TextField
+              select
+              label="Department"
+              value={filters.department_id}
+              onChange={(e) =>
+                handleFilterChange("department_id", e.target.value)
+              }
+              size="small"
+              sx={{ flex: 1, minWidth: 200 }}
             >
-              Clear
-            </Button>
-          </Box>
+              <MenuItem value="">All Departments</MenuItem>
+              {departments.map((d) => (
+                <MenuItem key={d.id} value={d.id}>
+                  {d.name}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            <Autocomplete
+              options={procedures}
+              getOptionLabel={(option) => option.name || ""}
+              value={
+                procedures.find((p) => p.id === filters.procedure_id) || null
+              }
+              onChange={(e, value) =>
+                handleFilterChange("procedure_id", value?.id)
+              }
+              renderInput={(params) => (
+                <TextField {...params} label="Procedure" size="small" />
+              )}
+              isOptionEqualToValue={(o, v) => o?.id === v?.id}
+              disablePortal
+              sx={{ flex: 1, minWidth: 200 }}
+            />
+          </Stack>
+
+          {/* === Row 3: 4 Fields + Right-Aligned Clear Button === */}
+          <Stack
+            direction={{ xs: "column", md: "row" }}
+            spacing={2}
+            alignItems="center"
+            flexWrap="wrap"
+          >
+            <Autocomplete
+              options={statuses}
+              getOptionLabel={(option) => option.name || ""}
+              value={statuses.find((s) => s.id === filters.status) || null}
+              onChange={(e, value) => handleFilterChange("status", value?.id)}
+              renderInput={(params) => (
+                <TextField {...params} label="Status" size="small" />
+              )}
+              isOptionEqualToValue={(o, v) => o?.id === v?.id}
+              disablePortal
+              sx={{ flex: 1, minWidth: 200 }}
+            />
+
+            <Autocomplete
+              options={remarks1}
+              getOptionLabel={(option) => option.name || ""}
+              value={
+                remarks1.find((r) => r.id === filters.remarks_1_id) || null
+              }
+              onChange={(e, value) =>
+                handleFilterChange("remarks_1_id", value?.id)
+              }
+              renderInput={(params) => (
+                <TextField {...params} label="Remark 1" size="small" />
+              )}
+              isOptionEqualToValue={(o, v) => o?.id === v?.id}
+              disablePortal
+              sx={{ flex: 1, minWidth: 200 }}
+            />
+
+            <Autocomplete
+              options={remarks2}
+              getOptionLabel={(option) => option.name || ""}
+              value={
+                remarks2.find((r) => r.id === filters.remarks_2_id) || null
+              }
+              onChange={(e, value) =>
+                handleFilterChange("remarks_2_id", value?.id)
+              }
+              renderInput={(params) => (
+                <TextField {...params} label="Remark 2" size="small" />
+              )}
+              isOptionEqualToValue={(o, v) => o?.id === v?.id}
+              disablePortal
+              sx={{ flex: 1, minWidth: 200 }}
+            />
+
+            {/* Last field + Clear Button aligned to right */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: { xs: "flex-start", md: "flex-end" },
+                flex: 1,
+                minWidth: 200,
+              }}
+            >
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={1}
+                alignItems="center"
+                sx={{ width: "100%" }}
+              >
+                <Autocomplete
+                  options={paymentModes}
+                  getOptionLabel={(option) => option.name || ""}
+                  value={
+                    paymentModes.find((p) => p.id === filters.payment_mode) ||
+                    null
+                  }
+                  onChange={(e, value) =>
+                    handleFilterChange("payment_mode", value?.id)
+                  }
+                  renderInput={(params) => (
+                    <TextField {...params} label="Payment Mode" size="small" />
+                  )}
+                  isOptionEqualToValue={(o, v) => o?.id === v?.id}
+                  disablePortal
+                  sx={{ flex: 1, minWidth: 200 }}
+                />
+
+                <Button
+                  variant="outlined"
+                  color="error"
+                  onClick={clearFilters}
+                  size="small"
+                  sx={{
+                    whiteSpace: "nowrap",
+                    alignSelf: { xs: "flex-start", md: "center" },
+                    ml: { md: "auto" },
+                  }}
+                >
+                  Clear
+                </Button>
+              </Stack>
+            </Box>
+          </Stack>
         </Stack>
       </Paper>
 

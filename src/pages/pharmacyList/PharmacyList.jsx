@@ -105,7 +105,9 @@ const PharmacyList = () => {
         rowsPerPage,
         filters.agent_id || "",
         // filters.status || "",
-        filters.start_date ? dayjs(filters.start_date).format("YYYY-MM-DD") : "",
+        filters.start_date
+          ? dayjs(filters.start_date).format("YYYY-MM-DD")
+          : "",
         filters.end_date ? dayjs(filters.end_date).format("YYYY-MM-DD") : ""
       );
 
@@ -203,35 +205,9 @@ const PharmacyList = () => {
           direction={{ xs: "column", md: "row" }}
           spacing={2}
           alignItems="center"
+          flexWrap="wrap"
         >
-          {/* Status select */}
-          {/* <TextField
-            select
-            label="Status"
-            value={filters.status}
-            onChange={(e) => handleFilterChange("status", e.target.value)}
-            size="small"
-            sx={{ minWidth: 200 }}
-            disabled={listsLoading}
-          >
-            <MenuItem value="">
-              <em>All Statuses</em>
-            </MenuItem>
-            {statuses.length > 0 ? (
-              statuses.map((s) => (
-                <MenuItem
-                  key={s.value ?? s.id ?? s}
-                  value={s.value ?? s.id ?? s}
-                >
-                  {s.label ?? s.name ?? s.status ?? String(s)}
-                </MenuItem>
-              ))
-            ) : (
-              <MenuItem disabled>No statuses</MenuItem>
-            )}
-          </TextField> */}
-
-          {/* Agent autocomplete */}
+          {/* Agent Autocomplete */}
           <Autocomplete
             options={agents}
             getOptionLabel={(option) => option.name || ""}
@@ -256,30 +232,44 @@ const PharmacyList = () => {
               />
             )}
             isOptionEqualToValue={(o, v) => o?.id === v?.id}
-            sx={{ minWidth: 240 }}
             disablePortal
-            fullWidth={false}
+            sx={{ flex: 1, minWidth: 240 }}
           />
 
-          {/* Date filters */}
+          {/* Date Filters */}
           <DatePicker
             label="Start Date"
             value={filters.start_date || null}
             onChange={(val) => handleFilterChange("start_date", val)}
             slotProps={{
-              textField: { size: "small", sx: { minWidth: 180 } },
+              textField: {
+                size: "small",
+                sx: { flex: 1, minWidth: 180 },
+              },
             }}
           />
+
           <DatePicker
             label="End Date"
             value={filters.end_date || null}
             onChange={(val) => handleFilterChange("end_date", val)}
             slotProps={{
-              textField: { size: "small", sx: { minWidth: 180 } },
+              textField: {
+                size: "small",
+                sx: { flex: 1, minWidth: 180 },
+              },
             }}
           />
 
-          <Box ml="auto" display="flex" gap={1}>
+          {/* Clear Button */}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: { xs: "flex-start", md: "flex-end" },
+              width: { xs: "100%", md: "auto" },
+              ml: { xs: 0, md: "auto" },
+            }}
+          >
             <Button
               variant="outlined"
               color="error"
@@ -310,7 +300,7 @@ const PharmacyList = () => {
                   <TableCell>Agent</TableCell>
                   <TableCell>Description</TableCell>
                   <TableCell>Amount</TableCell>
-                  <TableCell>Payment Status</TableCell>
+                  <TableCell>Payment</TableCell>
                   <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>

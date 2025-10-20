@@ -18,9 +18,7 @@ import dayjs from "dayjs";
 import GenericFormModal from "./GenericForm";
 import { useAuth } from "../../contexts/AuthContext"; 
 
-// Constants moved outside component for better performance
-// STATUS_OPTIONS removed (will come from API)
-const PAYMENT_OPTIONS = ["Not Paid"];
+const PAYMENT_OPTIONS = ["Cash", "Card", "Online", "Not Paid"];
 const DEFAULT_FORM_DATA = {
   patient_name: "",
   date: null,
@@ -522,11 +520,11 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
               />
 
               <FormControl fullWidth error={!!errors.payment_mode}>
-                <InputLabel>Payment Mode</InputLabel>
+                <InputLabel>Payment</InputLabel>
                 <Select
                   value={formData.payment_mode}
                   onChange={(e) => handleChange("payment_mode", e.target.value)}
-                  label="Payment Mode"
+                  label="Payment"
                 >
                   <MenuItem value="">
                     <em>Select payment mode</em>

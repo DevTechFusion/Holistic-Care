@@ -61,6 +61,9 @@ const VALIDATION_RULES = {
 };
 
 const PAYMENT_MODES = [
+  { value: "cash", label: "Cash" },
+  { value: "card", label: "Card" },
+  { value: "online", label: "Online" },
   { value: "not_paid", label: "Not Paid" },
   
 ];

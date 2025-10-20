@@ -12,7 +12,7 @@ import { createDepartment, updateDepartment } from "../../DAL/departments";
 // Constants
 const DEFAULT_FORM_DATA = {
   name: "",
-  incentive_percentage: 0
+  incentive_percentage: "",
 };
 
 // Validation rules
