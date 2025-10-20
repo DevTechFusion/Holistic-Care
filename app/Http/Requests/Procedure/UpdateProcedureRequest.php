@@ -5,6 +5,9 @@ namespace App\Http\Requests\Procedure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
+/**
+ * @method mixed route(string $param = null)
+ */
 class UpdateProcedureRequest extends FormRequest
 {
     /**
@@ -22,12 +25,14 @@ class UpdateProcedureRequest extends FormRequest
      */
     public function rules(): array
     {
+        $procedureId = $this->route('id');
+
         return [
             'name' => [
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('procedures', 'name')->ignore($this->procedure),
+                Rule::unique('procedures', 'name')->ignore($procedureId),
             ],
         ];
     }
