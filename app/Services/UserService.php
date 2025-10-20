@@ -17,9 +17,17 @@ class UserService extends CrudeService
      */
     public function getAllUsers($perPage = 15, $page = 1)
     {
-        return $this->model->with(['roles', 'permissions'])
-            ->withSum('incentives as incentives_sum', 'incentive_amount')
-            ->paginate($perPage, ['*'], 'page', $page);
+        $query = $this->model->with(['roles', 'permissions'])
+            ->withSum('incentives as incentives_sum', 'incentive_amount');
+
+        // If caller lacks SuperAdmin view permission, hide super_admin users
+        if (!$this->userHasModulePermission('view', 'SuperAdmin')) {
+            $query->whereDoesntHave('roles', function ($q) {
+                $q->where('name', 'super_admin');
+            });
+        }
+
+        return $query->paginate($perPage, ['*'], 'page', $page);
     }
 
     /**
@@ -27,9 +35,15 @@ class UserService extends CrudeService
      */
     public function getUserById($id)
     {
-        return $this->model->with(['roles', 'permissions'])
+        $user = $this->model->with(['roles', 'permissions'])
             ->withSum('incentives as incentives_sum', 'incentive_amount')
             ->find($id);
+
+        if ($user && $user->hasRole('super_admin') && !$this->userHasModulePermission('view', 'SuperAdmin')) {
+            throw new \Exception('Forbidden: missing permission to view super admin');
+        }
+
+        return $user;
     }
 
     /**
@@ -58,6 +72,9 @@ class UserService extends CrudeService
 
         // Assign role if provided
         if (isset($data['role'])) {
+            if ($data['role'] === 'super_admin' && !$this->userHasModulePermission('create', 'SuperAdmin')) {
+                throw new \Exception('Forbidden: missing permission to create super admin');
+            }
             $user->assignRole($data['role']);
         }
 
@@ -69,6 +86,14 @@ class UserService extends CrudeService
      */
     public function updateUser($id, $data)
     {
+        // Load target user first to enforce SuperAdmin checks before any changes
+        $user = $this->_find($id, ['roles', 'permissions']);
+
+        // If target is super_admin, require edit permission BEFORE updating
+        if ($user && $user->hasRole('super_admin') && !$this->userHasModulePermission('edit', 'SuperAdmin')) {
+            throw new \Exception('Forbidden: missing permission to edit super admin');
+        }
+
         $userData = [
             'name' => $data['name'],
             'email' => $data['email'],
@@ -81,10 +106,17 @@ class UserService extends CrudeService
 
         $this->_update($id, $userData);
 
-        $user = $this->_find($id, ['roles', 'permissions']);
+        // If target is super_admin, require edit permission
+        // (This is retained for defense-in-depth; main check happens before update)
+        if ($user && $user->hasRole('super_admin') && !$this->userHasModulePermission('edit', 'SuperAdmin')) {
+            throw new \Exception('Forbidden: missing permission to edit super admin');
+        }
 
         // Update role if provided
         if (isset($data['role'])) {
+            if ($data['role'] === 'super_admin' && !$this->userHasModulePermission('edit', 'SuperAdmin')) {
+                throw new \Exception('Forbidden: missing permission to grant super admin');
+            }
             $user->syncRoles([$data['role']]);
         }
 
@@ -97,6 +129,9 @@ class UserService extends CrudeService
     public function deleteUser($id)
     {
         $user = $this->_find($id);
+        if ($user->hasRole('super_admin') && !$this->userHasModulePermission('delete', 'SuperAdmin')) {
+            throw new \Exception('Forbidden: missing permission to delete super admin');
+        }
         return $this->_delete($id);
     }
 
@@ -108,6 +143,10 @@ class UserService extends CrudeService
         $user = $this->_find($id);
         if (!$user) {
             throw new \Exception('User not found');
+        }
+        // Require SuperAdmin edit permission to assign the super_admin role
+        if ($role === 'super_admin' && !$this->userHasModulePermission('edit', 'SuperAdmin')) {
+            throw new \Exception('Forbidden: missing permission to grant super admin');
         }
         $user->assignRole($role);
         return $user->load('roles', 'permissions');
@@ -121,6 +160,10 @@ class UserService extends CrudeService
         $user = $this->_find($id);
         if (!$user) {
             throw new \Exception('User not found');
+        }
+        // Require SuperAdmin edit permission to remove the super_admin role
+        if ($role === 'super_admin' && !$this->userHasModulePermission('edit', 'SuperAdmin')) {
+            throw new \Exception('Forbidden: missing permission to revoke super admin');
         }
         $user->removeRole($role);
         return $user->load('roles', 'permissions');
@@ -147,10 +190,23 @@ class UserService extends CrudeService
      */
     public function getUsersByRoles(array $roles, $perPage = 15, $page = 1)
     {
-        return $this->model->role($roles)
+        // If requesting super_admin users but caller lacks permission, forbid
+        if (in_array('super_admin', $roles, true) && !$this->userHasModulePermission('view', 'SuperAdmin')) {
+            throw new \Exception('Forbidden: missing permission to view super admins');
+        }
+
+        $query = $this->model->role($roles)
             ->with(['roles', 'permissions'])
-            ->withSum('incentives as incentives_sum', 'incentive_amount')
-            ->paginate($perPage, ['*'], 'page', $page);
+            ->withSum('incentives as incentives_sum', 'incentive_amount');
+
+        // If caller lacks SuperAdmin view permission, ensure super_admin users are not included
+        if (!$this->userHasModulePermission('view', 'SuperAdmin')) {
+            $query->whereDoesntHave('roles', function ($q) {
+                $q->where('name', 'super_admin');
+            });
+        }
+
+        return $query->paginate($perPage, ['*'], 'page', $page);
     }
 
     /**
@@ -162,5 +218,19 @@ class UserService extends CrudeService
             ->select('id', 'name', 'email')
             ->orderBy('name')
             ->get();
+    }
+
+    private function userHasModulePermission(string $action, string $module): bool
+    {
+        $authUser = request()->user();
+        if (!$authUser) {
+            return false;
+        }
+        foreach ($authUser->getAllPermissions() as $permission) {
+            if (isset($permission->name, $permission->module) && $permission->name === $action && $permission->module === $module) {
+                return true;
+            }
+        }
+        return false;
     }
 }

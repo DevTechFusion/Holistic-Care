@@ -133,6 +133,12 @@ class PermissionSeeder extends Seeder
             ['guard_name' => 'sanctum', 'name' => 'total_incentive', 'module' => 'AgentDashboard', 'display_name' => 'View Total Incentive'],
             ['guard_name' => 'sanctum', 'name' => 'view', 'module' => 'ManagerDashboard', 'display_name' => 'View Dashboard'],
 
+            // Super Admin User Management (module-scoped)
+            ['guard_name' => 'sanctum', 'name' => 'view', 'module' => 'SuperAdmin', 'display_name' => 'View Super Admins'],
+            ['guard_name' => 'sanctum', 'name' => 'create', 'module' => 'SuperAdmin', 'display_name' => 'Create Super Admins'],
+            ['guard_name' => 'sanctum', 'name' => 'edit', 'module' => 'SuperAdmin', 'display_name' => 'Edit Super Admins'],
+            ['guard_name' => 'sanctum', 'name' => 'delete', 'module' => 'SuperAdmin', 'display_name' => 'Delete Super Admins'],
+
         ];
 
         foreach ($permissions as $permission) {
