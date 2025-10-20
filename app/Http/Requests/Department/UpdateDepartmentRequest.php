@@ -5,6 +5,9 @@ namespace App\Http\Requests\Department;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
+/**
+ * @method mixed route(string $param = null)
+ */
 class UpdateDepartmentRequest extends FormRequest
 {
     /**
@@ -22,12 +25,14 @@ class UpdateDepartmentRequest extends FormRequest
      */
     public function rules(): array
     {
+        $departmentId = $this->route('id');
+
         return [
             'name' => [
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('departments', 'name')->ignore($this->department),
+                Rule::unique('departments', 'name')->ignore($departmentId),
             ],
             'incentive_percentage' => 'nullable|numeric|min:0|max:100',
         ];
