@@ -15,22 +15,18 @@ import {
 import { getAllDepartments, deleteDepartment } from "../../DAL/departments";
 import CreateDepartmentModal from "../../components/forms/DepartmentForm";
 import ActionButtons from "../../constants/actionButtons";
-// import { useAuth } from "../../contexts/AuthContext";
+import { useSnackbar } from "notistack";
 
 const DepartmentsPage = () => {
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
-
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [total, setTotal] = useState(0);
   const [targetItem, setTargetItem] = useState(null);
 
-  // const { user } = useAuth();
-  // const role = user?.roles?.[0]?.name ?? null;
-  // const isSuperAdmin = role === "super_admin";
-  // const isManager = role === "managerly";
+  const { enqueueSnackbar } = useSnackbar();
 
   const fetchDepartments = async () => {
     setLoading(true);
@@ -50,13 +46,30 @@ const DepartmentsPage = () => {
   }, [page, rowsPerPage]);
 
   const handleDelete = async (id) => {
-    try {
-      await deleteDepartment(id);
-      fetchDepartments();
-    } catch (error) {
-      console.error("Delete failed", error);
+  setLoading(true); // If you have a loading state
+  try {
+    const res = await deleteDepartment(id);
+    
+    if (res?.status === "error" || (res?.code && res.code !== 200)) {
+      enqueueSnackbar(res.message || "Failed to delete department", { 
+        variant: "error" 
+      });
+      return;
     }
-  };
+    
+    enqueueSnackbar("Department deleted successfully", { variant: "success" });
+    fetchDepartments();
+  } catch (error) {
+    console.error("Delete failed", error);
+    const message = 
+      error?.response?.data?.message || 
+      error?.message || 
+      "Failed to delete department";
+    enqueueSnackbar(message, { variant: "error" });
+  } finally {
+    setLoading(false); // If you have a loading state
+  }
+};
 
   const handleEdit = (dept) => {
     setTargetItem(dept);

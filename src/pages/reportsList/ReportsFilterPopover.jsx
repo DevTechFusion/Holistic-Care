@@ -18,9 +18,8 @@ import { getSelectRemarks1 } from "../../DAL/remarks1";
 import { getSelectRemarks2 } from "../../DAL/remarks2";
 
 const paymentModes = [
-  { id: "cash", name: "Cash" },
-  { id: "online", name: "Online" },
-  { id: "card", name: "Card" },
+  { id: "not_paid", name: "Not Paid" },
+
 ];
 
 const ReportsFilterPopover = ({ anchorEl, open, onClose, filters, setFilters }) => {

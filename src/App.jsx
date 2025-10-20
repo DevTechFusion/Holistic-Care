@@ -215,7 +215,7 @@ const routes = [
 ];
 // Protected Route Component
 const ProtectedRoute = () => {
-  const { isAuthenticated, loading, user } = useAuth();
+  const { isAuthenticated, loading, user, getAllowedPermissions } = useAuth();
 
   const role = user?.roles[0].name ?? null;
 

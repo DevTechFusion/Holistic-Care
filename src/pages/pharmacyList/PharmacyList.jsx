@@ -20,11 +20,16 @@ import {
   DialogContent,
   DialogActions,
   IconButton,
+  TextField,
+  Autocomplete,
+  MenuItem,
 } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import dayjs from "dayjs";
 import PharmacyForm from "../../components/forms/PharmacyForm";
-import PharmacyFilterPopover from "./PharmacyFilterPopover";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { getAgentList } from "../../DAL/users";
+// import { getSelectStatuses } from "../../DAL/status";
 
 const PharmacyList = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -36,15 +41,20 @@ const PharmacyList = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [total, setTotal] = useState(0);
+
+  // filters (removed search)
   const [filters, setFilters] = useState({
-    search: "",
-    status: "",
+    // status: "",
     agent_id: "",
     start_date: null,
     end_date: null,
   });
 
-  const [filterAnchor, setFilterAnchor] = useState(null);
+  // lists for inline filters
+  const [agents, setAgents] = useState([]);
+  // const [statuses, setStatuses] = useState([]);
+  const [listsLoading, setListsLoading] = useState(false);
+
   const [selectedDescription, setSelectedDescription] = useState("");
   const [descriptionModalOpen, setDescriptionModalOpen] = useState(false);
 
@@ -69,22 +79,34 @@ const PharmacyList = () => {
     }
   };
 
- 
-  const handleOpenFilters = (e) => setFilterAnchor(e.currentTarget);
-  const handleCloseFilters = () => setFilterAnchor(null);
+  const fetchFilterLists = async () => {
+    setListsLoading(true);
+    try {
+      const [agentRes, statusRes] = await Promise.all([
+        getAgentList(),
+        // getSelectStatuses(),
+      ]);
+      setAgents(Array.isArray(agentRes?.data) ? agentRes.data : []);
+      // setStatuses(Array.isArray(statusRes?.data) ? statusRes.data : []);
+    } catch (err) {
+      console.error("Failed to fetch filter lists", err);
+      setAgents([]);
+      // setStatuses([]);
+    } finally {
+      setListsLoading(false);
+    }
+  };
 
   const fetchPharmacies = useCallback(async () => {
     setLoading(true);
     try {
-      let apiFilters = { ...filters };
       const res = await getPharmacy(
         page + 1,
         rowsPerPage,
-        apiFilters.agent_id || "",
-        apiFilters.status || "",
-        apiFilters.search || "",
-        apiFilters.start_date ? dayjs(apiFilters.start_date).format("YYYY-MM-DD") : "",
-        apiFilters.end_date ? dayjs(apiFilters.end_date).format("YYYY-MM-DD") : ""
+        filters.agent_id || "",
+        // filters.status || "",
+        filters.start_date ? dayjs(filters.start_date).format("YYYY-MM-DD") : "",
+        filters.end_date ? dayjs(filters.end_date).format("YYYY-MM-DD") : ""
       );
 
       setData(res?.data?.data || []);
@@ -97,6 +119,10 @@ const PharmacyList = () => {
       setLoading(false);
     }
   }, [page, rowsPerPage, filters, enqueueSnackbar]);
+
+  useEffect(() => {
+    fetchFilterLists();
+  }, []);
 
   useEffect(() => {
     fetchPharmacies();
@@ -130,6 +156,22 @@ const PharmacyList = () => {
     fetchPharmacies();
   };
 
+  const handleFilterChange = (field, value) => {
+    setFilters((prev) => ({ ...prev, [field]: value || "" }));
+    setPage(0);
+  };
+
+  const clearFilters = () => {
+    const cleared = {
+      // status: "",
+      agent_id: "",
+      start_date: null,
+      end_date: null,
+    };
+    setFilters(cleared);
+    setPage(0);
+  };
+
   return (
     <Box p={3}>
       {/* Header */}
@@ -139,14 +181,9 @@ const PharmacyList = () => {
         alignItems="center"
         mb={2}
       >
-        <Typography variant="h5">
-          Pharmacy List
-        </Typography>
+        <Typography variant="h5">Pharmacy List</Typography>
 
         <Stack direction="row" spacing={2} alignItems="center">
-           <Button variant="outlined" onClick={handleOpenFilters}>
-            Filters
-          </Button>
           <Button
             variant="contained"
             sx={{ fontWeight: "bold" }}
@@ -160,17 +197,100 @@ const PharmacyList = () => {
         </Stack>
       </Box>
 
-      {/* Filter Popover */}
-      <PharmacyFilterPopover
-        anchorEl={filterAnchor}
-        open={Boolean(filterAnchor)}
-        onClose={handleCloseFilters}
-        filters={filters}
-        setFilters={(newFilters) => {
-          setFilters(newFilters);
-          setPage(0); 
-        }}
-      />
+      {/* Inline Filters (moved from popover) */}
+      <Paper sx={{ mb: 2, p: 2 }}>
+        <Stack
+          direction={{ xs: "column", md: "row" }}
+          spacing={2}
+          alignItems="center"
+        >
+          {/* Status select */}
+          {/* <TextField
+            select
+            label="Status"
+            value={filters.status}
+            onChange={(e) => handleFilterChange("status", e.target.value)}
+            size="small"
+            sx={{ minWidth: 200 }}
+            disabled={listsLoading}
+          >
+            <MenuItem value="">
+              <em>All Statuses</em>
+            </MenuItem>
+            {statuses.length > 0 ? (
+              statuses.map((s) => (
+                <MenuItem
+                  key={s.value ?? s.id ?? s}
+                  value={s.value ?? s.id ?? s}
+                >
+                  {s.label ?? s.name ?? s.status ?? String(s)}
+                </MenuItem>
+              ))
+            ) : (
+              <MenuItem disabled>No statuses</MenuItem>
+            )}
+          </TextField> */}
+
+          {/* Agent autocomplete */}
+          <Autocomplete
+            options={agents}
+            getOptionLabel={(option) => option.name || ""}
+            value={agents.find((a) => a.id === filters.agent_id) || null}
+            onChange={(e, value) => handleFilterChange("agent_id", value?.id)}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Agent"
+                size="small"
+                InputProps={{
+                  ...params.InputProps,
+                  endAdornment: (
+                    <>
+                      {listsLoading ? (
+                        <CircularProgress size={20} sx={{ mr: 1 }} />
+                      ) : null}
+                      {params.InputProps.endAdornment}
+                    </>
+                  ),
+                }}
+              />
+            )}
+            isOptionEqualToValue={(o, v) => o?.id === v?.id}
+            sx={{ minWidth: 240 }}
+            disablePortal
+            fullWidth={false}
+          />
+
+          {/* Date filters */}
+          <DatePicker
+            label="Start Date"
+            value={filters.start_date || null}
+            onChange={(val) => handleFilterChange("start_date", val)}
+            slotProps={{
+              textField: { size: "small", sx: { minWidth: 180 } },
+            }}
+          />
+          <DatePicker
+            label="End Date"
+            value={filters.end_date || null}
+            onChange={(val) => handleFilterChange("end_date", val)}
+            slotProps={{
+              textField: { size: "small", sx: { minWidth: 180 } },
+            }}
+          />
+
+          <Box ml="auto" display="flex" gap={1}>
+            <Button
+              variant="outlined"
+              color="error"
+              onClick={clearFilters}
+              size="small"
+            >
+              Clear
+            </Button>
+          </Box>
+        </Stack>
+      </Paper>
 
       {/* Table */}
       <Paper sx={{ width: "100%", overflowX: "auto" }}>
@@ -190,7 +310,7 @@ const PharmacyList = () => {
                   <TableCell>Agent</TableCell>
                   <TableCell>Description</TableCell>
                   <TableCell>Amount</TableCell>
-                  <TableCell>Status</TableCell>
+                  <TableCell>Payment Status</TableCell>
                   <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
@@ -220,7 +340,7 @@ const PharmacyList = () => {
                         {item.description || "—"}
                       </TableCell>
                       <TableCell>{item.amount}</TableCell>
-                      <TableCell>{item.status}</TableCell>
+                      <TableCell>{item.payment_mode || "Paid"}</TableCell>
                       <TableCell>
                         <ActionButtons
                           onEdit={() => handleEdit(item)}

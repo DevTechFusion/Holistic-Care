@@ -61,9 +61,8 @@ const VALIDATION_RULES = {
 };
 
 const PAYMENT_MODES = [
-  { value: "cash", label: "Cash" },
-  { value: "card", label: "Card" },
-  { value: "online", label: "Online Transfer" },
+  { value: "not_paid", label: "Not Paid" },
+  
 ];
 
 const API_ENDPOINTS = [
@@ -259,16 +258,22 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
     try {
       const payload = {
         ...formData,
-        agent_id: isCurrentUserAgent ? String(user.id) : formData.agent_id,
+        agent_id:
+          !isEditing && isCurrentUserAgent
+            ? String(user.id)
+            : formData.agent_id,
         start_time: normalizeTime(formData.start_time),
         end_time: normalizeTime(formData.end_time),
       };
+      const res = isEditing
+        ? await updateAppointment(data?.id, payload)
+        : await createAppointment(payload);
 
-      const res = isEditing ? await updateAppointment(data?.id, payload) : await createAppointment(payload);
-
-      const errorMessage = res?.status === "error" || (res?.code && res.code !== 200 && res.code !== 201)
-        ? res.message || res.error || res?.data?.message || res?.data?.error
-        : null;
+      const errorMessage =
+        res?.status === "error" ||
+        (res?.code && res.code !== 200 && res.code !== 201)
+          ? res.message || res.error || res?.data?.message || res?.data?.error
+          : null;
 
       if (errorMessage) {
         enqueueSnackbar(errorMessage, { variant: "error" });
@@ -276,12 +281,21 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
         return;
       }
 
-      enqueueSnackbar(`Appointment ${isEditing ? "updated" : "created"} successfully!`, { variant: "success" });
+      enqueueSnackbar(
+        `Appointment ${isEditing ? "updated" : "created"} successfully!`,
+        { variant: "success" }
+      );
       resetForm();
       onClose();
     } catch (error) {
       console.error("Error saving appointment:", error);
-      const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || `Failed to ${isEditing ? "update" : "create"} appointment. Please try again.`;
+      const errorMessage =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        error.message ||
+        `Failed to ${
+          isEditing ? "update" : "create"
+        } appointment. Please try again.`;
       enqueueSnackbar(errorMessage, { variant: "error" });
     } finally {
       setIsSubmitting(false);
@@ -379,7 +393,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
     );
 
     if (isCurrentUserAgent && user) return (
-      <TextField label="Agent *" fullWidth value={user.name || "Current User"} helperText="Automatically set to current agent" />
+      <TextField label="Agent *" fullWidth value={user.name || "Current User"} disabled helperText="Automatically set to current agent" />
     );
 
     return (

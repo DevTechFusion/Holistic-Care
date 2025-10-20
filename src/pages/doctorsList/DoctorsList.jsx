@@ -48,15 +48,25 @@ const DoctorsPage = () => {
   }, [fetchDoctors]);
 
   const handleDelete = async (id) => {
-  
   setLoading(true);
   try {
-    await deleteDoctor(id);
+    const res = await deleteDoctor(id);
+    
+    if (res?.status === "error" || (res?.code && res.code !== 200)) {
+      enqueueSnackbar(res.message || "Failed to delete doctor", { 
+        variant: "error" 
+      });
+      return;
+    }
+    
     enqueueSnackbar("Doctor deleted successfully", { variant: "success" });
     fetchDoctors();
   } catch (err) {
     console.error("Failed to delete doctor", err);
-    const message = err?.response?.data?.message || err?.message || "Failed to delete doctor";
+    const message = 
+      err?.response?.data?.message || 
+      err?.message || 
+      "Failed to delete doctor";
     enqueueSnackbar(message, { variant: "error" });
   } finally {
     setLoading(false);

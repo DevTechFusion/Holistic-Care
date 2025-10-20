@@ -34,16 +34,14 @@ export const updatePharmacy = (id, data) => {
 // # Filter by agent and status
 // GET /api/pharmacy?per_page=20&page=1&agent_id=1&status=completed
 
-export const getPharmacy = (page = 1, perPage = 15, agentId, status) => {
+export const getPharmacy = (page = 1, perPage = 15, agentId = "", start_date = "", end_date = "") => {
   return invokeApi({
-    path: `api/pharmacy?page=${page}&per_page=${perPage}&agent_id=${agentId}&status=${status}`,
+    path: `api/pharmacy?page=${page}&per_page=${perPage}&agent_id=${agentId}&start_date=${start_date}&end_date=${end_date}`,
   });
 };
 
-// # Multiple filters with date range
-// GET /api/pharmacy?agent_id=1&start_date=2025-09-01&end_date=2025-09-30&search=cash
 
-export const getFilteredPharmacy = (agentId, startDate, endDate, search) => {
+export const getFilteredPharmacy = (agentId = "", startDate = "", endDate = "", search  = "") => {
   return invokeApi({
     path: `api/pharmacy?agent_id=${agentId}&start_date=${startDate}&end_date=${endDate}&search=${search}`,
   });

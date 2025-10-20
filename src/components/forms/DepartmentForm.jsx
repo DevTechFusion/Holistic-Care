@@ -12,7 +12,7 @@ import { createDepartment, updateDepartment } from "../../DAL/departments";
 // Constants
 const DEFAULT_FORM_DATA = {
   name: "",
-  incentive_percentage: 0
+  incentive_percentage: 1
 };
 
 // Validation rules
@@ -20,7 +20,7 @@ const VALIDATION_RULES = {
   NAME_MIN_LENGTH: 2,
   NAME_MAX_LENGTH: 100,
   REQUIRED_FIELDS: ['name', 'incentive_percentage'],
-  INCENTIVE_MIN: 0,
+  INCENTIVE_MIN: 1,
   INCENTIVE_MAX: 100
 };
 
@@ -218,12 +218,12 @@ const CreateDepartmentModal = ({ open, onClose, isEditing, data }) => {
             value={formData.incentive_percentage}
             onChange={(e) => handleChange("incentive_percentage", e.target.value)}
             error={!!errors.incentive_percentage}
-            helperText={errors.incentive_percentage || "Enter percentage value (0-100)"}
+            helperText={errors.incentive_percentage || "Enter percentage value (1-100)"}
             placeholder="Enter incentive percentage"
             inputProps={{
               min: VALIDATION_RULES.INCENTIVE_MIN,
               max: VALIDATION_RULES.INCENTIVE_MAX,
-              step: "1.00"
+              step: "1",
             }}
           />
 

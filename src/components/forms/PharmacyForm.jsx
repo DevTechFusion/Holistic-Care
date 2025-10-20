@@ -13,13 +13,14 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { useSnackbar } from "notistack";
 import { createPharmacy, updatePharmacy } from "../../DAL/pharmacy";
 import { getRoles } from "../../DAL/modelRoles";
+import { getAllStatuses } from "../../DAL/status";
 import dayjs from "dayjs";
 import GenericFormModal from "./GenericForm";
 import { useAuth } from "../../contexts/AuthContext"; 
 
 // Constants moved outside component for better performance
-const STATUS_OPTIONS = ["pending", "completed", "cancelled"];
-const PAYMENT_OPTIONS = ["cash", "card", "online"];
+// STATUS_OPTIONS removed (will come from API)
+const PAYMENT_OPTIONS = ["Not Paid"];
 const DEFAULT_FORM_DATA = {
   patient_name: "",
   date: null,
@@ -51,20 +52,30 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
 
+  // New state for statuses from API
+  const [statuses, setStatuses] = useState([]);
+  const [statusesLoading, setStatusesLoading] = useState(false);
+  const [statusesError, setStatusesError] = useState(null);
+
   // Detect if current user is an agent
   const isCurrentUserAgent = Array.isArray(user?.roles) && user.roles.some(role => role.name?.toLowerCase() === 'agent');
 
   // Memoized options to prevent unnecessary re-renders
   const formOptions = useMemo(() => ({
-    statusOptions: STATUS_OPTIONS.map(status => ({
-      value: status,
-      label: status.charAt(0).toUpperCase() + status.slice(1)
-    })),
+    statusOptions: (statuses || []).map(s => {
+      // Support multiple possible shapes returned by API
+      const value = s.id ?? s.value ?? s.name ?? s.status ?? s;
+      const label = s.name ?? s.value ?? s.status ?? String(value);
+      return {
+        value,
+        label: label.charAt(0).toUpperCase() + label.slice(1)
+      };
+    }),
     paymentOptions: PAYMENT_OPTIONS.map(mode => ({
       value: mode,
       label: mode.charAt(0).toUpperCase() + mode.slice(1)
     }))
-  }), []);
+  }), [statuses]);
 
   // Validation function
   const validateField = useCallback((field, value) => {
@@ -142,7 +153,7 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
         });
       } else {
         // If user is agent, set agent_id automatically
-        if (isCurrentUserAgent && user) {
+        if (!isEditing && isCurrentUserAgent && user) {
           setFormData(prev => ({
             ...DEFAULT_FORM_DATA,
             agent_id: String(user.id)
@@ -160,7 +171,7 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
     let isMounted = true;
     
     const fetchRoles = async () => {
-      if (rolesLoading) return; // Prevent multiple simultaneous requests
+      if (rolesLoading) return; 
       
       setRolesLoading(true);
       setRolesError(null);
@@ -191,6 +202,43 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
     };
   }, [open]);
 
+  // New: fetch statuses from API (using getAllStatuses similar to appointment form)
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchStatuses = async () => {
+      if (statusesLoading) return;
+
+      setStatusesLoading(true);
+      setStatusesError(null);
+
+      try {
+        // Request a larger page size to get all statuses in one call
+        const res = await getAllStatuses(1, 1000);
+        if (isMounted) {
+          setStatuses(res?.data?.data || []);
+        }
+      } catch (err) {
+        console.error("Error fetching statuses:", err);
+        if (isMounted) {
+          setStatusesError("Failed to load statuses. Please refresh and try again.");
+        }
+      } finally {
+        if (isMounted) {
+          setStatusesLoading(false);
+        }
+      }
+    };
+
+    if (open) {
+      fetchStatuses();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [open]);
+
   // Handle form submission
   const handleSubmit = async () => {
     const validationErrors = validateForm();
@@ -208,7 +256,12 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
     try {
       const payload = {
         ...formData,
-        agent_id: isCurrentUserAgent ? String(user.id) : formData.agent_id,
+        agent_id: isEditing
+          ? formData.agent_id 
+          : isCurrentUserAgent
+          ? String(user.id)
+          : formData.agent_id,
+
         date: formData.date ? dayjs(formData.date).format("YYYY-MM-DD") : null,
       };
 
@@ -344,7 +397,7 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
         {/* Assignment & Status Section */}
         <Stack spacing={2}>
           <Typography variant="h6" color="primary" sx={{ fontWeight: 600, mb: 1 }}>
-            Assignment & Status
+            Agent Assignment 
           </Typography>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             {/* Agent Field */}
@@ -400,23 +453,45 @@ const PharmacyForm = ({ open, onClose, isEditing, data }) => {
               </FormControl>
             )}
 
-            <FormControl fullWidth>
-              <InputLabel>Status</InputLabel>
-              <Select
-                value={formData.status}
-                onChange={(e) => handleChange("status", e.target.value)}
-                label="Status"
-              >
-                <MenuItem value="">
-                  <em>Select status</em>
-                </MenuItem>
-                {formOptions.statusOptions.map((option) => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
+            {/* Status field now uses API-driven options */}
+            {/* {statusesLoading ? (
+              <FormControl fullWidth>
+                <InputLabel>Status</InputLabel>
+                <Stack direction="row" alignItems="center" spacing={1} p={2}>
+                  <CircularProgress size={20} />
+                  <Typography variant="body2">Loading statuses...</Typography>
+                </Stack>
+              </FormControl>
+            ) : statusesError ? (
+              <FormControl fullWidth>
+                <InputLabel>Status</InputLabel>
+                <Typography color="error" variant="body2" p={2}>
+                  {statusesError}
+                </Typography>
+              </FormControl>
+            ) : (
+              <FormControl fullWidth>
+                <InputLabel>Status</InputLabel>
+                <Select
+                  value={formData.status}
+                  onChange={(e) => handleChange("status", e.target.value)}
+                  label="Status"
+                >
+                  <MenuItem value="">
+                    <em>Select status</em>
                   </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+                  {formOptions.statusOptions.length > 0 ? (
+                    formOptions.statusOptions.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem disabled>No statuses available</MenuItem>
+                  )}
+                </Select>
+              </FormControl>
+            )} */}
           </Stack>
         </Stack>
 

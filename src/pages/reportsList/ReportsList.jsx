@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Box,
   Typography,
@@ -12,14 +12,24 @@ import {
   TablePagination,
   TableContainer,
   Button,
+  Stack,
+  TextField,
+  Autocomplete,
+  MenuItem,
 } from "@mui/material";
 
 import { getAllReports, exportReports } from "../../DAL/reports";
-import { getAllStatuses } from "../../DAL/status";
+import { getDoctorsList } from "../../DAL/doctors";
+import { getProceduresList } from "../../DAL/procedure";
+import { getDepartmentsList } from "../../DAL/departments";
+import { getAgentList } from "../../DAL/users";
+import { getSelectStatuses } from "../../DAL/status";
+import { getSelectRemarks1 } from "../../DAL/remarks1";
+import { getSelectRemarks2 } from "../../DAL/remarks2";
+
 import { useSnackbar } from "notistack";
 import dayjs from "dayjs";
-import ReportsFilterPopover from "./ReportsFilterPopover";
-import { useAuth } from "../../contexts/AuthContext"; 
+import { useAuth } from "../../contexts/AuthContext";
 
 const statusColors = {
   "Already Taken": "#e7f2fe",
@@ -29,6 +39,8 @@ const statusColors = {
   Rescheduled: "#FFFEE0",
 };
 
+const paymentModes = [{ id: "not_paid", name: "Not Paid" }];
+
 const ReportsPage = () => {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -36,12 +48,9 @@ const ReportsPage = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [total, setTotal] = useState(0);
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [statuses, setStatuses] = useState([]);
 
   const { enqueueSnackbar } = useSnackbar();
-
-  const { user } = useAuth(); 
+  const { user } = useAuth();
   const role = user?.roles?.[0]?.name;
   const isSuperAdmin = role === "super_admin";
   const isManager = role === "managerly";
@@ -61,19 +70,73 @@ const ReportsPage = () => {
     order_direction: "desc",
   });
 
-  
+  // lists for inline filters
+  const [doctors, setDoctors] = useState([]);
+  const [agents, setAgents] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [procedures, setProcedures] = useState([]);
+  const [statuses, setStatuses] = useState([]);
+  const [remarks1, setRemarks1] = useState([]);
+  const [remarks2, setRemarks2] = useState([]);
+  const [listsLoading, setListsLoading] = useState(false);
 
-  // ✅ Fetch statuses
-  const fetchStatuses = async () => {
+  const fetchFilterLists = useCallback(async () => {
+    setListsLoading(true);
     try {
-      const res = await getAllStatuses();
-      setStatuses(res?.data?.data || []);
-    } catch (err) {
-      console.error("Failed to fetch statuses", err);
-    }
-  };
+      const [
+        docRes,
+        agentRes,
+        deptRes,
+        procRes,
+        statusRes,
+        remarks1Res,
+        remarks2Res,
+      ] = await Promise.all([
+        getDoctorsList(),
+        getAgentList(),
+        getDepartmentsList(),
+        getProceduresList(),
+        getSelectStatuses(),
+        getSelectRemarks1(),
+        getSelectRemarks2(),
+      ]);
 
-  const fetchReports = async () => {
+      setDoctors(Array.isArray(docRes?.data) ? docRes.data : []);
+      setAgents(Array.isArray(agentRes?.data) ? agentRes.data : []);
+      setDepartments(Array.isArray(deptRes?.data) ? deptRes.data : []);
+      setProcedures(Array.isArray(procRes?.data) ? procRes.data : []);
+
+      setStatuses(
+        Array.isArray(statusRes?.data)
+          ? statusRes.data.map((s) => ({ id: s.value, name: s.label }))
+          : []
+      );
+
+      setRemarks1(
+        Array.isArray(remarks1Res?.data)
+          ? remarks1Res.data.map((r) => ({ id: r.value, name: r.label }))
+          : []
+      );
+      setRemarks2(
+        Array.isArray(remarks2Res?.data)
+          ? remarks2Res.data.map((r) => ({ id: r.value, name: r.label }))
+          : []
+      );
+    } catch (err) {
+      console.error("Error fetching report filter lists:", err);
+      setDoctors([]);
+      setAgents([]);
+      setDepartments([]);
+      setProcedures([]);
+      setStatuses([]);
+      setRemarks1([]);
+      setRemarks2([]);
+    } finally {
+      setListsLoading(false);
+    }
+  }, []);
+
+  const fetchReports = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -100,16 +163,19 @@ const ReportsPage = () => {
       setTotal(res?.data?.total || 0);
     } catch (err) {
       console.error("Failed to fetch reports", err);
+      enqueueSnackbar?.("Failed to fetch reports", { variant: "error" });
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, rowsPerPage, filters, enqueueSnackbar]);
+
+  useEffect(() => {
+    fetchFilterLists();
+  }, [fetchFilterLists]);
 
   useEffect(() => {
     fetchReports();
-    fetchStatuses();
-  }, [page, rowsPerPage, filters, user]);
-
+  }, [fetchReports, page, rowsPerPage, filters, user]);
 
   const handleExport = async () => {
     try {
@@ -138,7 +204,8 @@ const ReportsPage = () => {
           : new Blob([res.data], { type: "text/csv;charset=utf-8;" });
 
       const contentDisposition =
-        res.headers?.["content-disposition"] || res.headers?.get?.("content-disposition");
+        res.headers?.["content-disposition"] ||
+        res.headers?.get?.("content-disposition");
 
       const filename =
         contentDisposition?.split("filename=")[1]?.replace(/"/g, "") ||
@@ -162,26 +229,216 @@ const ReportsPage = () => {
     }
   };
 
+  const handleFilterChange = (field, value) => {
+    setFilters((prev) => ({ ...prev, [field]: value || "" }));
+    setPage(0);
+  };
+
+  const clearFilters = () => {
+    const cleared = {
+      start_date: "",
+      end_date: "",
+      doctor_id: "",
+      agent_id: "",
+      department_id: "",
+      procedure_id: "",
+      status: "",
+      remarks_1_id: "",
+      remarks_2_id: "",
+      payment_mode: "",
+      order_by: "created_at",
+      order_direction: "desc",
+    };
+    setFilters(cleared);
+    setPage(0);
+  };
+
   return (
     <Box p={3}>
       {/* Header */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
         <Typography variant="h5">Reports List</Typography>
         <Box display="flex" gap={2}>
           <Button
-            variant="outlined"
-            onClick={(e) => setAnchorEl(anchorEl ? null : e.currentTarget)}
+            variant="contained"
+            color="primary"
+            onClick={handleExport}
+            disabled={exporting}
           >
-            Filters
-          </Button>
-          
-            <Button variant="contained" color="primary" onClick={handleExport} disabled={exporting}>
             {exporting ? "Exporting..." : "Export CSV"}
           </Button>
-            
-        
         </Box>
       </Box>
+
+      {/* Inline Filters */}
+      <Paper sx={{ mb: 2, p: 2 }}>
+        <Stack
+          direction={{ xs: "column", md: "row" }}
+          spacing={2}
+          alignItems="center"
+        >
+          <TextField
+            label="Start Date"
+            type="date"
+            value={filters.start_date}
+            onChange={(e) => handleFilterChange("start_date", e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            size="small"
+          />
+          <TextField
+            label="End Date"
+            type="date"
+            value={filters.end_date}
+            onChange={(e) => handleFilterChange("end_date", e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            size="small"
+          />
+
+          <Autocomplete
+            options={doctors}
+            getOptionLabel={(option) => option.name || ""}
+            value={doctors.find((d) => d.id === filters.doctor_id) || null}
+            onChange={(e, value) => handleFilterChange("doctor_id", value?.id)}
+            renderInput={(params) => (
+              <TextField {...params} label="Doctor" size="small" />
+            )}
+            isOptionEqualToValue={(o, v) => o?.id === v?.id}
+            sx={{ minWidth: 200 }}
+            disablePortal
+          />
+
+          <Autocomplete
+            options={agents}
+            getOptionLabel={(option) => option.name || ""}
+            value={agents.find((a) => a.id === filters.agent_id) || null}
+            onChange={(e, value) => handleFilterChange("agent_id", value?.id)}
+            renderInput={(params) => (
+              <TextField {...params} label="Agent" size="small" />
+            )}
+            isOptionEqualToValue={(o, v) => o?.id === v?.id}
+            sx={{ minWidth: 200 }}
+            disablePortal
+          />
+
+          <TextField
+            select
+            label="Department"
+            value={filters.department_id}
+            onChange={(e) =>
+              handleFilterChange("department_id", e.target.value)
+            }
+            size="small"
+            sx={{ minWidth: 180 }}
+          >
+            <MenuItem value="">All Departments</MenuItem>
+            {departments.map((d) => (
+              <MenuItem key={d.id} value={d.id}>
+                {d.name}
+              </MenuItem>
+            ))}
+          </TextField>
+
+          <Autocomplete
+            options={procedures}
+            getOptionLabel={(option) => option.name || ""}
+            value={
+              procedures.find((p) => p.id === filters.procedure_id) || null
+            }
+            onChange={(e, value) =>
+              handleFilterChange("procedure_id", value?.id)
+            }
+            renderInput={(params) => (
+              <TextField {...params} label="Procedure" size="small" />
+            )}
+            isOptionEqualToValue={(o, v) => o?.id === v?.id}
+            sx={{ minWidth: 200 }}
+            disablePortal
+          />
+          </Stack>
+            <Stack
+          direction={{ xs: "column", md: "row", lg: "row" }}
+          spacing={2}
+          mt={2}
+          alignItems="center"
+        >
+
+          <Autocomplete
+            options={statuses}
+            getOptionLabel={(option) => option.name || ""}
+            value={statuses.find((s) => s.id === filters.status) || null}
+            onChange={(e, value) => handleFilterChange("status", value?.id)}
+            renderInput={(params) => (
+              <TextField {...params} label="Status" size="small" />
+            )}
+            isOptionEqualToValue={(o, v) => o?.id === v?.id}
+            sx={{ minWidth: 200 }}
+            disablePortal
+          />
+
+          <Autocomplete
+            options={remarks1}
+            getOptionLabel={(option) => option.name || ""}
+            value={remarks1.find((r) => r.id === filters.remarks_1_id) || null}
+            onChange={(e, value) =>
+              handleFilterChange("remarks_1_id", value?.id)
+            }
+            renderInput={(params) => (
+              <TextField {...params} label="Remark 1" size="small" />
+            )}
+            isOptionEqualToValue={(o, v) => o?.id === v?.id}
+            sx={{ minWidth: 200 }}
+            disablePortal
+          />
+
+          <Autocomplete
+            options={remarks2}
+            getOptionLabel={(option) => option.name || ""}
+            value={remarks2.find((r) => r.id === filters.remarks_2_id) || null}
+            onChange={(e, value) =>
+              handleFilterChange("remarks_2_id", value?.id)
+            }
+            renderInput={(params) => (
+              <TextField {...params} label="Remark 2" size="small" />
+            )}
+            isOptionEqualToValue={(o, v) => o?.id === v?.id}
+            sx={{ minWidth: 200 }}
+            disablePortal
+          />
+
+          <Autocomplete
+            options={paymentModes}
+            getOptionLabel={(option) => option.name || ""}
+            value={
+              paymentModes.find((p) => p.id === filters.payment_mode) || null
+            }
+            onChange={(e, value) =>
+              handleFilterChange("payment_mode", value?.id)
+            }
+            renderInput={(params) => (
+              <TextField {...params} label="Payment Mode" size="small" />
+            )}
+            isOptionEqualToValue={(o, v) => o?.id === v?.id}
+            sx={{ minWidth: 180 }}
+            disablePortal
+          />
+
+          <Box ml="auto" display="flex" gap={1}>
+            <Button
+              variant="outlined"
+              color="error"
+              onClick={clearFilters}
+              size="small"
+            >
+              Clear
+            </Button>
+          </Box>
+        </Stack>
+      </Paper>
 
       {/* Table */}
       <Paper>
@@ -208,7 +465,7 @@ const ReportsPage = () => {
                     <TableCell>Remarks_2</TableCell>
                     <TableCell>Status</TableCell>
                     <TableCell>Amount</TableCell>
-                    <TableCell>MOP</TableCell>
+                    <TableCell>Payment</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -234,12 +491,20 @@ const ReportsPage = () => {
                         >
                           {page * rowsPerPage + idx + 1}
                         </TableCell>
-                        <TableCell>{dayjs(rep.appointment?.date).format("DD-MM-YYYY")}</TableCell>
+                        <TableCell>
+                          {dayjs(rep.appointment?.date).format("DD-MM-YYYY")}
+                        </TableCell>
                         <TableCell>{rep.appointment?.patient_name}</TableCell>
                         <TableCell>{rep.appointment?.contact_number}</TableCell>
                         <TableCell>{rep.appointment?.doctor?.name}</TableCell>
-                        <TableCell>{rep.appointment?.procedures?.map((p) => p.name).join(", ")}</TableCell>
-                        <TableCell>{rep.appointment?.department?.name}</TableCell>
+                        <TableCell>
+                          {rep.appointment?.procedures
+                            ?.map((p) => p.name)
+                            .join(", ")}
+                        </TableCell>
+                        <TableCell>
+                          {rep.appointment?.department?.name}
+                        </TableCell>
                         <TableCell>{rep.appointment?.agent?.name}</TableCell>
                         <TableCell>{rep.appointment?.source?.name}</TableCell>
                         <TableCell>{rep.remarks1?.name}</TableCell>
@@ -270,16 +535,6 @@ const ReportsPage = () => {
           </>
         )}
       </Paper>
-
-      {/* Reports Filter Popover */}
-      <ReportsFilterPopover
-        open={Boolean(anchorEl)}
-        anchorEl={anchorEl}
-        onClose={() => setAnchorEl(null)}
-        filters={filters}
-        setFilters={setFilters}
-        statuses={statuses}
-      />
     </Box>
   );
 };

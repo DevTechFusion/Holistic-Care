@@ -49,15 +49,30 @@ const ProceduresPage = () => {
   }, [page, rowsPerPage]);
 
   const handleDeleteProcedure = async (id) => {
-    try {
-      await deleteProcedure(id);
-      fetchProcedures();
-      enqueueSnackbar("Procedure deleted successfully", { variant: "success" });
-    } catch (err) {
-      console.error("Failed to delete procedure", err);
+  setLoading(true); // If you have a loading state
+  try {
+    const res = await deleteProcedure(id);
+    
+    if (res?.status === "error" || (res?.code && res.code !== 200)) {
+      enqueueSnackbar(res.message || "Failed to delete procedure", { 
+        variant: "error" 
+      });
+      return;
     }
-  };
-
+    
+    enqueueSnackbar("Procedure deleted successfully", { variant: "success" });
+    fetchProcedures();
+  } catch (err) {
+    console.error("Failed to delete procedure", err);
+    const message = 
+      err?.response?.data?.message || 
+      err?.message || 
+      "Failed to delete procedure";
+    enqueueSnackbar(message, { variant: "error" });
+  } finally {
+    setLoading(false); // If you have a loading state
+  }
+};
   const handleUpdateProcedure = (proc) => {
     setTargetItem(proc);
     setOpenModal(true);
