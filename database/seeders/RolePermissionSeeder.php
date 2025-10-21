@@ -78,6 +78,11 @@ class RolePermissionSeeder extends Seeder
             // ['name' => 'create', 'module' => 'Roles'],
             // ['name' => 'edit', 'module' => 'Roles'],
             // ['name' => 'delete', 'module' => 'Roles'],
+
+            // ['name' => 'view', 'module' => 'Sources'],
+            // ['name' => 'create', 'module' => 'Sources'],
+            // ['name' => 'edit', 'module' => 'Sources'],
+            // ['name' => 'delete', 'module' => 'Sources'],
         ];
 
         if ($agentRole) {
