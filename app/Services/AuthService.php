@@ -63,6 +63,7 @@ class AuthService extends CrudeService
 
         return [
             'user' => $user->load('roles'),
+            'permissions' => $user->getAllPermissions()->toArray(),
             'token' => $token,
             'token_type' => 'Bearer'
         ];

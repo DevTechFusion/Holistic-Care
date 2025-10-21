@@ -55,6 +55,7 @@ class WebAuthController extends Controller
             'message' => 'Login successful',
             'data' => [
                 'user' => $user->load('roles'),
+                'permissions' => $user->getAllPermissions()->toArray(),
                 'token' => $token,
                 'token_type' => 'Bearer',
                 'expires_at' => now()->addHours(8)->toISOString()
@@ -146,7 +147,10 @@ class WebAuthController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => $user->load('roles', 'permissions', 'profilePicture')
+            'data' => [
+                'user' => $user->load('roles', 'permissions', 'profilePicture'),
+                'permissions' => $user->getAllPermissions()->toArray()
+            ]
         ], 200);
     }
 

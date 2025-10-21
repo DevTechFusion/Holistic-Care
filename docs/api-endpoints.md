@@ -38,6 +38,14 @@ http://your-laravel-backend.com/api
         "email": "superadmin@example.com",
         "roles": [...]
       },
+      "permissions": [
+        "view,Users",
+        "create,Users",
+        "edit,Users",
+        "delete,Users",
+        "view,Reports",
+        "create,Reports"
+      ],
       "token": "1|abc123...",
       "token_type": "Bearer",
       "expires_at": "2024-01-XX..."
@@ -140,6 +148,30 @@ http://your-laravel-backend.com/api
 #### Get Profile
 - **URL**: `GET /api/profile`
 - **Headers**: Same as logout
+- **Success Response** (200):
+  ```json
+  {
+    "status": "success",
+    "data": {
+      "user": {
+        "id": 1,
+        "name": "Super Admin",
+        "email": "superadmin@example.com",
+        "roles": [...],
+        "permissions": [...],
+        "profilePicture": {...}
+      },
+      "permissions": [
+        "view,Users",
+        "create,Users",
+        "edit,Users",
+        "delete,Users",
+        "view,Reports",
+        "create,Reports"
+      ]
+    }
+  }
+  ```
 
 #### Refresh Token
 - **URL**: `POST /api/refresh`
