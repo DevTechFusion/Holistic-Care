@@ -15,14 +15,15 @@ import {
 import { getAllStatuses, deleteStatus } from "../../DAL/status";
 import CreateStatusModal from "../../components/forms/StatusForm";
 import ActionButtons from "../../constants/actionButtons";
+import { useSnackbar } from "notistack";
 
 
 const StatusesPage = () => {
+  const { enqueueSnackbar } = useSnackbar();
   const [statuses, setStatuses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
-
-  const [page, setPage] = useState(0); // TablePagination is 0-based
+  const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [total, setTotal] = useState(0);
   const [targetItem, setTargetItem] = useState(null);
@@ -44,14 +45,33 @@ const StatusesPage = () => {
     fetchStatuses();
   }, [page, rowsPerPage]);
 
-  const handleDelete = async (id) => {
-    try {
-      await deleteStatus(id);
-      fetchStatuses();
-    } catch (err) {
-      console.error("Delete failed", err);
+const handleDelete = async (id) => {
+  try {
+    const res = await deleteStatus(id);
+
+    if (res?.status === "error" || (res?.code && res.code !== 200)) {
+      enqueueSnackbar(res.message || "Failed to delete status", {
+        variant: "error",
+      });
+      return;
     }
-  };
+
+    enqueueSnackbar("Status deleted successfully", { variant: "success" });
+    fetchStatuses(); 
+  } catch (error) {
+    console.error("Failed to delete status:", error);
+
+    const message =
+      error?.response?.data?.message ||
+      error?.message ||
+      "Failed to delete status";
+
+    enqueueSnackbar(message, { variant: "error" });
+  } finally {
+    setLoading(false); 
+  }
+};
+
 
   const handleEdit = (status) => {
     setTargetItem(status);

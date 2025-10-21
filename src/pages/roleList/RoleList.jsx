@@ -31,11 +31,6 @@ const RolesList = () => {
   const { enqueueSnackbar } = useSnackbar();
   const [targetItem, setTargetItem] = useState(null);
 
-//   const { user } = useAuth();
-//   const role = user?.roles?.[0]?.name ?? null;
-//   const isSuperAdmin = role === "super_admin";
-//   const isManager = role === "managerly";
-
   const fetchRoles = async () => {
     setLoading(true);
     try {
@@ -55,15 +50,33 @@ const RolesList = () => {
     fetchRoles();
   }, [page, rowsPerPage]);
 
-  const handleDeleteRole = async (id) => {
-    try {
-      await deleteRole(id);
-      fetchRoles();
-      enqueueSnackbar("Role deleted successfully", { variant: "success" });
-    } catch (err) {
-      console.error("Failed to delete role", err);
+const handleDeleteRole = async (id) => {
+  try {
+    const res = await deleteRole(id);
+
+    if (res?.status === "error" || (res?.code && res.code !== 200)) {
+      enqueueSnackbar(res.message || "Failed to delete role", {
+        variant: "error",
+      });
+      return;
     }
-  };
+
+    enqueueSnackbar("Role deleted successfully", { variant: "success" });
+    fetchRoles(); 
+  } catch (error) {
+    console.error("Failed to delete role:", error);
+
+    const message =
+      error?.response?.data?.message ||
+      error?.message ||
+      "Failed to delete role";
+
+    enqueueSnackbar(message, { variant: "error" });
+  } finally {
+    setLoading(false); 
+  }
+};
+
 
   const handleUpdateRole = (role) => {
     setTargetItem(role);

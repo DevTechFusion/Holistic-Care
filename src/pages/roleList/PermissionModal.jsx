@@ -15,7 +15,7 @@ import {
   Paper,
   alpha,
 } from "@mui/material";
-import { getPermissions, assignPermission, removePermission } from "../../DAL/permission";
+import { getPermissions, assignPermission, removePermission, getAssignedPermissions } from "../../DAL/permission";
 import { useSnackbar } from "notistack";
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
@@ -30,55 +30,99 @@ const PermissionModal = ({ open, onClose, role }) => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Fetch permissions and initialize selected state
   useEffect(() => {
-    if (open && role) {
-      setLoading(true);
-      getPermissions()
-        .then((res) => {
-          const perms = res?.data || [];
-          setPermissions(perms);
-          
-          const groupedObj = {};
-          perms.forEach((perm) => {
-            if (!groupedObj[perm.module]) groupedObj[perm.module] = [];
-            groupedObj[perm.module].push(perm);
-          });
-          setGrouped(groupedObj);
-          const rolePermissions = role?.permissions || [];
-          const initialPerms = rolePermissions.map(p => ({
-            name: p.name,
-            module: p.module
-          }));
-          setSelected(initialPerms);
-          setInitialSelected(initialPerms);
-        })
-        .catch((err) => {
-          console.error("Failed to fetch permissions", err);
-          setPermissions([]);
-          enqueueSnackbar("Failed to load permissions", { variant: "error" });
-        })
-        .finally(() => setLoading(false));
-    }
-  }, [open, role, enqueueSnackbar]);
+  if (open && role) {
+    setLoading(true);
+    
+    // Fetch both all permissions and role's assigned permissions
+    Promise.all([
+      getPermissions(),
+      getAssignedPermissions(role.id)
+    ])
+      .then(([allPermsRes, assignedPermsRes]) => {
+        // Process all available permissions
+        const perms = allPermsRes?.data || [];
+        setPermissions(perms);
+        
+        // Group permissions by module
+        const groupedObj = {};
+        perms.forEach((perm) => {
+          if (!groupedObj[perm.module]) groupedObj[perm.module] = [];
+          groupedObj[perm.module].push(perm);
+        });
+        setGrouped(groupedObj);
+        
+        // Extract assigned permissions from API response
+        const assignedPerms = assignedPermsRes?.data || [];
+        const initialPerms = assignedPerms.map(p => ({
+          name: p.name,
+          module: p.module
+        }));
+        
+        setSelected(initialPerms);
+        setInitialSelected(initialPerms);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch permissions", err);
+        enqueueSnackbar("Failed to load permissions", { variant: "error" });
+      })
+      .finally(() => setLoading(false));
+  }
+}, [open, role, enqueueSnackbar]);
 
   const isSelected = (perm) => {
-    return selected.some(
-      (p) => p.name === perm.name && p.module === perm.module
+    return selected.some(p => p.name === perm.name && p.module === perm.module);
+  };
+
+  const findViewPermission = (module) => {
+    return permissions.find(p => 
+      p.module === module && /view/i.test(p.name)
     );
   };
 
+  const isViewPermission = (perm) => {
+    return /view/i.test(perm.name);
+  };
+
   const handleToggle = (perm) => {
-    const exists = selected.find(
-      (p) => p.name === perm.name && p.module === perm.module
-    );
+    const exists = isSelected(perm);
     
     if (exists) {
-      setSelected(selected.filter(
-        (p) => !(p.name === perm.name && p.module === perm.module)
+      // If unchecking, check if it's a view permission
+      if (isViewPermission(perm)) {
+        // Check if there are other non-view permissions in this module
+        const hasOtherPerms = selected.some(p => 
+          p.module === perm.module && !isViewPermission(p)
+        );
+        
+        if (hasOtherPerms) {
+          enqueueSnackbar(
+            `Cannot remove view permission while other permissions exist in ${perm.module}`,
+            { variant: "warning" }
+          );
+          return;
+        }
+      }
+      
+      setSelected(selected.filter(p => 
+        !(p.name === perm.name && p.module === perm.module)
       ));
     } else {
-      setSelected([...selected, { name: perm.name, module: perm.module }]);
+      // If checking a non-view permission, auto-check view permission
+      const newSelected = [...selected, { name: perm.name, module: perm.module }];
+      
+      if (!isViewPermission(perm)) {
+        const viewPerm = findViewPermission(perm.module);
+        const viewAlreadySelected = selected.some(p => 
+          p.module === perm.module && isViewPermission(p)
+        );
+        
+        if (viewPerm && !viewAlreadySelected) {
+          newSelected.push({ name: viewPerm.name, module: viewPerm.module });
+        }
+      }
+      
+      setSelected(newSelected);
     }
   };
 
@@ -87,9 +131,7 @@ const PermissionModal = ({ open, onClose, role }) => {
     const allSelected = modulePerms.every(perm => isSelected(perm));
     
     if (allSelected) {
-      setSelected(selected.filter(
-        (p) => p.module !== module
-      ));
+      setSelected(selected.filter(p => p.module !== module));
     } else {
       const newPerms = modulePerms.map(perm => ({
         name: perm.name,
@@ -113,25 +155,28 @@ const PermissionModal = ({ open, onClose, role }) => {
   };
 
   const changes = useMemo(() => {
-    const toAdd = selected.filter(
-      (sel) =>
-        !initialSelected.some(
-          (init) => init.name === sel.name && init.module === sel.module
-        )
+    const toAdd = selected.filter(sel =>
+      !initialSelected.some(init => 
+        init.name === sel.name && init.module === sel.module
+      )
     );
 
-    const toRemove = initialSelected.filter(
-      (init) =>
-        !selected.some(
-          (sel) => sel.name === init.name && sel.module === init.module
-        )
+    const toRemove = initialSelected.filter(init =>
+      !selected.some(sel => 
+        sel.name === init.name && sel.module === init.module
+      )
     );
 
     return { toAdd, toRemove };
   }, [selected, initialSelected]);
 
- 
   const hasChanges = changes.toAdd.length > 0 || changes.toRemove.length > 0;
+
+  const isDashboardPerm = (perm) => {
+    const module = String(perm.module || "").toLowerCase();
+    const name = String(perm.name || "").toLowerCase();
+    return module.includes("dashboard") || name.includes("dashboard");
+  };
 
   const handleSubmit = async () => {
     if (!hasChanges) {
@@ -140,51 +185,61 @@ const PermissionModal = ({ open, onClose, role }) => {
       return;
     }
 
+    // Validate exactly one dashboard permission
+    const dashboardCount = selected.filter(isDashboardPerm).length;
+    if (dashboardCount !== 1) {
+      enqueueSnackbar(
+        "Exactly one dashboard permission must be assigned to a role.",
+        { variant: "error" }
+      );
+      return;
+    }
+
     setSubmitting(true);
-    const errors = [];
 
     try {
-  
+      // Add permissions
       if (changes.toAdd.length > 0) {
-        const assignPayload = { permissions: changes.toAdd };
-        const assignRes = await assignPermission(assignPayload, role.id);
+        const assignRes = await assignPermission(
+          { permissions: changes.toAdd },
+          role.id
+        );
         
         if (assignRes?.code && assignRes.code !== 200 && assignRes.code !== 201) {
-          errors.push(`Failed to assign permissions: ${assignRes.message || 'Unknown error'}`);
+          throw new Error(assignRes.message || 'Failed to assign permissions');
         }
       }
 
+      // Remove permissions
       if (changes.toRemove.length > 0) {
-        const removePayload = { permissions: changes.toRemove };
-        const removeRes = await removePermission(removePayload, role.id);
+        const removeRes = await removePermission(
+          { permissions: changes.toRemove },
+          role.id
+        );
         
         if (removeRes?.code && removeRes.code !== 200 && removeRes.code !== 201) {
-          errors.push(`Failed to remove permissions: ${removeRes.message || 'Unknown error'}`);
+          throw new Error(removeRes.message || 'Failed to remove permissions');
         }
       }
 
-      if (errors.length > 0) {
-        enqueueSnackbar(errors.join('. '), { variant: "error" });
-      } else {
-        const addedCount = changes.toAdd.length;
-        const removedCount = changes.toRemove.length;
-        let message = "Permissions updated successfully!";
-        
-        if (addedCount > 0 && removedCount > 0) {
-          message = `Added ${addedCount} and removed ${removedCount} permissions`;
-        } else if (addedCount > 0) {
-          message = `Added ${addedCount} permission(s)`;
-        } else if (removedCount > 0) {
-          message = `Removed ${removedCount} permission(s)`;
-        }
-        
-        enqueueSnackbar(message, { variant: "success" });
-        onClose();
+      const addedCount = changes.toAdd.length;
+      const removedCount = changes.toRemove.length;
+      let message = "Permissions updated successfully!";
+      
+      if (addedCount > 0 && removedCount > 0) {
+        message = `Added ${addedCount} and removed ${removedCount} permissions`;
+      } else if (addedCount > 0) {
+        message = `Added ${addedCount} permission(s)`;
+      } else if (removedCount > 0) {
+        message = `Removed ${removedCount} permission(s)`;
       }
+      
+      enqueueSnackbar(message, { variant: "success" });
+      onClose();
     } catch (err) {
       console.error("Error updating permissions:", err);
       enqueueSnackbar(
-        "Network error. Please check your connection and try again.",
+        err.message || "Failed to update permissions",
         { variant: "error" }
       );
     } finally {
@@ -192,7 +247,6 @@ const PermissionModal = ({ open, onClose, role }) => {
     }
   };
 
- 
   const handleCancel = () => {
     setSelected(initialSelected);
     onClose();
@@ -217,7 +271,7 @@ const PermissionModal = ({ open, onClose, role }) => {
             <Typography variant="h5" fontWeight={600} gutterBottom>
               Manage Permissions
             </Typography>
-            <Typography variant="body2" color="text.secondary" >
+            <Typography variant="body2" color="text.secondary">
               Configure access permissions for <strong>{role?.name}</strong> role
             </Typography>
           </Box>
@@ -226,10 +280,7 @@ const PermissionModal = ({ open, onClose, role }) => {
               label={`${changes.toAdd.length} to add • ${changes.toRemove.length} to remove`}
               color="primary"
               size="small"
-              sx={{ 
-                fontWeight: 600,
-                px: 2,
-              }}
+              sx={{ fontWeight: 600, px: 2 }}
             />
           )}
         </Box>
@@ -254,7 +305,7 @@ const PermissionModal = ({ open, onClose, role }) => {
           </Box>
         ) : (
           <Stack spacing={2.5}>
-            {Object.keys(grouped).sort().map((module, idx) => {
+            {Object.keys(grouped).sort().map((module) => {
               const moduleSelectedCount = grouped[module].filter(p => isSelected(p)).length;
               const moduleTotalCount = grouped[module].length;
               const isFullySelected = isModuleFullySelected(module);
@@ -284,10 +335,7 @@ const PermissionModal = ({ open, onClose, role }) => {
                     display="flex" 
                     alignItems="center" 
                     mb={2}
-                    sx={{ 
-                      cursor: 'pointer',
-                      userSelect: 'none',
-                    }}
+                    sx={{ cursor: 'pointer', userSelect: 'none' }}
                     onClick={() => handleSelectAllModule(module)}
                   >
                     <Checkbox
@@ -318,10 +366,7 @@ const PermissionModal = ({ open, onClose, role }) => {
                       size="small"
                       color={isFullySelected ? 'primary' : 'default'}
                       variant={isFullySelected ? 'filled' : 'outlined'}
-                      sx={{ 
-                        fontWeight: 600,
-                        minWidth: 50,
-                      }}
+                      sx={{ fontWeight: 600, minWidth: 50 }}
                     />
                   </Box>
                   

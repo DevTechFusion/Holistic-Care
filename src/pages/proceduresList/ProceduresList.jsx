@@ -49,7 +49,6 @@ const ProceduresPage = () => {
   }, [page, rowsPerPage]);
 
   const handleDeleteProcedure = async (id) => {
-  setLoading(true); // If you have a loading state
   try {
     const res = await deleteProcedure(id);
     

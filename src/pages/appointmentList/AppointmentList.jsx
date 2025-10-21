@@ -117,21 +117,35 @@ const AppointmentsPage = () => {
 
   useEffect(() => {
     fetchAppointments();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, rowsPerPage, filters, user]);
 
   const handleDeleteAppointment = async (id) => {
-    try {
-      await deleteAppointment(id);
-      fetchAppointments();
-      enqueueSnackbar("Appointment deleted successfully", {
-        variant: "success",
+   
+  try {
+    const res = await deleteAppointment(id);
+
+    if (res?.status === "error" || (res?.code && res.code !== 200)) {
+      enqueueSnackbar(res.message || "Failed to delete appointment", {
+        variant: "error",
       });
-    } catch (err) {
-      console.error("Failed to delete appointment", err);
-      enqueueSnackbar("Failed to delete appointment", { variant: "error" });
+      return;
     }
-  };
+
+    enqueueSnackbar("Appointment deleted successfully", { variant: "success" });
+    fetchAppointments(); // Refresh list
+  } catch (error) {
+    console.error("Delete appointment failed:", error);
+
+    const message =
+      error?.response?.data?.message ||
+      error?.message ||
+      "Failed to delete appointment";
+
+    enqueueSnackbar(message, { variant: "error" });
+  } finally {
+    setLoading(false); // reset loading state
+  }
+};
 
   const handleUpdateAppointment = (appointment) => {
     setTargetItem(appointment);

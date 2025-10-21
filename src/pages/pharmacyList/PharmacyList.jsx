@@ -130,20 +130,36 @@ const PharmacyList = () => {
     fetchPharmacies();
   }, [fetchPharmacies]);
 
-  const handleDelete = async (id) => {
-    setLoading(true);
-    try {
-      await deletePharmacy(id);
-      enqueueSnackbar("Pharmacy record deleted successfully", {
-        variant: "success",
+const handleDelete = async (id) => {
+  try {
+    const res = await deletePharmacy(id);
+
+    if (res?.status === "error" || (res?.code && res.code !== 200)) {
+      enqueueSnackbar(res.message || "Failed to delete pharmacy record", {
+        variant: "error",
       });
-      fetchPharmacies();
-    } catch (err) {
-      console.error("Failed to delete pharmacy record", err);
-      enqueueSnackbar("Failed to delete pharmacy record", { variant: "error" });
-      setLoading(false);
+      return;
     }
-  };
+
+    enqueueSnackbar("Pharmacy record deleted successfully", {
+      variant: "success",
+    });
+
+    fetchPharmacies(); 
+  } catch (error) {
+    console.error("Failed to delete pharmacy record:", error);
+
+    const message =
+      error?.response?.data?.message ||
+      error?.message ||
+      "Failed to delete pharmacy record";
+
+    enqueueSnackbar(message, { variant: "error" });
+  } finally {
+    setLoading(false); 
+  }
+};
+
 
   // Edit
   const handleEdit = (record) => {

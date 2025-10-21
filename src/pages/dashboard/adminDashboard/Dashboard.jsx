@@ -220,17 +220,26 @@ const Dashboard = () => {
       {/* Stats Cards */}
       <Stack
         direction="row"
-        spacing={12}
+        spacing={6}
         sx={{
           justifyContent: "space-between",
           alignItems: "flex-start",
+          flexWrap: "wrap",
+          mt: 4,
+          mb: 4,
         }}
       >
-        <Box sx={{ mt: 4, mb: 4, flex: { xs: "1", lg: "0 0 auto" } }}>
+        {/* Stat Cards Section */}
+        <Box
+          sx={{
+            flex: { xs: "1 1 100%", lg: "0 0 40%" },
+            mb: { xs: 4, lg: 0 },
+          }}
+        >
           <Typography
             variant="h4"
             sx={{
-              mb: 6,
+              mb: 4,
               fontWeight: 700,
               fontSize: { xs: "1.5rem", sm: "2rem" },
             }}
@@ -239,19 +248,27 @@ const Dashboard = () => {
           </Typography>
           <StatsCards filter={filter} />
         </Box>
-      
-        <Box sx={{ mb: 4, width: { xs: "100%", lg: "55%" } }}>
+
+        {/* Leaderboard Section */}
+        <Box
+          sx={{
+            flex: { xs: "1 1 100%", lg: "0 0 55%" },
+          }}
+        >
           <DoctorLeaderboard filter={filter} />
         </Box>
       </Stack>
 
-      <Box sx={{ mt: 4, mb: 4 }}>
+      {/* Revenue Section */}
+      <Box sx={{ my: 4 }}>
         <RevenueSection filter={filter} />
       </Box>
 
-      <Box sx={{ mt: 4, mb: 4 }}>
+      {/* Bookings Section */}
+      <Box sx={{ my: 4 }}>
         <Stack
           direction={{ xs: "column", lg: "row" }}
+          spacing={{ xs: 3, lg: 4 }}
           divider={
             <Divider
               orientation="vertical"
@@ -259,14 +276,15 @@ const Dashboard = () => {
               sx={{ display: { xs: "none", lg: "block" } }}
             />
           }
-          spacing={{ xs: 3, lg: 2 }}
         >
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <AgentWiseBookings filter={filter} />
           </Box>
+
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <SourceWiseBookings filter={filter} />
           </Box>
+
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <DoctorWiseBooking filter={filter} />
           </Box>

@@ -21,3 +21,7 @@ export const removePermission = (data, role_id = "") => {
     };
     return invokeApi(reqObj);
 };
+
+export const getAssignedPermissions = (role_id = "") => {
+    return invokeApi({ path: `api/roles/${role_id}/permissions` });
+};

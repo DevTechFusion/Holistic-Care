@@ -15,12 +15,13 @@ import {
 import { getSources, deleteSource } from "../../DAL/source";
 import CreateSourceModal from "../../components/forms/MetaSourceForm";
 import ActionButtons from "../../constants/actionButtons";
+import { useSnackbar } from "notistack";
 
 const SourcesPage = () => {
+  const { enqueueSnackbar } = useSnackbar();
   const [sources, setSources] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
-
   const [page, setPage] = useState(0); 
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [total, setTotal] = useState(0);
@@ -44,14 +45,33 @@ const SourcesPage = () => {
     fetchSources();
   }, [page, rowsPerPage]);
 
-  const handleDelete = async (id) => {
-    try {
-      await deleteSource(id);
-      fetchSources();
-    } catch (err) {
-      console.error("Delete failed", err);
+const handleDelete = async (id) => {
+  try {
+    const res = await deleteSource(id);
+
+    if (res?.status === "error" || (res?.code && res.code !== 200)) {
+      enqueueSnackbar(res.message || "Failed to delete source", {
+        variant: "error",
+      });
+      return;
     }
-  };
+
+    enqueueSnackbar("Source deleted successfully", { variant: "success" });
+    fetchSources(); 
+  } catch (error) {
+    console.error("Failed to delete source:", error);
+
+    const message =
+      error?.response?.data?.message ||
+      error?.message ||
+      "Failed to delete source";
+
+    enqueueSnackbar(message, { variant: "error" });
+  } finally {
+    setLoading(false); 
+  }
+};
+
 
   const handleEdit = (source) => {
     setTargetItem(source);

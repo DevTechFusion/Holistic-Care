@@ -18,8 +18,10 @@ import { getUsers, deleteUser } from "../../DAL/users";
 import UsersFilterPopover from "./UsersFilterPopover";
 import UserForm from "../../components/forms/UserForm";
 import ActionButtons from "../../constants/actionButtons"; 
+import { useSnackbar } from "notistack";
 
 const UsersList = () => {
+  const { enqueueSnackbar } = useSnackbar();
   const [users, setUsers] = useState([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(15);
@@ -37,7 +39,6 @@ const UsersList = () => {
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
-      // adapt getUsers params to your DAL signature; here we pass page, perPage, role_id
       const res = await getUsers(page + 1, rowsPerPage, filters.role || "all");
       const data = res?.data?.data ?? res?.data ?? [];
       const totalCount = res?.data?.total ?? (Array.isArray(data) ? data.length : 0);
@@ -56,12 +57,10 @@ const UsersList = () => {
     fetchUsers();
   }, [fetchUsers]);
 
-  // when role filter changes reset to first page
   useEffect(() => {
     setPage(0);
   }, [filters]);
 
-  // Handle delete user - same behaviour as ManagerList
   const handleDeleteUser = async (id) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
     try {

@@ -46,7 +46,6 @@ const DepartmentsPage = () => {
   }, [page, rowsPerPage]);
 
   const handleDelete = async (id) => {
-  setLoading(true); // If you have a loading state
   try {
     const res = await deleteDepartment(id);
     
@@ -67,7 +66,7 @@ const DepartmentsPage = () => {
       "Failed to delete department";
     enqueueSnackbar(message, { variant: "error" });
   } finally {
-    setLoading(false); // If you have a loading state
+    setLoading(false); 
   }
 };
 

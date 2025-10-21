@@ -39,12 +39,6 @@ const DayScheduleCard = ({ day, schedule }) => {
         display: "flex",
         flexDirection: "column",
         borderRadius: 3,
-        transition: "all 0.3s ease",
-        "&:hover": {
-          boxShadow: isAvailable ? 6 : 2,
-          transform: "translateY(-4px)",
-          borderColor: isAvailable ? theme.palette.primary.dark : theme.palette.divider,
-        },
         borderWidth: 2,
         borderColor: isAvailable ? theme.palette.primary.main : theme.palette.divider,
         backgroundColor: isAvailable
