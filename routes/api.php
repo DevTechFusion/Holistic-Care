@@ -51,13 +51,15 @@ Route::middleware(['sanctum.token', 'auth:sanctum'])->group(function () {
     // Route::apiResource('categories', App\Http\Controllers\Api\CategoryController::class)->middleware(PermissionHelper::resourcePermissions('Categories'));
 
     // Source management routes
-    // Route::get('sources/select', [App\Http\Controllers\Api\SourceController::class, 'getSourcesForSelect'])->middleware(PermissionHelper::actionPermission('view', 'Sources'));
-    // Route::get('sources/{id}/can-delete', [App\Http\Controllers\Api\SourceController::class, 'canDelete'])->middleware(PermissionHelper::actionPermission('view', 'Sources'));
+    Route::get('sources/select', [App\Http\Controllers\Api\SourceController::class, 'getSourcesForSelect'])->middleware('check.permission:view,Sources');
+    Route::get('sources/{id}/can-delete', [App\Http\Controllers\Api\SourceController::class, 'canDelete'])->middleware('check.permission:view,Sources');
+    Route::get('sources', [App\Http\Controllers\Api\SourceController::class, 'index'])->middleware('check.permission:view,Sources');
+    Route::post('sources', [App\Http\Controllers\Api\SourceController::class, 'store'])->middleware('check.permission:create,Sources');
+    Route::get('sources/{id}', [App\Http\Controllers\Api\SourceController::class, 'show'])->middleware('check.permission:view,Sources');
+    Route::put('sources/{id}', [App\Http\Controllers\Api\SourceController::class, 'update'])->middleware('check.permission:edit,Sources');
+    Route::patch('sources/{id}', [App\Http\Controllers\Api\SourceController::class, 'update'])->middleware('check.permission:edit,Sources');
+    Route::delete('sources/{id}', [App\Http\Controllers\Api\SourceController::class, 'destroy'])->middleware('check.permission:delete,Sources');
     // Route::apiResource('sources', App\Http\Controllers\Api\SourceController::class)->middleware(PermissionHelper::resourcePermissions('Sources'));
-
-    Route::get('sources/select', [App\Http\Controllers\Api\SourceController::class, 'getSourcesForSelect']);
-    Route::get('sources/{id}/can-delete', [App\Http\Controllers\Api\SourceController::class, 'canDelete']);
-    Route::apiResource('sources', App\Http\Controllers\Api\SourceController::class);
 
     // Remarks1 management routes
     Route::get('remarks1/select', [App\Http\Controllers\Api\Remarks1Controller::class, 'getRemarks1ForSelect'])->middleware(PermissionHelper::actionPermission('view', 'Remarks1'));
@@ -80,13 +82,15 @@ Route::middleware(['sanctum.token', 'auth:sanctum'])->group(function () {
     // Route::apiResource('remarks2', App\Http\Controllers\Api\Remarks2Controller::class)->middleware(PermissionHelper::resourcePermissions('Remarks2'));
 
     // Status management routes
-    // Route::get('statuses/select', [App\Http\Controllers\Api\StatusController::class, 'getStatusesForSelect'])->middleware(PermissionHelper::actionPermission('view', 'Statuses'));
-    // Route::get('statuses/{id}/can-delete', [App\Http\Controllers\Api\StatusController::class, 'canDelete'])->middleware(PermissionHelper::actionPermission('view', 'Statuses'));
-    // Route::apiResource('statuses', App\Http\Controllers\Api\StatusController::class)->middleware(PermissionHelper::resourcePermissions('Statuses')); 
-
-    Route::get('statuses/select', [App\Http\Controllers\Api\StatusController::class, 'getStatusesForSelect']);
-    Route::get('statuses/{id}/can-delete', [App\Http\Controllers\Api\StatusController::class, 'canDelete']);
-    Route::apiResource('statuses', App\Http\Controllers\Api\StatusController::class);
+    Route::get('statuses/select', [App\Http\Controllers\Api\StatusController::class, 'getStatusesForSelect'])->middleware('check.permission:view,Statuses');
+    Route::get('statuses/{id}/can-delete', [App\Http\Controllers\Api\StatusController::class, 'canDelete'])->middleware('check.permission:view,Statuses');
+    Route::get('statuses', [App\Http\Controllers\Api\StatusController::class, 'index'])->middleware('check.permission:view,Statuses');
+    Route::post('statuses', [App\Http\Controllers\Api\StatusController::class, 'store'])->middleware('check.permission:create,Statuses');
+    Route::get('statuses/{id}', [App\Http\Controllers\Api\StatusController::class, 'show'])->middleware('check.permission:view,Statuses');
+    Route::put('statuses/{id}', [App\Http\Controllers\Api\StatusController::class, 'update'])->middleware('check.permission:edit,Statuses');
+    Route::patch('statuses/{id}', [App\Http\Controllers\Api\StatusController::class, 'update'])->middleware('check.permission:edit,Statuses');
+    Route::delete('statuses/{id}', [App\Http\Controllers\Api\StatusController::class, 'destroy'])->middleware('check.permission:delete,Statuses');
+    // Route::apiResource('statuses', App\Http\Controllers\Api\StatusController::class)->middleware(PermissionHelper::resourcePermissions('Statuses'));
 
     // Complaint Type management routes
     Route::get('complaint-types/select', [App\Http\Controllers\Api\ComplaintTypeController::class, 'getComplaintTypesForSelect'])->middleware(PermissionHelper::actionPermission('view', 'ComplaintTypes'));
