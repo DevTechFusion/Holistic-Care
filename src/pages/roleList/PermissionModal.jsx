@@ -34,7 +34,6 @@ const PermissionModal = ({ open, onClose, role }) => {
   if (open && role) {
     setLoading(true);
     
-    // Fetch both all permissions and role's assigned permissions
     Promise.all([
       getPermissions(),
       getAssignedPermissions(role.id)
@@ -172,10 +171,10 @@ const PermissionModal = ({ open, onClose, role }) => {
 
   const hasChanges = changes.toAdd.length > 0 || changes.toRemove.length > 0;
 
-  const isDashboardPerm = (perm) => {
-    const module = String(perm.module || "").toLowerCase();
-    const name = String(perm.name || "").toLowerCase();
-    return module.includes("dashboard") || name.includes("dashboard");
+  // determine if a module should be considered a dashboard module
+  const isDashboardModule = (moduleName) => {
+    if (!moduleName) return false;
+    return String(moduleName).toLowerCase().includes("dashboard");
   };
 
   const handleSubmit = async () => {
@@ -185,11 +184,15 @@ const PermissionModal = ({ open, onClose, role }) => {
       return;
     }
 
-    // Validate exactly one dashboard permission
-    const dashboardCount = selected.filter(isDashboardPerm).length;
-    if (dashboardCount !== 1) {
+    // Validate exactly one dashboard module is assigned (unique modules)
+    const dashboardModules = Array.from(new Set(
+      selected
+        .map(s => s.module)
+        .filter(m => isDashboardModule(m))
+    ));
+    if (dashboardModules.length !== 1) {
       enqueueSnackbar(
-        "Exactly one dashboard permission must be assigned to a role.",
+        "Exactly one dashboard module must be assigned to a role.",
         { variant: "error" }
       );
       return;
@@ -198,31 +201,67 @@ const PermissionModal = ({ open, onClose, role }) => {
     setSubmitting(true);
 
     try {
-      // Add permissions
-      if (changes.toAdd.length > 0) {
-        const assignRes = await assignPermission(
-          { permissions: changes.toAdd },
-          role.id
-        );
-        
+      // Prepare assign list and ensure view permissions are included for any added action perms
+      let assignList = [...changes.toAdd.map(p => ({ name: p.name, module: p.module }))];
+
+      const actionRegex = /\b(create|edit|update|delete|remove)\b/i;
+      const finalSelection = selected; // final selected after user's changes
+
+      for (const p of changes.toAdd) {
+        if (actionRegex.test(p.name || "")) {
+          const hasViewInFinal = finalSelection.some(sel => sel.module === p.module && /view/i.test(sel.name));
+          const hasViewInAssign = assignList.some(a => a.module === p.module && /view/i.test(a.name));
+          if (!hasViewInFinal && !hasViewInAssign) {
+            const viewPerm = findViewPermission(p.module);
+            if (viewPerm) {
+              assignList.push({ name: viewPerm.name, module: viewPerm.module });
+            } else {
+              // fallback: construct a plausible view permission name
+              assignList.push({ name: `view_${String(p.module).toLowerCase()}`, module: p.module });
+            }
+          }
+        }
+      }
+
+      // Deduplicate assignList
+      const dedupMap = {};
+      assignList = assignList.filter(item => {
+        const key = `${String(item.name)}|${String(item.module)}`;
+        if (dedupMap[key]) return false;
+        dedupMap[key] = true;
+        return true;
+      });
+
+      if (assignList.length > 0) {
+        const assignRes = await assignPermission({ permissions: assignList }, role.id);
         if (assignRes?.code && assignRes.code !== 200 && assignRes.code !== 201) {
           throw new Error(assignRes.message || 'Failed to assign permissions');
         }
       }
 
-      // Remove permissions
+      // Handle removals: prevent removing a view permission if final selection still contains action perms for same module
       if (changes.toRemove.length > 0) {
-        const removeRes = await removePermission(
-          { permissions: changes.toRemove },
-          role.id
-        );
-        
-        if (removeRes?.code && removeRes.code !== 200 && removeRes.code !== 201) {
-          throw new Error(removeRes.message || 'Failed to remove permissions');
+        const toRemoveFiltered = [];
+        for (const rem of changes.toRemove) {
+          if (/view/i.test(rem.name || "")) {
+            const willHaveActions = finalSelection.some(sel => sel.module === rem.module && actionRegex.test(sel.name));
+            if (willHaveActions) {
+              enqueueSnackbar(`Cannot remove view permission from module "${rem.module}" while action permissions will remain.`, { variant: "warning" });
+              continue;
+            }
+          }
+          toRemoveFiltered.push(rem);
+        }
+
+        if (toRemoveFiltered.length > 0) {
+          const removeRes = await removePermission({ permissions: toRemoveFiltered }, role.id);
+          if (removeRes?.code && removeRes.code !== 200 && removeRes.code !== 201) {
+            throw new Error(removeRes.message || 'Failed to remove permissions');
+          }
         }
       }
 
-      const addedCount = changes.toAdd.length;
+      const addedCount = assignList.length;
       const removedCount = changes.toRemove.length;
       let message = "Permissions updated successfully!";
       
