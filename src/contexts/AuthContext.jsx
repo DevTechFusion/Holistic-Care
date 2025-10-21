@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { getUserProfile } from "../DAL/auth";
-import { getPermissions } from "../DAL/permission";
+import { getAssignedPermissions, getPermissions } from "../DAL/permission";
 
 const AuthContext = createContext();
 
@@ -13,14 +13,12 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [allowedPermissions, setAllowedPermissions] = useState();
-
   const isAuthenticated = !!localStorage.getItem("token");
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(isAuthenticated);
+  const [allowedPermissions, setAllowedPermissions] = useState([]);
 
   const getUserDetail = async () => {
-    setLoading(true);
     try {
       const result = await getUserProfile();
       if (result.status === "success") {
@@ -28,37 +26,31 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error("Failed to fetch user details:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
   const getRolePermissions = async () => {
-    const role = user?.roles?.[0]?.name;
+    setLoading(true);
+    const role = user?.roles?.[0]?.id;
     if (role) {
       try {
-        const res = await getPermissions(role);
+        const res = await getAssignedPermissions(role);
         if (res.status === "success") {
           setAllowedPermissions(res.data);
         }
       } catch (error) {
         console.error("Failed to fetch permissions:", error);
+      } finally {
+        setLoading(false);
       }
     }
   };
 
   const hasPermission = (moduleName, action) => {
-    
-    const roles = user?.roles || [];
-    for (const role of roles) {
-      const permissions = role.permissions || [];
-      for (const permission of permissions) {
-        if (
-          permission.module?.moduleName === moduleName &&
-          permission.action === action
-        ) {
-          return true;
-        }
+    if (allowedPermissions.length <= 0) return false;
+    for (const permission of allowedPermissions) {
+      if (permission.module === moduleName && permission.name === action) {
+        return true;
       }
     }
     return false;
@@ -79,11 +71,12 @@ export const AuthProvider = ({ children }) => {
   const value = {
     isAuthenticated,
     user,
+    setUser,
     loading,
     setLoading,
     getUserDetail,
     allowedPermissions,
-    hasPermission, 
+    hasPermission,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

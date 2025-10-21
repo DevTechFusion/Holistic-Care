@@ -29,7 +29,8 @@ import dayjs from "dayjs";
 import PharmacyForm from "../../components/forms/PharmacyForm";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { getAgentList } from "../../DAL/users";
-// import { getSelectStatuses } from "../../DAL/status";
+import { useAuth } from "../../contexts/AuthContext";
+import { MODULES, PERMISSIONS } from "../../constants/permissionConstants";
 
 const PharmacyList = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -41,6 +42,8 @@ const PharmacyList = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [total, setTotal] = useState(0);
+
+  const { hasPermission } = useAuth();
 
   // filters (removed search)
   const [filters, setFilters] = useState({
@@ -202,13 +205,14 @@ const handleDelete = async (id) => {
         <Typography variant="h5">Pharmacy List</Typography>
 
         <Stack direction="row" spacing={2} alignItems="center">
+          { hasPermission(MODULES.PHARMACY, PERMISSIONS.TOTAL_INCENTIVE) &&
           <Button
             variant="contained"
             sx={{ fontWeight: "bold" }}
             disableElevation
           >
             Total Incentive: {Number(totalIncentive).toFixed(2)}
-          </Button>
+          </Button>}
           <Button variant="contained" onClick={() => setOpenModal(true)}>
             + Add Pharmacy Record
           </Button>

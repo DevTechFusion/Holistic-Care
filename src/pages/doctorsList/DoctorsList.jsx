@@ -19,16 +19,19 @@ import CreateDoctorModal from "../../components/forms/DoctorForm";
 import { useSnackbar } from "notistack";
 import ActionButtons from "../../constants/actionButtons";
 import dayjs from "dayjs";
+import { useAuth } from "../../contexts/AuthContext";
+import { MODULES, PERMISSIONS } from "../../constants/permissionConstants";
 
 const DoctorsPage = () => {
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
-  const { enqueueSnackbar } = useSnackbar();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [total, setTotal] = useState(0);
   const [targetItem, setTargetItem] = useState(null);
+  const { enqueueSnackbar } = useSnackbar();
+  const { hasPermission } = useAuth();
 
   const fetchDoctors = useCallback(async () => {
     setLoading(true);
@@ -88,7 +91,7 @@ const DoctorsPage = () => {
         mb={2}
       >
         <Typography variant="h5">Doctors</Typography>
-        { (
+        {( hasPermission(MODULES.DOCTORS, PERMISSIONS.CREATE) &&
           <Button variant="contained" onClick={() => setOpenModal(true)}>
             + Add Doctor
           </Button>

@@ -19,7 +19,7 @@ export const MODULES = {
   APPOINTMENTS: "Appointments",
   COMPLAINTS: "Complaints",
   REPORTS: "Reports",
-  DCOTORS: "Doctors",
+  DOCTORS: "Doctors",
   DEPARTMENTS: "Departments",
   PROCEDURES: "Procedures",
   CATEGORIES: "Categories",

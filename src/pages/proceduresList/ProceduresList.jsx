@@ -17,6 +17,8 @@ import { useSnackbar } from "notistack";
 import { getProcedures, deleteProcedure } from "../../DAL/procedure";
 import CreateProcedureModal from "../../components/forms/ProcedureForm";
 import ActionButtons from "../../constants/actionButtons";
+import { useAuth } from "../../contexts/AuthContext";
+import { MODULES, PERMISSIONS } from "../../constants/permissionConstants";
 
 
 const ProceduresPage = () => {
@@ -28,6 +30,8 @@ const ProceduresPage = () => {
   const [total, setTotal] = useState(0);
   const { enqueueSnackbar } = useSnackbar();
   const [targetItem, setTargetItem] = useState(null);
+
+  const { hasPermission } = useAuth();
 
   const fetchProcedures = async () => {
     setLoading(true);
@@ -87,11 +91,11 @@ const ProceduresPage = () => {
         mb={2}
       >
         <Typography variant="h5">Procedures</Typography>
-     
+     { hasPermission(MODULES.PROCEDURES, PERMISSIONS.CREATE) &&
            <Button variant="contained" onClick={() => setOpenModal(true)}>
           + Add Procedure
         </Button>
-        
+      }
        
       </Box>
 

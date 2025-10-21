@@ -16,6 +16,8 @@ import { getAllDepartments, deleteDepartment } from "../../DAL/departments";
 import CreateDepartmentModal from "../../components/forms/DepartmentForm";
 import ActionButtons from "../../constants/actionButtons";
 import { useSnackbar } from "notistack";
+import { useAuth } from "../../contexts/AuthContext";
+import { MODULES, PERMISSIONS } from "../../constants/permissionConstants";
 
 const DepartmentsPage = () => {
   const [departments, setDepartments] = useState([]);
@@ -27,6 +29,7 @@ const DepartmentsPage = () => {
   const [targetItem, setTargetItem] = useState(null);
 
   const { enqueueSnackbar } = useSnackbar();
+  const { hasPermission } = useAuth();
 
   const fetchDepartments = async () => {
     setLoading(true);
@@ -85,7 +88,7 @@ const DepartmentsPage = () => {
         mb={2}
       >
         <Typography variant="h5">Departments List</Typography>
-        {(
+        {( hasPermission( MODULES.DEPARTMENTS, PERMISSIONS.CREATE ) &&
           <Button variant="contained" onClick={() => setOpenModal(true)}>
             + Add Department
           </Button>

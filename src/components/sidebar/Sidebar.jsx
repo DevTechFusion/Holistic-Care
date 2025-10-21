@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Box,
   List,
@@ -18,10 +18,11 @@ import SidebarConfig from "./SidebarConfig";
 import logo from "../../assets/images/logo.svg";
 import { logout } from "../../DAL/auth";
 import { useAuth } from "../../contexts/AuthContext";
+import { PERMISSIONS } from "../../constants/permissionConstants";
 
 const Sidebar = () => {
   const [openDropdowns, setOpenDropdowns] = useState({});
-  const { user } = useAuth();
+  const { hasPermission } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -39,11 +40,21 @@ const Sidebar = () => {
       let token = localStorage.getItem("token");
       await logout(token);
       localStorage.removeItem("token");
-      window.location.href = "/login"; 
+      window.location.href = "/login";
     } catch (error) {
       console.error("Logout failed:", error);
     }
   };
+
+  const filteredSidebarItems = useMemo(() => {
+    return SidebarConfig.filter((item) =>
+      item.children
+        ? item.children.some((child) =>
+            hasPermission(child.module, PERMISSIONS.VIEW)
+          )
+        : hasPermission(item.module, PERMISSIONS.VIEW)
+    );
+  }, []);
 
   return (
     <Box
@@ -93,7 +104,7 @@ const Sidebar = () => {
         }}
       >
         <List sx={{ flexGrow: 1 }}>
-          {(SidebarConfig[user?.roles[0]?.name] || []).map((item) => {
+          {filteredSidebarItems.map((item) => {
             const parentActive =
               isActive(item.path) ||
               (item.children &&

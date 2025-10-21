@@ -16,6 +16,8 @@ import { getSources, deleteSource } from "../../DAL/source";
 import CreateSourceModal from "../../components/forms/MetaSourceForm";
 import ActionButtons from "../../constants/actionButtons";
 import { useSnackbar } from "notistack";
+import { useAuth } from "../../contexts/AuthContext";
+import { MODULES, PERMISSIONS } from "../../constants/permissionConstants";
 
 const SourcesPage = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -26,6 +28,8 @@ const SourcesPage = () => {
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [total, setTotal] = useState(0);
   const [targetItem, setTargetItem] = useState(null);
+
+  const { hasPermission } = useAuth();
 
 
   const fetchSources = async () => {
@@ -88,11 +92,11 @@ const handleDelete = async (id) => {
         mb={2}
       >
         <Typography variant="h5">Meta Ads Sources List</Typography>
-       
+       { hasPermission(MODULES.SOURCES, PERMISSIONS.CREATE) &&
           <Button variant="contained" onClick={() => setOpenModal(true)}>
             + Add Source
           </Button>
-      
+        }
       </Box>
 
       {/* Table */}

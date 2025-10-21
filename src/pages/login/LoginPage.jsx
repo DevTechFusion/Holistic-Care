@@ -40,13 +40,11 @@ const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
-  const { setLoading, getUserDetail } = useAuth();
+  const { setUser } = useAuth();
 
   const handleLogin = async () => {
-    setLoading(true);
     if (!email.trim() || !password.trim()) {
       enqueueSnackbar("Please fill in all fields", { variant: "error" });
-      setLoading(false);
       return;
     }
 
@@ -56,20 +54,9 @@ const LoginForm = () => {
       if (result?.status === "success") {
         enqueueSnackbar("Login successful", { variant: "success" });
         localStorage.setItem("token", result.data.token);
-        
-        // Wait for user profile to be fetched before navigating
-        await getUserDetail();
         const { user } = result.data;
-
-        let from = location.state?.from?.pathname;
-        if (!from) {
-          const role = user?.roles?.[0]?.name;
-          if (role === "super_admin") from = "/dashboard";
-          else if (role === "managerly") from = "/manager/dashboard";
-          else if (role === "agent") from = "/agent/dashboard";
-          else from = "/dashboard"; // fallback
-        }
-        navigate(from, { replace: true });
+        setUser(user);
+        navigate("/");
       } else {
         enqueueSnackbar(result?.message || "Login failed", {
           variant: "error",
@@ -79,7 +66,6 @@ const LoginForm = () => {
       enqueueSnackbar(error?.message || "Login failed", { variant: "error" });
     } finally {
       setIsLoading(false);
-      setLoading(false);
     }
   };
 
@@ -217,7 +203,6 @@ const LoginPage = () => {
           }}
         >
           <LoginForm />
-          
         </Grid>
       </Grid>
     </Box>

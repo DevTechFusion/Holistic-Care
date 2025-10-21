@@ -1,9 +1,4 @@
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { Box, CircularProgress } from "@mui/material";
 import ThemeConfig from "./theme";
 import "./App.css";
@@ -28,6 +23,7 @@ import UsersList from "./pages/usersList/UsersList";
 import AgentDashboard from "./pages/dashboard/agentDashboard/AgentDashboard";
 import ManagerDashboard from "./pages/dashboard/managerDashboard/ManagerDashboard";
 import NoAuthLayout from "./layouts/NoAuth";
+import Router from "./routes";
 const routes = [
   // Super Admin Routes
   // {
@@ -211,106 +207,25 @@ const routes = [
     element: <UsersList />,
     role: "managerly",
   },
- 
 ];
-// Protected Route Component
-const ProtectedRoute = () => {
-  const { isAuthenticated, loading, user, getAllowedPermissions } = useAuth();
-
-  const role = user?.roles[0].name ?? null;
-
-  if (isAuthenticated) {
-    if (loading || !user) {
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="100vh"
-      >
-        <CircularProgress />
-      </Box>;
-    } else if (role === "super_admin") {
-      return <Navigate to="/dashboard" replace />;
-    } else if (role === "managerly") {
-      return <Navigate to="/manager/dashboard" replace />;
-    } else {
-      return <Navigate to="/agent/dashboard" replace />;
-    }
-  } else {
-    return <Navigate to="/login" replace />;
-  }
-};
-
-// App Routes Component
-const AppRoutes = () => {
-  const { isAuthenticated, loading, user } = useAuth();
-  let role = null;
-  if (user) role = user?.roles[0]?.name ?? null;
-
-  if (loading) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="100vh"
-      >
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  return (
-    <Routes>
-      <Route
-        path="/"
-        element={
-          <Navigate
-            to={
-              role === "super_admin"
-                ? "/dashboard"
-                : role === "managerly"
-                ? "/manager/dashboard"
-                : "/agent/dashboard"
-            }
-            replace
-          />
-        }
-      />
-      <Route element={<NoAuthLayout />}>
-        <Route path="/login" element={<LoginPage />} />
-      </Route>
-      <Route element={<AuthLayout />}>
-        {routes
-          .filter((route) => route.role === role)
-          .map((route) => (
-            <Route key={route.path} path={route.path} element={route.element} />
-          ))}
-        <Route path="*" element={<div>404 - Page Not Found</div>} />
-      </Route>
-    </Routes>
-  );
-};
 
 // Main App Component
 function App() {
   return (
-    <Router>
-      <ThemeConfig>
-        <AuthProvider>
-          <SnackbarProvider
-            maxSnack={3}
-            autoHideDuration={3000}
-            anchorOrigin={{
-              vertical: "top",
-              horizontal: "right",
-            }}
-          >
-            <AppRoutes />
-          </SnackbarProvider>
-        </AuthProvider>
-      </ThemeConfig>
-    </Router>
+    <ThemeConfig>
+      <AuthProvider>
+        <SnackbarProvider
+          maxSnack={3}
+          autoHideDuration={3000}
+          anchorOrigin={{
+            vertical: "top",
+            horizontal: "right",
+          }}
+        >
+          <Router />
+        </SnackbarProvider>
+      </AuthProvider>
+    </ThemeConfig>
   );
 }
 

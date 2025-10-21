@@ -26,10 +26,10 @@ import { getAgentList } from "../../DAL/users";
 import { getSelectStatuses } from "../../DAL/status";
 import { getSelectRemarks1 } from "../../DAL/remarks1";
 import { getSelectRemarks2 } from "../../DAL/remarks2";
-
 import { useSnackbar } from "notistack";
 import dayjs from "dayjs";
 import { useAuth } from "../../contexts/AuthContext";
+import { MODULES, PERMISSIONS } from "../../constants/permissionConstants";
 
 const statusColors = {
   "Already Taken": "#e7f2fe",
@@ -50,10 +50,7 @@ const ReportsPage = () => {
   const [total, setTotal] = useState(0);
 
   const { enqueueSnackbar } = useSnackbar();
-  const { user } = useAuth();
-  const role = user?.roles?.[0]?.name;
-  const isSuperAdmin = role === "super_admin";
-  const isManager = role === "managerly";
+  const { hasPermission } = useAuth();
 
   const [filters, setFilters] = useState({
     start_date: "",
@@ -175,7 +172,7 @@ const ReportsPage = () => {
 
   useEffect(() => {
     fetchReports();
-  }, [fetchReports, page, rowsPerPage, filters, user]);
+  }, [fetchReports, page, rowsPerPage, filters]);
 
   const handleExport = async () => {
     try {
@@ -264,6 +261,7 @@ const ReportsPage = () => {
       >
         <Typography variant="h5">Reports List</Typography>
         <Box display="flex" gap={2}>
+        { hasPermission( MODULES.REPORTS, PERMISSIONS.EXPORT ) &&
           <Button
             variant="contained"
             color="primary"
@@ -272,6 +270,7 @@ const ReportsPage = () => {
           >
             {exporting ? "Exporting..." : "Export CSV"}
           </Button>
+}
         </Box>
       </Box>
 

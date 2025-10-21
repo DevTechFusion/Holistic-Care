@@ -19,6 +19,8 @@ import UsersFilterPopover from "./UsersFilterPopover";
 import UserForm from "../../components/forms/UserForm";
 import ActionButtons from "../../constants/actionButtons"; 
 import { useSnackbar } from "notistack";
+import { useAuth } from "../../contexts/AuthContext";
+import { MODULES, PERMISSIONS } from "../../constants/permissionConstants";
 
 const UsersList = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -34,6 +36,7 @@ const UsersList = () => {
   });
 
   const [filterAnchor, setFilterAnchor] = useState(null);
+  const { hasPermission } = useAuth();
   const openFilter = Boolean(filterAnchor);
 
   const fetchUsers = useCallback(async () => {
@@ -108,9 +111,10 @@ const UsersList = () => {
           >
             Filter
           </Button>
+          {hasPermission(MODULES.USERS, PERMISSIONS.CREATE) && 
           <Button variant="contained" onClick={handleOpenCreateUser}>
             + Add User
-          </Button>
+          </Button> }
         </Stack>
       </Stack>
 

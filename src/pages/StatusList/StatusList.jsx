@@ -16,6 +16,8 @@ import { getAllStatuses, deleteStatus } from "../../DAL/status";
 import CreateStatusModal from "../../components/forms/StatusForm";
 import ActionButtons from "../../constants/actionButtons";
 import { useSnackbar } from "notistack";
+import { useAuth } from "../../contexts/AuthContext";
+import { MODULES, PERMISSIONS } from "../../constants/permissionConstants";
 
 
 const StatusesPage = () => {
@@ -27,6 +29,8 @@ const StatusesPage = () => {
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [total, setTotal] = useState(0);
   const [targetItem, setTargetItem] = useState(null);
+
+  const { hasPermission } = useAuth();
 
   const fetchStatuses = async () => {
     setLoading(true);
@@ -88,11 +92,11 @@ const handleDelete = async (id) => {
         mb={2}
       >
         <Typography variant="h5">Statuses List</Typography>
-        
+        { hasPermission(MODULES.STATUS, PERMISSIONS.CREATE) &&
           <Button variant="contained" onClick={() => setOpenModal(true)}>
             + Add Status
           </Button>
-        
+}
       </Box>
 
       {/* Table */}
