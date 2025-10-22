@@ -82,51 +82,62 @@ const DoctorsPage = () => {
   };
 
   return (
-    <Box p={3}>
+    <Box p={{ xs: 2, sm: 3 }}>
       {/* Header */}
       <Box
         display="flex"
+        flexDirection={{ xs: "column", sm: "row" }}
         justifyContent="space-between"
-        alignItems="center"
-        mb={2}
+        alignItems={{ xs: "stretch", sm: "center" }}
+        gap={{ xs: 1.5, sm: 0 }}
+        mb={{ xs: 2, sm: 2 }}
       >
-        <Typography variant="h5">Doctors</Typography>
+        <Typography 
+          variant="h5"
+          sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem" } }}
+        >
+          Doctors
+        </Typography>
         {( hasPermission(MODULES.DOCTORS, PERMISSIONS.CREATE) &&
-          <Button variant="contained" onClick={() => setOpenModal(true)}>
+          <Button 
+            variant="contained" 
+            onClick={() => setOpenModal(true)}
+            sx={{ width: { xs: "100%", sm: "auto" } }}
+          >
             + Add Doctor
           </Button>
         )}
       </Box>
 
       {/* Table */}
-      <Paper>
+      <Paper sx={{ overflowX: "auto" }}>
         {loading ? (
-          <Box display="flex" justifyContent="center" alignItems="center" p={3}>
+          <Box display="flex" justifyContent="center" alignItems="center" p={{ xs: 2, sm: 3 }}>
             <CircularProgress />
           </Box>
         ) : (
           <>
-            <Table>
+            <Table sx={{ minWidth: { xs: 650, sm: "auto" } }}>
               <TableHead>
                 <TableRow>
-                  <TableCell>Sr#</TableCell>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Phone</TableCell>
-                  <TableCell>Department</TableCell>
-                  <TableCell>Procedures</TableCell>
-                  <TableCell>Availability</TableCell>
-                  <TableCell>Actions</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Sr#</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Name</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Phone</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Department</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Procedures</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Availability</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {doctors.length > 0 ? (
                   doctors.map((doctor, idx) => (
                   <TableRow key={doctor.id}>
-                    <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
-                    <TableCell>{doctor.name}</TableCell>
-                    <TableCell>{doctor.phone_number}</TableCell>
-                    <TableCell>{doctor.department?.name}</TableCell>
-                    <TableCell>
+                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{page * rowsPerPage + idx + 1}</TableCell>
+                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{doctor.name}</TableCell>
+                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{doctor.phone_number}</TableCell>
+                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{doctor.department?.name}</TableCell>
+                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
                       {doctor.procedures?.map((p) => p.name).join(", ")}
                     </TableCell>
                     <TableCell>

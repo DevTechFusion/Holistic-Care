@@ -109,31 +109,47 @@ const handleDeleteUser = async (id) => {
   };
 
   return (
-    <Box p={3}>
+    <Box p={{ xs: 2, sm: 3 }}>
       <Stack 
-        direction="row"
+        direction={{ xs: "column", sm: "row" }}
         justifyContent="space-between"
-        alignItems="center"
-        mb={2}>
-        <Typography variant="h5" fontWeight={600}>
+        alignItems={{ xs: "stretch", sm: "center" }}
+        gap={{ xs: 1.5, sm: 0 }}
+        mb={{ xs: 2, sm: 2 }}
+      >
+        <Typography 
+          variant="h5" 
+          fontWeight={600}
+          sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem" } }}
+        >
             Users List
         </Typography>
 
-        <Stack direction="row" spacing={2} alignItems="center">
+        <Stack 
+          direction={{ xs: "column", sm: "row" }} 
+          spacing={2} 
+          alignItems="center"
+          sx={{ width: { xs: "100%", sm: "auto" } }}
+        >
           <Button
             onClick={(e) => setFilterAnchor(e.currentTarget)}
             variant="outlined"
+            sx={{ width: { xs: "100%", sm: "auto" } }}
           >
             Filter
           </Button>
           {hasPermission(MODULES.USERS, PERMISSIONS.CREATE) && 
-          <Button variant="contained" onClick={handleOpenCreateUser}>
+          <Button 
+            variant="contained" 
+            onClick={handleOpenCreateUser}
+            sx={{ width: { xs: "100%", sm: "auto" } }}
+          >
             + Add User
           </Button> }
         </Stack>
       </Stack>
 
-      <Paper>
+      <Paper sx={{ overflowX: "auto" }}>
         {loading ? (
           <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
             <CircularProgress />
@@ -143,11 +159,11 @@ const handleDeleteUser = async (id) => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Sr#</TableCell>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Email</TableCell>
-                  <TableCell>Role</TableCell>
-                  <TableCell>Actions</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Sr#</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Name</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Email</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Role</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
 
@@ -155,10 +171,10 @@ const handleDeleteUser = async (id) => {
                 {users.length > 0 ? (
                   users.map((u, idx) => (
                     <TableRow key={u.id || idx}>
-                      <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
-                      <TableCell>{u.name || "-"}</TableCell>
-                      <TableCell>{u.email || "-"}</TableCell>
-                      <TableCell>{(u.roles || []).map(r => r.name).join(", ") || "-"}</TableCell>
+                      <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{page * rowsPerPage + idx + 1}</TableCell>
+                      <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{u.name || "-"}</TableCell>
+                      <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{u.email || "-"}</TableCell>
+                      <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{(u.roles || []).map(r => r.name).join(", ") || "-"}</TableCell>
                       <TableCell>
                         <ActionButtons
                           onEdit={ hasPermission(MODULES.USERS, PERMISSIONS.EDIT) ? () => handleOpenEditUser(u) : null}

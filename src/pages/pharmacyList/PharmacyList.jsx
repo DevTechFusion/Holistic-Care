@@ -193,34 +193,50 @@ const PharmacyList = () => {
   };
 
   return (
-    <Box p={3}>
+    <Box p={{ xs: 2, sm: 3 }}>
       {/* Header */}
       <Box
         display="flex"
+        flexDirection={{ xs: "column", sm: "row" }}
         justifyContent="space-between"
-        alignItems="center"
-        mb={2}
+        alignItems={{ xs: "stretch", sm: "center" }}
+        gap={{ xs: 1.5, sm: 0 }}
+        mb={{ xs: 2, sm: 2 }}
       >
-        <Typography variant="h5">Pharmacy List</Typography>
+        <Typography 
+          variant="h5"
+          sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem" } }}
+        >
+          Pharmacy List
+        </Typography>
 
-        <Stack direction="row" spacing={2} alignItems="center">
+        <Stack 
+          direction={{ xs: "column", sm: "row" }} 
+          spacing={2} 
+          alignItems="center"
+          sx={{ width: { xs: "100%", sm: "auto" } }}
+        >
           {hasPermission(MODULES.PHARMACY, PERMISSIONS.TOTAL_INCENTIVE) && (
             <Button
               variant="contained"
-              sx={{ fontWeight: "bold" }}
+              sx={{ fontWeight: "bold", width: { xs: "100%", sm: "auto" } }}
               disableElevation
             >
               Total Incentive: {Number(totalIncentive).toFixed(2)}
             </Button>
           )}
-          <Button variant="contained" onClick={() => setOpenModal(true)}>
+          <Button 
+            variant="contained" 
+            onClick={() => setOpenModal(true)}
+            sx={{ width: { xs: "100%", sm: "auto" } }}
+          >
             + Add Pharmacy Record
           </Button>
         </Stack>
       </Box>
 
       {/* Inline Filters (moved from popover) */}
-      <Paper sx={{ mb: 2, p: 2 }}>
+      <Paper sx={{ mb: 2, p: { xs: 1.5, sm: 2 } }}>
         <Stack
           direction={{ xs: "column", md: "row" }}
           spacing={2}
@@ -305,36 +321,36 @@ const PharmacyList = () => {
       {/* Table */}
       <Paper sx={{ width: "100%", overflowX: "auto" }}>
         {loading ? (
-          <Box display="flex" justifyContent="center" alignItems="center" p={2}>
+          <Box display="flex" justifyContent="center" alignItems="center" p={{ xs: 2, sm: 2 }}>
             <CircularProgress />
           </Box>
         ) : (
           <>
-            <Table fixed>
+            <Table fixed sx={{ minWidth: { xs: 700, sm: "auto" } }}>
               <TableHead>
                 <TableRow>
-                  <TableCell>Sr#</TableCell>
-                  <TableCell>Date</TableCell>
-                  <TableCell>Patient</TableCell>
-                  <TableCell>Phone</TableCell>
-                  <TableCell>Agent</TableCell>
-                  <TableCell>Description</TableCell>
-                  <TableCell>Amount</TableCell>
-                  <TableCell>Payment</TableCell>
-                  <TableCell>Actions</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Sr#</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Date</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Patient</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Phone</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Agent</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Description</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Amount</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Payment</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {data.length > 0 ? (
                   data.map((item, idx) => (
                     <TableRow key={item.id}>
-                      <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
-                      <TableCell>
+                      <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{page * rowsPerPage + idx + 1}</TableCell>
+                      <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
                         {dayjs(item.date).format("DD-MM-YYYY")}
                       </TableCell>
-                      <TableCell>{item.patient_name}</TableCell>
-                      <TableCell>{item.phone_number}</TableCell>
-                      <TableCell>{item.agent?.name || "—"}</TableCell>
+                      <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{item.patient_name}</TableCell>
+                      <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{item.phone_number}</TableCell>
+                      <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{item.agent?.name || "—"}</TableCell>
                       <TableCell
                         sx={{
                           maxWidth: 250,
@@ -343,14 +359,15 @@ const PharmacyList = () => {
                           textOverflow: "ellipsis",
                           cursor: "pointer",
                           color: "primary.main",
+                          fontSize: { xs: "0.75rem", sm: "0.875rem" },
                         }}
                         onClick={() => handleOpenDescription(item.description)}
                         title="Click to view full description"
                       >
                         {item.description || "—"}
                       </TableCell>
-                      <TableCell>{item.amount}</TableCell>
-                      <TableCell>{item.payment_mode || "Paid"}</TableCell>
+                      <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{item.amount}</TableCell>
+                      <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{item.payment_mode || "Paid"}</TableCell>
                       <TableCell>
                         <ActionButtons
                           onEdit={

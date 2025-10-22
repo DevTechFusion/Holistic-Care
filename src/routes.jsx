@@ -19,6 +19,7 @@ import ManagerDashboard from "./pages/dashboard/managerDashboard/ManagerDashboar
 import NoAuthLayout from "./layouts/NoAuth";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { CircularProgress } from "@mui/material";
+import NotFound404 from "./pages/notFound/NotFound";
 
 const routes = [
   {
@@ -168,7 +169,7 @@ const Router = () => {
               />
             ))}
         </Route>
-        <Route path="*" element={<div>404 - Page Not Found</div>} />
+        <Route path="*" element={<NotFound404 />} />
       </Routes>
     </BrowserRouter>
   );

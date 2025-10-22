@@ -54,12 +54,19 @@ const DoctorWiseBookings = ({ filter }) => {
     <Card
       sx={{
         height: "100%",
-        borderRadius: 3,
+        borderRadius: { xs: 2, md: 3 },
         boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
       }}
     >
-      <CardContent sx={{ p: 3 }}>
-        <Typography variant="h6" sx={{ fontWeight: "bold", mb: 3 }}>
+      <CardContent sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            fontWeight: "bold", 
+            mb: { xs: 2, sm: 2.5, md: 3 },
+            fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' }
+          }}
+        >
           Doctor Wise Bookings
         </Typography>
 
@@ -70,24 +77,45 @@ const DoctorWiseBookings = ({ filter }) => {
         ) : (
           <TableContainer
             component={MuiPaper}
-            sx={{ boxShadow: "none", border: "1px solid #e0e0e0" }}
+            sx={{ 
+              boxShadow: "none", 
+              border: "1px solid #e0e0e0",
+              overflowX: "auto"
+            }}
           >
             <Table size="small">
               <TableHead>
                 <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
                   <TableCell
                     align="center"
-                    sx={{ fontWeight: "bold", borderRight: "1px solid #e0e0e0" }}
+                    sx={{ 
+                      fontWeight: "bold", 
+                      borderRight: "1px solid #e0e0e0",
+                      fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                      px: { xs: 1, sm: 2 }
+                    }}
                   >
                     Sr#
                   </TableCell>
                   <TableCell
                     align="center"
-                    sx={{ fontWeight: "bold", borderRight: "1px solid #e0e0e0" }}
+                    sx={{ 
+                      fontWeight: "bold", 
+                      borderRight: "1px solid #e0e0e0",
+                      fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                      px: { xs: 1, sm: 2 }
+                    }}
                   >
                     Doctor
                   </TableCell>
-                  <TableCell align="center" sx={{ fontWeight: "bold" }}>
+                  <TableCell 
+                    align="center" 
+                    sx={{ 
+                      fontWeight: "bold",
+                      fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                      px: { xs: 1, sm: 2 }
+                    }}
+                  >
                     Bookings
                   </TableCell>
                 </TableRow>
@@ -98,7 +126,11 @@ const DoctorWiseBookings = ({ filter }) => {
                     <TableRow key={row.id || index}>
                       <TableCell
                         align="center"
-                        sx={{ borderRight: "1px solid #e0e0e0" }}
+                        sx={{ 
+                          borderRight: "1px solid #e0e0e0",
+                          fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                          px: { xs: 1, sm: 2 }
+                        }}
                       >
                         {index + 1}
                       </TableCell>
@@ -107,13 +139,20 @@ const DoctorWiseBookings = ({ filter }) => {
                         sx={{
                           fontWeight: 600,
                           borderRight: "1px solid #e0e0e0",
+                          fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                          px: { xs: 1, sm: 2 }
                         }}
                       >
                         {row.name}
                       </TableCell>
                       <TableCell
                         align="center"
-                        sx={{ fontWeight: "bold", color: "#23C7B7" }}
+                        sx={{ 
+                          fontWeight: "bold", 
+                          color: "#23C7B7",
+                          fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                          px: { xs: 1, sm: 2 }
+                        }}
                       >
                         {row.bookings}
                       </TableCell>
@@ -124,7 +163,11 @@ const DoctorWiseBookings = ({ filter }) => {
                     <TableCell
                       colSpan={3}
                       align="center"
-                      sx={{ py: 3, color: "text.secondary" }}
+                      sx={{ 
+                        py: 3, 
+                        color: "text.secondary",
+                        fontSize: { xs: "0.8125rem", sm: "0.875rem" }
+                      }}
                     >
                       No records found
                     </TableCell>

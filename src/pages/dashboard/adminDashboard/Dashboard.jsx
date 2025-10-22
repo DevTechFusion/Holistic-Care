@@ -5,7 +5,6 @@ import {
   MenuItem,
   ListItemIcon,
   ListItemText,
-  Grid,
   Box,
   Button,
   Stack,
@@ -161,7 +160,7 @@ const Dashboard = () => {
         justifyContent="space-between"
         alignItems={{ xs: "stretch", sm: "start" }}
         spacing={2}
-        sx={{ mb: 4 }}
+        sx={{ mb: { xs: 3, sm: 4 } }}
       >
         <WelcomeSection />
 
@@ -217,58 +216,54 @@ const Dashboard = () => {
         </Stack>
       </Stack>
 
-      {/* Stats Cards */}
-      <Stack
-        direction="row"
-        spacing={6}
+      {/* Stats Cards Section */}
+      <Box
         sx={{
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          flexWrap: "wrap",
-          mt: 4,
-          mb: 4,
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          gap: 3,
+          mb: { xs: 3, sm: 4 },
         }}
       >
-        {/* Stat Cards Section */}
-        <Box
-          sx={{
-            flex: { xs: "1 1 100%", lg: "0 0 40%" },
-            mb: { xs: 4, lg: 0 },
-          }}
-        >
+        <Box sx={{ flex: 1 }}>
           <Typography
             variant="h4"
             sx={{
-              mb: 4,
+              mb: { xs: 2, sm: 3 },
               fontWeight: 700,
-              fontSize: { xs: "1.5rem", sm: "2rem" },
+              fontSize: { xs: "1.25rem", sm: "1.75rem", md: "2rem" },
             }}
           >
-            Stat Cards
+            Statistics Overview
           </Typography>
           <StatsCards filter={filter} />
         </Box>
 
-        {/* Leaderboard Section */}
-        <Box
-          sx={{
-            flex: { xs: "1 1 100%", lg: "0 0 55%" },
-          }}
-        >
+        <Box sx={{ flex: 1 }}>
           <DoctorLeaderboard filter={filter} />
         </Box>
-      </Stack>
+      </Box>
 
       {/* Revenue Section */}
-      <Box sx={{ my: 4 }}>
+      <Box sx={{ mb: { xs: 3, sm: 4 } }}>
         <RevenueSection filter={filter} />
       </Box>
 
       {/* Bookings Section */}
-      <Box sx={{ my: 4 }}>
+      <Box sx={{ mb: { xs: 3, sm: 4 } }}>
+        <Typography
+          variant="h4"
+          sx={{
+            mb: { xs: 2, sm: 3 },
+            fontWeight: 700,
+            fontSize: { xs: "1.25rem", sm: "1.75rem", md: "2rem" },
+          }}
+        >
+          Bookings Analysis
+        </Typography>
         <Stack
           direction={{ xs: "column", lg: "row" }}
-          spacing={{ xs: 3, lg: 4 }}
+          spacing={{ xs: 2, sm: 3, lg: 4 }}
           divider={
             <Divider
               orientation="vertical"

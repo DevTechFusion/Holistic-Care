@@ -1,5 +1,4 @@
 import { Box, CircularProgress } from "@mui/material";
-import React from "react";
 import Topbar from "../components/topbar/Topbar";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import Sidebar from "../components/sidebar/Sidebar";

@@ -190,17 +190,28 @@ const AppointmentsPage = () => {
   };
 
   return (
-    <Box p={3}>
+    <Box p={{ xs: 2, sm: 3 }}>
       <Box
         display="flex"
+        flexDirection={{ xs: "column", sm: "row" }}
         justifyContent="space-between"
-        alignItems="center"
-        mb={2}
+        alignItems={{ xs: "stretch", sm: "center" }}
+        gap={{ xs: 1.5, sm: 0 }}
+        mb={{ xs: 2, sm: 2 }}
       >
-        <Typography variant="h5">Appointments</Typography>
+        <Typography 
+          variant="h5"
+          sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem" } }}
+        >
+          Appointments
+        </Typography>
         <Box display="flex" gap={2}>
           {hasPermission(MODULES.APPOINTMENTS, PERMISSIONS.CREATE) && (
-            <Button variant="contained" onClick={handleCreateAppointment}>
+            <Button 
+              variant="contained" 
+              onClick={handleCreateAppointment}
+              sx={{ width: { xs: "100%", sm: "auto" } }}
+            >
               + Add Appointment
             </Button>
           )}
@@ -208,7 +219,7 @@ const AppointmentsPage = () => {
       </Box>
 
       {/* Inline Filters */}
-      <Paper sx={{ mb: 2, p: 2 }}>
+      <Paper sx={{ mb: 2, p: { xs: 1.5, sm: 2 } }}>
         <Stack spacing={2}>
           {/* First Row */}
           <Stack
@@ -329,30 +340,30 @@ const AppointmentsPage = () => {
         </Stack>
       </Paper>
 
-      <Paper>
+      <Paper sx={{ overflowX: "auto" }}>
         {loading ? (
-          <Box display="flex" justifyContent="center" alignItems="center" p={3}>
+          <Box display="flex" justifyContent="center" alignItems="center" p={{ xs: 2, sm: 3 }}>
             <CircularProgress />
           </Box>
         ) : (
           <>
-            <TableContainer sx={{ maxHeight: 700 }}>
-              <Table fixed>
+            <TableContainer sx={{ maxHeight: { xs: 500, sm: 600, md: 700 } }}>
+              <Table fixed sx={{ minWidth: { xs: 800, sm: "auto" } }}>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Sr#</TableCell>
-                    <TableCell>Date</TableCell>
-                    <TableCell>Start Time</TableCell>
-                    <TableCell>End Time</TableCell>
-                    <TableCell>Appt. ID</TableCell>
-                    <TableCell>Patient</TableCell>
-                    <TableCell>Contact</TableCell>
-                    <TableCell>Doctor</TableCell>
-                    <TableCell>Agent</TableCell>
-                    <TableCell>Procedure</TableCell>
-                    <TableCell>Department</TableCell>
-                    <TableCell>Source</TableCell>
-                    <TableCell>Actions</TableCell>
+                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Sr#</TableCell>
+                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Date</TableCell>
+                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Start Time</TableCell>
+                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>End Time</TableCell>
+                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Appt. ID</TableCell>
+                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Patient</TableCell>
+                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Contact</TableCell>
+                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Doctor</TableCell>
+                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Agent</TableCell>
+                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Procedure</TableCell>
+                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Department</TableCell>
+                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Source</TableCell>
+                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -366,28 +377,29 @@ const AppointmentsPage = () => {
                             zIndex: 1,
                             backgroundColor: "#fff",
                             fontWeight: 500,
+                            fontSize: { xs: "0.75rem", sm: "0.875rem" },
                           }}
                         >
                           {page * rowsPerPage + idx + 1}
                         </TableCell>
-                        <TableCell>
+                        <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
                           {dayjs(appt.date).format("DD-MM-YYYY")}
                         </TableCell>
-                        <TableCell>{appt.start_time}</TableCell>
-                        <TableCell>{appt.end_time}</TableCell>
-                        <TableCell>{appt.id}</TableCell>
-                        <TableCell>{appt.patient_name}</TableCell>
-                        <TableCell>{appt.contact_number}</TableCell>
-                        <TableCell>{appt.doctor?.name}</TableCell>
-                        <TableCell>{appt.agent?.name}</TableCell>
-                        <TableCell>
+                        <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{appt.start_time}</TableCell>
+                        <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{appt.end_time}</TableCell>
+                        <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{appt.id}</TableCell>
+                        <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{appt.patient_name}</TableCell>
+                        <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{appt.contact_number}</TableCell>
+                        <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{appt.doctor?.name}</TableCell>
+                        <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{appt.agent?.name}</TableCell>
+                        <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
                           {Array.isArray(appt.procedures) &&
                           appt.procedures.length > 0
                             ? appt.procedures.map((p) => p.name).join(", ")
                             : appt.procedure?.name || "-"}
                         </TableCell>
-                        <TableCell>{appt.department?.name}</TableCell>
-                        <TableCell>{appt.source?.name}</TableCell>
+                        <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{appt.department?.name}</TableCell>
+                        <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{appt.source?.name}</TableCell>
                         <TableCell>
                           <ActionButtons
                             onEdit={

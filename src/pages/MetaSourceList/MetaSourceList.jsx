@@ -83,26 +83,37 @@ const handleDelete = async (id) => {
   };
 
   return (
-    <Box p={3}>
+    <Box p={{ xs: 2, sm: 3 }}>
       {/* Header */}
       <Box
         display="flex"
+        flexDirection={{ xs: "column", sm: "row" }}
         justifyContent="space-between"
-        alignItems="center"
-        mb={2}
+        alignItems={{ xs: "stretch", sm: "center" }}
+        gap={{ xs: 1.5, sm: 0 }}
+        mb={{ xs: 2, sm: 2 }}
       >
-        <Typography variant="h5">Meta Ads Sources List</Typography>
+        <Typography 
+          variant="h5"
+          sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem" } }}
+        >
+          Meta Ads Sources List
+        </Typography>
        { hasPermission(MODULES.SOURCES, PERMISSIONS.CREATE) &&
-          <Button variant="contained" onClick={() => setOpenModal(true)}>
+          <Button 
+            variant="contained" 
+            onClick={() => setOpenModal(true)}
+            sx={{ width: { xs: "100%", sm: "auto" } }}
+          >
             + Add Source
           </Button>
         }
       </Box>
 
       {/* Table */}
-      <Paper>
+      <Paper sx={{ overflowX: "auto" }}>
         {loading ? (
-          <Box display="flex" justifyContent="center" alignItems="center" p={3}>
+          <Box display="flex" justifyContent="center" alignItems="center" p={{ xs: 2, sm: 3 }}>
             <CircularProgress />
           </Box>
         ) : (
@@ -110,17 +121,17 @@ const handleDelete = async (id) => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Sr#</TableCell>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Actions</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Sr#</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Name</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {sources.length > 0 ? ( 
                   sources.map((src, idx) => (
                   <TableRow key={src.id}>
-                    <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
-                    <TableCell>{src.name}</TableCell>
+                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{page * rowsPerPage + idx + 1}</TableCell>
+                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{src.name}</TableCell>
                       <TableCell>
                         <ActionButtons
                           onEdit={ hasPermission(MODULES.SOURCES, PERMISSIONS.EDIT) ? () => handleEdit(src) : null }

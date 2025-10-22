@@ -79,26 +79,37 @@ const DepartmentsPage = () => {
   };
 
   return (
-    <Box p={3}>
+    <Box p={{ xs: 2, sm: 3 }}>
       {/* Header */}
       <Box
         display="flex"
+        flexDirection={{ xs: "column", sm: "row" }}
         justifyContent="space-between"
-        alignItems="center"
-        mb={2}
+        alignItems={{ xs: "stretch", sm: "center" }}
+        gap={{ xs: 1.5, sm: 0 }}
+        mb={{ xs: 2, sm: 2 }}
       >
-        <Typography variant="h5">Departments List</Typography>
+        <Typography 
+          variant="h5"
+          sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem" } }}
+        >
+          Departments List
+        </Typography>
         {( hasPermission( MODULES.DEPARTMENTS, PERMISSIONS.CREATE ) &&
-          <Button variant="contained" onClick={() => setOpenModal(true)}>
+          <Button 
+            variant="contained" 
+            onClick={() => setOpenModal(true)}
+            sx={{ width: { xs: "100%", sm: "auto" } }}
+          >
             + Add Department
           </Button>
         )}
       </Box>
 
       {/* Table */}
-      <Paper>
+      <Paper sx={{ overflowX: "auto" }}>
         {loading ? (
-          <Box display="flex" justifyContent="center" alignItems="center" p={3}>
+          <Box display="flex" justifyContent="center" alignItems="center" p={{ xs: 2, sm: 3 }}>
             <CircularProgress />
           </Box>
         ) : (
@@ -106,19 +117,19 @@ const DepartmentsPage = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Sr#</TableCell>
-                  <TableCell>Department Name</TableCell>
-                  <TableCell>Incentive %</TableCell>
-                  {<TableCell>Actions</TableCell>}
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Sr#</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Department Name</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Incentive %</TableCell>
+                  {<TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Actions</TableCell>}
                 </TableRow>
               </TableHead>
               <TableBody>
                 {departments.length > 0 ? (
                   departments.map((dept, idx) => (
                     <TableRow key={dept.id}>
-                      <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
-                      <TableCell>{dept.name}</TableCell>
-                      <TableCell>{dept.incentive_percentage}%</TableCell>
+                      <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{page * rowsPerPage + idx + 1}</TableCell>
+                      <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{dept.name}</TableCell>
+                      <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{dept.incentive_percentage}%</TableCell>
                         <TableCell>
                           <ActionButtons
                             onEdit={ hasPermission( MODULES.DEPARTMENTS, PERMISSIONS.EDIT ) ? () => handleEdit(dept) : null}

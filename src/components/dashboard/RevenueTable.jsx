@@ -27,11 +27,12 @@ const RevenueTable = ({ data, formatCurrency, calculatePercentage }) => {
         boxShadow: "none",
         border: 1,
         borderColor: "divider",
-        maxHeight: 240, // shows ~5 rows before scrolling
+        maxHeight: { xs: 300, sm: 240 },
         overflowY: "auto",
+        overflowX: "auto",
       }}
     >
-      <Table fixed size="small">
+      <Table fixed size="small" sx={{ minWidth: { xs: 650, sm: "auto" } }}>
         <TableHead>
           <TableRow sx={{ backgroundColor: "#f9fafb" }}>
             {headers.map((header, idx) => (
@@ -41,6 +42,9 @@ const RevenueTable = ({ data, formatCurrency, calculatePercentage }) => {
                 sx={{
                   fontWeight: "bold",
                   borderRight: idx !== headers.length - 1 ? "1px solid #e0e0e0" : "none",
+                  fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                  whiteSpace: "nowrap",
+                  px: { xs: 1, sm: 2 }
                 }}
               >
                 {header}
@@ -53,31 +57,53 @@ const RevenueTable = ({ data, formatCurrency, calculatePercentage }) => {
             <TableRow key={row.agent_id ?? index}>
               <TableCell
                 align="center"
-                sx={{ borderRight: "1px solid #e0e0e0" }}
+                sx={{ 
+                  borderRight: "1px solid #e0e0e0",
+                  fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                  px: { xs: 1, sm: 2 }
+                }}
               >
                 {index + 1}
               </TableCell>
               <TableCell
                 align="center"
-                sx={{ fontWeight: 600, borderRight: "1px solid #e0e0e0" }}
+                sx={{ 
+                  fontWeight: 600, 
+                  borderRight: "1px solid #e0e0e0",
+                  fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                  whiteSpace: "nowrap",
+                  px: { xs: 1, sm: 2 }
+                }}
               >
                 {row.agent?.name ?? "Unknown Agent"}
               </TableCell>
               <TableCell
                 align="center"
-                sx={{ borderRight: "1px solid #e0e0e0" }}
+                sx={{ 
+                  borderRight: "1px solid #e0e0e0",
+                  fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                  px: { xs: 1, sm: 2 }
+                }}
               >
                 {row.bookings ?? 0}
               </TableCell>
               <TableCell
                 align="center"
-                sx={{ borderRight: "1px solid #e0e0e0" }}
+                sx={{ 
+                  borderRight: "1px solid #e0e0e0",
+                  fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                  px: { xs: 1, sm: 2 }
+                }}
               >
                 {row.arrived ?? 0}
               </TableCell>
               <TableCell
                 align="center"
-                sx={{ borderRight: "1px solid #e0e0e0" }}
+                sx={{ 
+                  borderRight: "1px solid #e0e0e0",
+                  fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                  px: { xs: 1, sm: 2 }
+                }}
               >
                 {row.no_show ?? 0}
               </TableCell>
@@ -87,17 +113,34 @@ const RevenueTable = ({ data, formatCurrency, calculatePercentage }) => {
                   color: "primary.main",
                   fontWeight: "bold",
                   borderRight: "1px solid #e0e0e0",
+                  fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                  px: { xs: 1, sm: 2 }
                 }}
               >
                 {calculatePercentage(row.arrived, row.bookings)}
               </TableCell>
               <TableCell
                 align="center"
-                sx={{ fontWeight: "bold", borderRight: "1px solid #e0e0e0" }}
+                sx={{ 
+                  fontWeight: "bold", 
+                  borderRight: "1px solid #e0e0e0",
+                  fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                  whiteSpace: "nowrap",
+                  px: { xs: 1, sm: 2 }
+                }}
               >
                 {formatCurrency(row.revenue)}
               </TableCell>
-              <TableCell align="center" sx={{ color: "warning.main", fontWeight: "bold" }}>
+              <TableCell 
+                align="center" 
+                sx={{ 
+                  color: "warning.main", 
+                  fontWeight: "bold",
+                  fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                  whiteSpace: "nowrap",
+                  px: { xs: 1, sm: 2 }
+                }}
+              >
                 {formatCurrency(row.incentive)}
               </TableCell>
             </TableRow>

@@ -79,8 +79,8 @@ const DoctorLeaderboard = ({ filter }) => {
   return (
     <Card
       sx={{
-        p: 2.5,
-        borderRadius: 3,
+        p: { xs: 2, sm: 2.5 },
+        borderRadius: { xs: 2, md: 3 },
         border: "1px solid #E5E7EB",
         boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
         backgroundColor: "#fff",
@@ -90,18 +90,25 @@ const DoctorLeaderboard = ({ filter }) => {
       {/* Header */}
       <Box
         display="flex"
+        flexDirection={{ xs: "column", sm: "row" }}
         justifyContent="space-between"
-        alignItems="center"
-        mb={1.5}
+        alignItems={{ xs: "stretch", sm: "center" }}
+        gap={{ xs: 1.5, sm: 0 }}
+        mb={{ xs: 2, sm: 1.5 }}
       >
         <Typography
           variant="h6"
-          sx={{ fontWeight: 700, color: "#111827", letterSpacing: 0 }}
+          sx={{ 
+            fontWeight: 700, 
+            color: "#111827", 
+            letterSpacing: 0,
+            fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' }
+          }}
         >
           Doctor Booking Leaderboard
         </Typography>
 
-        <FormControl size="small" sx={{ minWidth: 160 }}>
+        <FormControl size="small" sx={{ minWidth: { xs: "100%", sm: 160 } }}>
           <Select
             value={selectedDepartment}
             onChange={handleDepartmentChange}
@@ -109,8 +116,8 @@ const DoctorLeaderboard = ({ filter }) => {
             sx={{
               backgroundColor: "#F9FAFB",
               borderRadius: "9999px",
-              fontSize: "0.875rem",
-              height: 36,
+              fontSize: { xs: "0.8125rem", sm: "0.875rem" },
+              height: { xs: 40, sm: 36 },
               px: 1,
               "& .MuiOutlinedInput-notchedOutline": {
                 borderColor: "#E5E7EB",
@@ -155,6 +162,7 @@ const DoctorLeaderboard = ({ filter }) => {
           color="text.secondary"
           textAlign="center"
           mt={2}
+          sx={{ fontSize: { xs: '0.8125rem', sm: '0.875rem' } }}
         >
           No booking data available.
         </Typography>
@@ -165,22 +173,24 @@ const DoctorLeaderboard = ({ filter }) => {
               key={doc.doctor_id ?? index}
               sx={{
                 display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
                 justifyContent: "space-between",
-                alignItems: "center",
-                py: 1.25,
-                px: 1.5,
+                alignItems: { xs: "flex-start", sm: "center" },
+                gap: { xs: 1, sm: 0 },
+                py: { xs: 1.5, sm: 1.25 },
+                px: { xs: 1.25, sm: 1.5 },
                 mb: 1,
                 border: "1px solid #E5E7EB",
-                borderRadius: "10px",
+                borderRadius: { xs: "8px", sm: "10px" },
                 backgroundColor: "#ffffff",
               }}
             >
               {/* Left side */}
-              <Box display="flex" alignItems="center" gap={1.5}>
+              <Box display="flex" alignItems="center" gap={{ xs: 1.25, sm: 1.5 }}>
                 <Avatar
                   src={doc.doctor?.profile_picture || "/placeholder-user.jpg"}
                   alt={doc.doctor?.name}
-                  sx={{ width: 40, height: 40 }}
+                  sx={{ width: { xs: 36, sm: 40 }, height: { xs: 36, sm: 40 } }}
                 >
                   {!doc.doctor?.profile_picture &&
                     (doc.doctor?.name?.charAt(0) || "D")}
@@ -193,6 +203,7 @@ const DoctorLeaderboard = ({ filter }) => {
                       fontWeight: 600,
                       color: "#111827",
                       lineHeight: 1.2,
+                      fontSize: { xs: '0.875rem', sm: '1rem' }
                     }}
                   >
                     {doc.doctor?.name || "Unknown Doctor"}
@@ -203,13 +214,14 @@ const DoctorLeaderboard = ({ filter }) => {
                       color: "#6B7280",
                       mt: 0.25,
                       display: "inline-block",
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' }
                     }}
                   >
                     {"Bookings: "}
                     <Typography
                       component="span"
                       variant="body2"
-                      sx={{ color: "#23C7B7", fontWeight: 700 }}
+                      sx={{ color: "#23C7B7", fontWeight: 700, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
                     >
                       {formatTwoDigits(doc.bookings)}
                     </Typography>
@@ -222,28 +234,39 @@ const DoctorLeaderboard = ({ filter }) => {
                 display="flex"
                 flexDirection="column"
                 gap={0.5}
-                alignItems="flex-end"
+                alignItems={{ xs: "flex-start", sm: "flex-end" }}
+                sx={{ width: { xs: "100%", sm: "auto" } }}
               >
                 <Box
                   sx={{
                     bgcolor: "rgba(35, 199, 183, 0.12)",
                     color: "#23C7B7",
-                    px: 1.25,
+                    px: { xs: 1, sm: 1.25 },
                     py: 0.5,
                     borderRadius: "9999px",
-                    fontSize: "0.75rem",
+                    fontSize: { xs: "0.6875rem", sm: "0.75rem" },
                     fontWeight: 600,
                     lineHeight: 1,
                   }}
                 >
                   {doc.doctor?.department_name || "N/A"}
                 </Box>
-                <Typography variant="caption" sx={{ color: "#6B7280" }}>
+                <Typography 
+                  variant="caption" 
+                  sx={{ 
+                    color: "#6B7280",
+                    fontSize: { xs: "0.6875rem", sm: "0.75rem" }
+                  }}
+                >
                   {"Agent: "}
                   <Typography
                     component="span"
                     variant="caption"
-                    sx={{ color: "#111827", fontWeight: 600 }}
+                    sx={{ 
+                      color: "#111827", 
+                      fontWeight: 600,
+                      fontSize: { xs: "0.6875rem", sm: "0.75rem" }
+                    }}
                   >
                     {doc.agent?.name || "N/A"}
                   </Typography>

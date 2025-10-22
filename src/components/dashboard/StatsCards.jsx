@@ -71,16 +71,16 @@ const AdminStatsCards = ({ filter }) => {
   ];
 
   return (
-    <Grid container maxWidth="md" spacing={4}>
+    <Grid container rowSpacing={{ xs: 1.5, sm: 2 }} columnSpacing={{ xs: 1, sm: 2, md: 4 }}>
       {stats.map((stat, index) => {
         const IconComponent = stat.icon;
         return (
-          <Grid key={index} size={{ xs: 12, md: 6 }}>
+          <Grid key={index} size={{ xs: 12, sm: 6, md: 6 }}>
             <Card
               sx={{
                 height: "100%",
-                minHeight: 150,
-                borderRadius: 3,
+                minHeight: { xs: 120, sm: 140, md: 150 },
+                borderRadius: { xs: 2, md: 3 },
                 boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                 transition: "all 0.3s ease",
                 "&:hover": {
@@ -91,7 +91,7 @@ const AdminStatsCards = ({ filter }) => {
             >
               <CardContent
                 sx={{
-                  p: 3,
+                  p: { xs: 2, sm: 2.5, md: 3 },
                   height: "100%",
                   display: "flex",
                   flexDirection: "column",
@@ -100,8 +100,8 @@ const AdminStatsCards = ({ filter }) => {
                 }}
               >
                 {/* Icon */}
-                <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                  <IconComponent sx={{ color: stat.color, fontSize: 36 }} />
+                <Box sx={{ display: "flex", alignItems: "center", mb: { xs: 1, sm: 1.5, md: 2 } }}>
+                  <IconComponent sx={{ color: stat.color, fontSize: { xs: 28, sm: 32, md: 36 } }} />
                 </Box>
 
                 {/* Value */}
@@ -110,8 +110,9 @@ const AdminStatsCards = ({ filter }) => {
                   sx={{
                     fontWeight: 700,
                     color: stat.color,
-                    mb: 1,
+                    mb: { xs: 0.5, md: 1 },
                     lineHeight: 1.2,
+                    fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2.125rem" },
                   }}
                 >
                   {stat.value}
@@ -123,7 +124,8 @@ const AdminStatsCards = ({ filter }) => {
                   sx={{
                     color: "text.secondary",
                     fontWeight: 500,
-                    fontSize: "0.875rem",
+                    fontSize: { xs: "0.75rem", sm: "0.8125rem", md: "0.875rem" },
+                    textAlign: "center",
                   }}
                 >
                   {stat.title}

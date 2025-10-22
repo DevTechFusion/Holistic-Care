@@ -81,26 +81,37 @@ const ProceduresPage = () => {
   };
 
   return (
-    <Box p={3}>
+    <Box p={{ xs: 2, sm: 3 }}>
       {/* Page Header */}
       <Box
         display="flex"
+        flexDirection={{ xs: "column", sm: "row" }}
         justifyContent="space-between"
-        alignItems="center"
-        mb={2}
+        alignItems={{ xs: "stretch", sm: "center" }}
+        gap={{ xs: 1.5, sm: 0 }}
+        mb={{ xs: 2, sm: 2 }}
       >
-        <Typography variant="h5">Procedures</Typography>
+        <Typography 
+          variant="h5"
+          sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem" } }}
+        >
+          Procedures
+        </Typography>
         {hasPermission(MODULES.PROCEDURES, PERMISSIONS.CREATE) && (
-          <Button variant="contained" onClick={() => setOpenModal(true)}>
+          <Button 
+            variant="contained" 
+            onClick={() => setOpenModal(true)}
+            sx={{ width: { xs: "100%", sm: "auto" } }}
+          >
             + Add Procedure
           </Button>
         )}
       </Box>
 
       {/* Table */}
-      <Paper>
+      <Paper sx={{ overflowX: "auto" }}>
         {loading ? (
-          <Box display="flex" justifyContent="center" p={3}>
+          <Box display="flex" justifyContent="center" p={{ xs: 2, sm: 3 }}>
             <CircularProgress />
           </Box>
         ) : (
@@ -108,17 +119,17 @@ const ProceduresPage = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Sr#</TableCell>
-                  <TableCell>Procedure Name</TableCell>
-                  <TableCell>Actions</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Sr#</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Procedure Name</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {procedures.length > 0 ? (
                   procedures.map((proc, idx) => (
                     <TableRow key={proc.id || idx}>
-                      <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
-                      <TableCell>{proc.name}</TableCell>
+                      <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{page * rowsPerPage + idx + 1}</TableCell>
+                      <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{proc.name}</TableCell>
 
                       <TableCell>
                         <ActionButtons

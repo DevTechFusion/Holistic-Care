@@ -1,9 +1,7 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-import { Box, CircularProgress } from "@mui/material";
+
 import ThemeConfig from "./theme";
 import "./App.css";
 import { SnackbarProvider } from "notistack";
-import LoginPage from "./pages/login/LoginPage";
 import Dashboard from "./pages/dashboard/adminDashboard/Dashboard";
 import DepartmentsPage from "./pages/departmentsList/DepartmentsList";
 import AgentList from "./pages/usersList/AgentList";
@@ -14,7 +12,6 @@ import ReportsPage from "./pages/reportsList/ReportsList";
 import PharmacyList from "./pages/pharmacyList/PharmacyList";
 import AppointmentsList from "./pages/appointmentList/AppointmentList";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
-import AuthLayout from "./layouts/AuthLayout";
 import ComplaintList from "./pages/complaintList/ComplaintList";
 import SourcesPage from "./pages/MetaSourceList/MetaSourceList";
 import RolesList from "./pages/roleList/RoleList";
@@ -22,7 +19,6 @@ import StatusesPage from "./pages/StatusList/StatusList";
 import UsersList from "./pages/usersList/UsersList";
 import AgentDashboard from "./pages/dashboard/agentDashboard/AgentDashboard";
 import ManagerDashboard from "./pages/dashboard/managerDashboard/ManagerDashboard";
-import NoAuthLayout from "./layouts/NoAuth";
 import Router from "./routes";
 const routes = [
   // Super Admin Routes

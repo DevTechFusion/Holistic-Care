@@ -61,9 +61,14 @@ const RevenueSection = ({ filter}) => {
   );
 
   return (
-    <Card sx={{ height: "100%", borderRadius: 3, boxShadow: 1 }}>
-      <CardContent sx={{ p: 3 }}>
-        <Typography variant="h6" fontWeight="bold" mb={3}>
+    <Card sx={{ height: "100%", borderRadius: { xs: 2, md: 3 }, boxShadow: 1 }}>
+      <CardContent sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
+        <Typography 
+          variant="h6" 
+          fontWeight="bold" 
+          mb={{ xs: 2, sm: 2.5, md: 3 }}
+          sx={{ fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' } }}
+        >
           Revenue
         </Typography>
 

@@ -103,13 +103,24 @@ const ComplaintList = () => {
   });
 
   return (
-    <Box p={3}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Typography variant="h5" fontWeight={600}>
+    <Box p={{ xs: 2, sm: 3 }}>
+      <Box 
+        display="flex" 
+        flexDirection={{ xs: "column", sm: "row" }}
+        justifyContent="space-between" 
+        alignItems={{ xs: "stretch", sm: "center" }}
+        gap={{ xs: 1.5, sm: 0 }}
+        mb={{ xs: 2, sm: 2 }}
+      >
+        <Typography 
+          variant="h5" 
+          fontWeight={600}
+          sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem" } }}
+        >
           Complaints
         </Typography>
 
-        <FormControl size="small" sx={{ minWidth: 150 }}>
+        <FormControl size="small" sx={{ minWidth: { xs: "100%", sm: 150 } }}>
           <InputLabel>Filter By</InputLabel>
           <Select
             value={filterType}
@@ -122,37 +133,37 @@ const ComplaintList = () => {
         </FormControl>
       </Box>
 
-      <Paper>
+      <Paper sx={{ overflowX: "auto" }}>
         {loading ? (
           <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
             <CircularProgress />
           </Box>
         ) : (
           <>
-            <Table>
+            <Table sx={{ minWidth: { xs: 600, sm: "auto" } }}>
               <TableHead>
                 <TableRow>
-                  <TableCell>Sr#</TableCell>
-                  <TableCell>Appointment ID</TableCell>
-                  <TableCell>Complaint Type</TableCell>
-                  <TableCell>Description</TableCell>
-                  {showDoctor && <TableCell>Doctor</TableCell>}
-                  {showAgent && <TableCell>Agent</TableCell>}
-                  <TableCell>Status</TableCell>
-                  <TableCell>Actions</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Sr#</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Appointment ID</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Complaint Type</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Description</TableCell>
+                  {showDoctor && <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Doctor</TableCell>}
+                  {showAgent && <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Agent</TableCell>}
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Status</TableCell>
+                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {filteredComplaints.length > 0 ? (
                   filteredComplaints.map((complaint, idx) => (
                   <TableRow key={complaint.id || idx}>
-                    <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
-                    <TableCell>
+                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{page * rowsPerPage + idx + 1}</TableCell>
+                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
                       {complaint.appointment_id ||
                        complaint.appointment?.id ||
                        "-"}
                     </TableCell>
-                    <TableCell>{complaint.complaint_type?.name || "-"}</TableCell>
+                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{complaint.complaint_type?.name || "-"}</TableCell>
                     <TableCell
                       sx={{
                         maxWidth: 250,
@@ -161,6 +172,7 @@ const ComplaintList = () => {
                         textOverflow: "ellipsis",
                         cursor: "pointer",
                         color: "primary.main",
+                        fontSize: { xs: "0.75rem", sm: "0.875rem" },
                       }}
                       onClick={() => handleOpenDescription(complaint.description)}
                       title="Click to view full description"
@@ -168,13 +180,13 @@ const ComplaintList = () => {
                       {complaint.description}
                     </TableCell>
                     {showDoctor && (
-                      <TableCell>
+                      <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
                         {complaint.doctor?.name ||
                          "-"}
                       </TableCell>
                     )}
                     {showAgent && (
-                      <TableCell>
+                      <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
                         {complaint.agent?.name ||
                          "-"}
                       </TableCell>
