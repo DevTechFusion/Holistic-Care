@@ -21,7 +21,6 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { CircularProgress } from "@mui/material";
 
 const routes = [
-  
   {
     path: "/dashboard",
     element: <Dashboard />,
@@ -118,6 +117,7 @@ const Authentication = () => {
   const { loading, user, hasPermission, isAuthenticated } = useAuth();
 
   if (isAuthenticated) {
+    console.log(user);
     if (!user) {
       throw new Error("Access Denied, Please contact support team.");
     } else if (hasPermission(MODULES.ADMIN_DASHBOARD, PERMISSIONS.VIEW)) {
@@ -135,19 +135,21 @@ const Authentication = () => {
 };
 
 const Router = () => {
-  const { hasPermission, loading } = useAuth();
-  if (loading) return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-      }}
-    >
-      <CircularProgress />
-    </div>
-  );
+  const { hasPermission, loading, allowedPermissions, isAuthenticated } =
+    useAuth();
+  if ((loading || allowedPermissions.length === 0) && isAuthenticated)
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <CircularProgress />
+      </div>
+    );
   return (
     <BrowserRouter>
       <Routes>

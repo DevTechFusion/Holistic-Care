@@ -92,7 +92,7 @@ const handleDelete = async (id) => {
         mb={2}
       >
         <Typography variant="h5">Statuses List</Typography>
-        { hasPermission(MODULES.STATUS, PERMISSIONS.CREATE) &&
+        { hasPermission(MODULES.STATUSES, PERMISSIONS.CREATE) &&
           <Button variant="contained" onClick={() => setOpenModal(true)}>
             + Add Status
           </Button>

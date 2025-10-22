@@ -39,7 +39,12 @@ const statusColors = {
   Rescheduled: "#FFFEE0",
 };
 
-const paymentModes = [{ id: "cash", name: "Cash" }, { id: "card", name: "Card" }, { id: "online", name: "Online" }, { id: "not_paid", name: "Not Paid" }];
+const paymentModes = [
+  { id: "cash", name: "Cash" },
+  { id: "card", name: "Card" },
+  { id: "online", name: "Online" },
+  { id: "not_paid", name: "Not Paid" },
+];
 
 const ReportsPage = () => {
   const [reports, setReports] = useState([]);
@@ -261,16 +266,16 @@ const ReportsPage = () => {
       >
         <Typography variant="h5">Reports List</Typography>
         <Box display="flex" gap={2}>
-        { hasPermission( MODULES.REPORTS, PERMISSIONS.EXPORT ) &&
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleExport}
-            disabled={exporting}
-          >
-            {exporting ? "Exporting..." : "Export CSV"}
-          </Button>
-}
+          {hasPermission(MODULES.REPORTS, PERMISSIONS.EXPORT) && (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleExport}
+              disabled={exporting}
+            >
+              {exporting ? "Exporting..." : "Export CSV"}
+            </Button>
+          )}
         </Box>
       </Box>
 

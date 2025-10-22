@@ -133,36 +133,35 @@ const PharmacyList = () => {
     fetchPharmacies();
   }, [fetchPharmacies]);
 
-const handleDelete = async (id) => {
-  try {
-    const res = await deletePharmacy(id);
+  const handleDelete = async (id) => {
+    try {
+      const res = await deletePharmacy(id);
 
-    if (res?.status === "error" || (res?.code && res.code !== 200)) {
-      enqueueSnackbar(res.message || "Failed to delete pharmacy record", {
-        variant: "error",
+      if (res?.status === "error" || (res?.code && res.code !== 200)) {
+        enqueueSnackbar(res.message || "Failed to delete pharmacy record", {
+          variant: "error",
+        });
+        return;
+      }
+
+      enqueueSnackbar("Pharmacy record deleted successfully", {
+        variant: "success",
       });
-      return;
+
+      fetchPharmacies();
+    } catch (error) {
+      console.error("Failed to delete pharmacy record:", error);
+
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to delete pharmacy record";
+
+      enqueueSnackbar(message, { variant: "error" });
+    } finally {
+      setLoading(false);
     }
-
-    enqueueSnackbar("Pharmacy record deleted successfully", {
-      variant: "success",
-    });
-
-    fetchPharmacies(); 
-  } catch (error) {
-    console.error("Failed to delete pharmacy record:", error);
-
-    const message =
-      error?.response?.data?.message ||
-      error?.message ||
-      "Failed to delete pharmacy record";
-
-    enqueueSnackbar(message, { variant: "error" });
-  } finally {
-    setLoading(false); 
-  }
-};
-
+  };
 
   // Edit
   const handleEdit = (record) => {
@@ -205,14 +204,15 @@ const handleDelete = async (id) => {
         <Typography variant="h5">Pharmacy List</Typography>
 
         <Stack direction="row" spacing={2} alignItems="center">
-          { hasPermission(MODULES.PHARMACY, PERMISSIONS.TOTAL_INCENTIVE) &&
-          <Button
-            variant="contained"
-            sx={{ fontWeight: "bold" }}
-            disableElevation
-          >
-            Total Incentive: {Number(totalIncentive).toFixed(2)}
-          </Button>}
+          {hasPermission(MODULES.PHARMACY, PERMISSIONS.TOTAL_INCENTIVE) && (
+            <Button
+              variant="contained"
+              sx={{ fontWeight: "bold" }}
+              disableElevation
+            >
+              Total Incentive: {Number(totalIncentive).toFixed(2)}
+            </Button>
+          )}
           <Button variant="contained" onClick={() => setOpenModal(true)}>
             + Add Pharmacy Record
           </Button>
@@ -353,8 +353,16 @@ const handleDelete = async (id) => {
                       <TableCell>{item.payment_mode || "Paid"}</TableCell>
                       <TableCell>
                         <ActionButtons
-                          onEdit={() => handleEdit(item)}
-                          onDelete={() => handleDelete(item.id)}
+                          onEdit={
+                            hasPermission(MODULES.PHARMACY, PERMISSIONS.UPDATE)
+                              ? () => handleEdit(item)
+                              : null
+                          }
+                          onDelete={
+                            hasPermission(MODULES.PHARMACY, PERMISSIONS.DELETE)
+                              ? () => handleDelete(item.id)
+                              : null
+                          }
                         />
                       </TableCell>
                     </TableRow>

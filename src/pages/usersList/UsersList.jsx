@@ -64,24 +64,39 @@ const UsersList = () => {
     setPage(0);
   }, [filters]);
 
-  const handleDeleteUser = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this user?")) return;
-    try {
-      await deleteUser(id);
-      // refresh list after delete
-      fetchUsers();
-    } catch (err) {
-      console.error("Failed to delete user", err);
-    }
-  };
+const handleDeleteUser = async (id) => {
+  try {
+    const res = await deleteUser(id);
 
-  // Open modal for creating a new user
+    if (res?.status === "error" || (res?.code && res.code !== 200)) {
+      enqueueSnackbar(res.message || "Failed to delete user", {
+        variant: "error",
+      });
+      return;
+    }
+
+    enqueueSnackbar("User deleted successfully", { variant: "success" });
+    fetchUsers(); 
+  } catch (error) {
+    console.error("Failed to delete user:", error);
+
+    const message =
+      error?.response?.data?.message ||
+      error?.message ||
+      "Failed to delete user";
+
+    enqueueSnackbar(message, { variant: "error" });
+  } finally {
+    setLoading(false); 
+  }
+};
+
   const handleOpenCreateUser = () => {
     setTargetItem(null);
     setOpenModal(true);
   };
 
-  // Open modal for editing an existing user
+ 
   const handleOpenEditUser = (user) => {
     setTargetItem(user);
     setOpenModal(true);
