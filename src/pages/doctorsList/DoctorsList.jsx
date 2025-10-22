@@ -119,7 +119,8 @@ const DoctorsPage = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {doctors.map((doctor, idx) => (
+                {doctors.length > 0 ? (
+                  doctors.map((doctor, idx) => (
                   <TableRow key={doctor.id}>
                     <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
                     <TableCell>{doctor.name}</TableCell>
@@ -154,13 +155,20 @@ const DoctorsPage = () => {
                   
                       <TableCell>
                         <ActionButtons
-                          onEdit={() => handleEdit(doctor)}
-                          onDelete={() => handleDelete(doctor.id)}
+                          onEdit={ hasPermission(MODULES.DOCTORS, PERMISSIONS.EDIT) ? () => handleEdit(doctor) : null}
+                          onDelete={ hasPermission(MODULES.DOCTORS, PERMISSIONS.DELETE) ? () => handleDelete(doctor.id) : null}
                         />
                       </TableCell>
                     
                   </TableRow>
-                ))}
+                ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={7} align="center">
+                      No doctors found
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
 

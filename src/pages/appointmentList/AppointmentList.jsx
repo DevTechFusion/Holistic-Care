@@ -28,9 +28,10 @@ import { getDoctorsList } from "../../DAL/doctors";
 import { getProceduresList } from "../../DAL/procedure";
 import { getDepartmentsList } from "../../DAL/departments";
 import { getAgentList } from "../../DAL/users";
-
+import { MODULES, PERMISSIONS } from "../../constants/permissionConstants";
+import { has } from "lodash";
 const AppointmentsPage = () => {
-  const { user } = useAuth();
+  const { hasPermission } = useAuth();
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
@@ -117,35 +118,36 @@ const AppointmentsPage = () => {
 
   useEffect(() => {
     fetchAppointments();
-  }, [page, rowsPerPage, filters, user]);
+  }, [page, rowsPerPage, filters]);
 
   const handleDeleteAppointment = async (id) => {
-   
-  try {
-    const res = await deleteAppointment(id);
+    try {
+      const res = await deleteAppointment(id);
 
-    if (res?.status === "error" || (res?.code && res.code !== 200)) {
-      enqueueSnackbar(res.message || "Failed to delete appointment", {
-        variant: "error",
+      if (res?.status === "error" || (res?.code && res.code !== 200)) {
+        enqueueSnackbar(res.message || "Failed to delete appointment", {
+          variant: "error",
+        });
+        return;
+      }
+
+      enqueueSnackbar("Appointment deleted successfully", {
+        variant: "success",
       });
-      return;
+      fetchAppointments(); // Refresh list
+    } catch (error) {
+      console.error("Delete appointment failed:", error);
+
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to delete appointment";
+
+      enqueueSnackbar(message, { variant: "error" });
+    } finally {
+      setLoading(false); // reset loading state
     }
-
-    enqueueSnackbar("Appointment deleted successfully", { variant: "success" });
-    fetchAppointments(); // Refresh list
-  } catch (error) {
-    console.error("Delete appointment failed:", error);
-
-    const message =
-      error?.response?.data?.message ||
-      error?.message ||
-      "Failed to delete appointment";
-
-    enqueueSnackbar(message, { variant: "error" });
-  } finally {
-    setLoading(false); // reset loading state
-  }
-};
+  };
 
   const handleUpdateAppointment = (appointment) => {
     setTargetItem(appointment);
@@ -197,9 +199,11 @@ const AppointmentsPage = () => {
       >
         <Typography variant="h5">Appointments</Typography>
         <Box display="flex" gap={2}>
-          <Button variant="contained" onClick={handleCreateAppointment}>
-            + Add Appointment
-          </Button>
+          {hasPermission(MODULES.APPOINTMENTS, PERMISSIONS.CREATE) && (
+            <Button variant="contained" onClick={handleCreateAppointment}>
+              + Add Appointment
+            </Button>
+          )}
         </Box>
       </Box>
 
@@ -352,46 +356,75 @@ const AppointmentsPage = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {appointments.map((appt, idx) => (
-                    <TableRow key={appt.id}>
-                      <TableCell
-                        sx={{
-                          position: "sticky",
-                          left: 0,
-                          zIndex: 1,
-                          backgroundColor: "#fff",
-                          fontWeight: 500,
-                        }}
-                      >
-                        {page * rowsPerPage + idx + 1}
-                      </TableCell>
-                      <TableCell>
-                        {dayjs(appt.date).format("DD-MM-YYYY")}
-                      </TableCell>
-                      <TableCell>{appt.start_time}</TableCell>
-                      <TableCell>{appt.end_time}</TableCell>
-                      <TableCell>{appt.id}</TableCell>
-                      <TableCell>{appt.patient_name}</TableCell>
-                      <TableCell>{appt.contact_number}</TableCell>
-                      <TableCell>{appt.doctor?.name}</TableCell>
-                      <TableCell>{appt.agent?.name}</TableCell>
-                      <TableCell>
-                        {Array.isArray(appt.procedures) &&
-                        appt.procedures.length > 0
-                          ? appt.procedures.map((p) => p.name).join(", ")
-                          : appt.procedure?.name || "-"}
-                      </TableCell>
-                      <TableCell>{appt.department?.name}</TableCell>
-                      <TableCell>{appt.source?.name}</TableCell>
-                      <TableCell>
-                        <ActionButtons
-                          onEdit={() => handleUpdateAppointment(appt)}
-                          onDelete={() => handleDeleteAppointment(appt.id)}
-                          onAdd={() => handleAddComplaint(appt)}
-                        />
+                  {appointments.length > 0 ? (
+                    appointments.map((appt, idx) => (
+                      <TableRow key={appt.id}>
+                        <TableCell
+                          sx={{
+                            position: "sticky",
+                            left: 0,
+                            zIndex: 1,
+                            backgroundColor: "#fff",
+                            fontWeight: 500,
+                          }}
+                        >
+                          {page * rowsPerPage + idx + 1}
+                        </TableCell>
+                        <TableCell>
+                          {dayjs(appt.date).format("DD-MM-YYYY")}
+                        </TableCell>
+                        <TableCell>{appt.start_time}</TableCell>
+                        <TableCell>{appt.end_time}</TableCell>
+                        <TableCell>{appt.id}</TableCell>
+                        <TableCell>{appt.patient_name}</TableCell>
+                        <TableCell>{appt.contact_number}</TableCell>
+                        <TableCell>{appt.doctor?.name}</TableCell>
+                        <TableCell>{appt.agent?.name}</TableCell>
+                        <TableCell>
+                          {Array.isArray(appt.procedures) &&
+                          appt.procedures.length > 0
+                            ? appt.procedures.map((p) => p.name).join(", ")
+                            : appt.procedure?.name || "-"}
+                        </TableCell>
+                        <TableCell>{appt.department?.name}</TableCell>
+                        <TableCell>{appt.source?.name}</TableCell>
+                        <TableCell>
+                          <ActionButtons
+                            onEdit={
+                              hasPermission(
+                                MODULES.APPOINTMENTS,
+                                PERMISSIONS.EDIT
+                              )
+                                ? () => handleUpdateAppointment(appt)
+                                : null
+                            }
+                            onDelete={
+                              hasPermission(
+                                MODULES.APPOINTMENTS,
+                                PERMISSIONS.DELETE
+                              )
+                                ? () => handleDeleteAppointment(appt.id)
+                                : null
+                            }
+                            onAdd={
+                              hasPermission(
+                                MODULES.COMPLAINTS,
+                                PERMISSIONS.CREATE
+                              )
+                                ? () => handleAddComplaint(appt)
+                                : null
+                            }
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={13} align="center">
+                        No appointments found
                       </TableCell>
                     </TableRow>
-                  ))}
+                  )}
                 </TableBody>
               </Table>
             </TableContainer>

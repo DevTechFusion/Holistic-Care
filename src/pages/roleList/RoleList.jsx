@@ -17,8 +17,9 @@ import { useSnackbar } from "notistack";
 import { getRoles, deleteRole } from "../../DAL/roles";
 import CreateRoleModal from "../../components/forms/RolesForm";
 import ActionButtons from "../../constants/actionButtons";
-import PermissionModal from "./PermissionModal"; // <-- import your modal
-
+import PermissionModal from "./PermissionModal";
+import { useAuth } from "../../contexts/AuthContext";
+import { MODULES, PERMISSIONS } from "../../constants/permissionConstants";
 
 const RolesList = () => {
   const [roles, setRoles] = useState([]);
@@ -30,6 +31,8 @@ const RolesList = () => {
   const [total, setTotal] = useState(0);
   const { enqueueSnackbar } = useSnackbar();
   const [targetItem, setTargetItem] = useState(null);
+
+  const { hasPermission } = useAuth();
 
   const fetchRoles = async () => {
     setLoading(true);
@@ -50,33 +53,32 @@ const RolesList = () => {
     fetchRoles();
   }, [page, rowsPerPage]);
 
-const handleDeleteRole = async (id) => {
-  try {
-    const res = await deleteRole(id);
+  const handleDeleteRole = async (id) => {
+    try {
+      const res = await deleteRole(id);
 
-    if (res?.status === "error" || (res?.code && res.code !== 200)) {
-      enqueueSnackbar(res.message || "Failed to delete role", {
-        variant: "error",
-      });
-      return;
+      if (res?.status === "error" || (res?.code && res.code !== 200)) {
+        enqueueSnackbar(res.message || "Failed to delete role", {
+          variant: "error",
+        });
+        return;
+      }
+
+      enqueueSnackbar("Role deleted successfully", { variant: "success" });
+      fetchRoles();
+    } catch (error) {
+      console.error("Failed to delete role:", error);
+
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to delete role";
+
+      enqueueSnackbar(message, { variant: "error" });
+    } finally {
+      setLoading(false);
     }
-
-    enqueueSnackbar("Role deleted successfully", { variant: "success" });
-    fetchRoles(); 
-  } catch (error) {
-    console.error("Failed to delete role:", error);
-
-    const message =
-      error?.response?.data?.message ||
-      error?.message ||
-      "Failed to delete role";
-
-    enqueueSnackbar(message, { variant: "error" });
-  } finally {
-    setLoading(false); 
-  }
-};
-
+  };
 
   const handleUpdateRole = (role) => {
     setTargetItem(role);
@@ -98,11 +100,11 @@ const handleDeleteRole = async (id) => {
         mb={2}
       >
         <Typography variant="h5">Roles</Typography>
-           <Button variant="contained" onClick={() => setOpenModal(true)}>
-          + Add Role
-        </Button>
-        
-       
+        {hasPermission(MODULES.ROLES, PERMISSIONS.CREATE) && (
+          <Button variant="contained" onClick={() => setOpenModal(true)}>
+            + Add Role
+          </Button>
+        )}
       </Box>
 
       {/* Table */}
@@ -119,7 +121,6 @@ const handleDeleteRole = async (id) => {
                   <TableCell>Sr#</TableCell>
                   <TableCell>Role Name</TableCell>
                   <TableCell>Actions</TableCell>
-              
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -128,17 +129,28 @@ const handleDeleteRole = async (id) => {
                     <TableRow key={role.id || idx}>
                       <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
                       <TableCell>{role.name}</TableCell>
-                        <TableCell>
-                        
+                      <TableCell>
                         <ActionButtons
-                          onEdit={() => handleUpdateRole(role)}
-                          onDelete={() => handleDeleteRole(role.id)}
-                          onAdd={() => handleAddPermission(role)}
+                          onEdit={
+                            hasPermission(MODULES.ROLES, PERMISSIONS.EDIT)
+                              ? () => handleUpdateRole(role)
+                              : null
+                          }
+                          onDelete={
+                            hasPermission(MODULES.ROLES, PERMISSIONS.DELETE)
+                              ? () => handleDeleteRole(role.id)
+                              : null
+                          }
+                          onAdd={
+                            hasPermission(
+                              MODULES.ROLES,
+                              PERMISSIONS.ASSIGN
+                            )
+                              ? () => handleAddPermission(role)
+                              : null
+                          }
                         />
-                        
                       </TableCell>
-                      
-                      
                     </TableRow>
                   ))
                 ) : (

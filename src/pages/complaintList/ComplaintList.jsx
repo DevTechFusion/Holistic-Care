@@ -27,6 +27,8 @@ import { useSnackbar } from "notistack";
 import ActionButtons from "../../constants/actionButtons";
 import { getAllMistakes } from "../../DAL/mistakes";
 import ComplaintForm from "../../components/forms/ComplaintForm";
+import { useAuth } from "../../contexts/AuthContext";
+import { MODULES, PERMISSIONS } from "../../constants/permissionConstants";
 
 const ComplaintList = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -37,12 +39,11 @@ const ComplaintList = () => {
   const [total, setTotal] = useState(0);
   const [targetItem, setTargetItem] = useState(null);
   const [complaintModalOpen, setComplaintModalOpen] = useState(false);
-
   const [selectedDescription, setSelectedDescription] = useState("");
   const [descriptionModalOpen, setDescriptionModalOpen] = useState(false);
-
-  // Set default filter to "agent"
   const [filterType, setFilterType] = useState("agent");
+
+  const { hasPermission } = useAuth();
 
   const fetchComplaints = async () => {
     setLoading(true);
@@ -142,7 +143,8 @@ const ComplaintList = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredComplaints.map((complaint, idx) => (
+                {filteredComplaints.length > 0 ? (
+                  filteredComplaints.map((complaint, idx) => (
                   <TableRow key={complaint.id || idx}>
                     <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
                     <TableCell>
@@ -185,10 +187,17 @@ const ComplaintList = () => {
                       )}
                     </TableCell>
                     <TableCell>
-                      <ActionButtons onEdit={() => handleUpdateComplaint(complaint)} />
+                      <ActionButtons onEdit={ hasPermission(MODULES.COMPLAINTS, PERMISSIONS.EDIT) ? () => handleUpdateComplaint(complaint) : null} />
                     </TableCell>
                   </TableRow>
-                ))}
+                ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={8} align="center">
+                      No complaints found
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
 

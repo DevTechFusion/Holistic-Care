@@ -116,7 +116,7 @@ const handleDeleteUser = async (id) => {
         alignItems="center"
         mb={2}>
         <Typography variant="h5" fontWeight={600}>
-            Users
+            Users List
         </Typography>
 
         <Stack direction="row" spacing={2} alignItems="center">
@@ -152,11 +152,7 @@ const handleDeleteUser = async (id) => {
               </TableHead>
 
               <TableBody>
-                {users.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} align="center">No users found</TableCell>
-                  </TableRow>
-                ) : (
+                {users.length > 0 ? (
                   users.map((u, idx) => (
                     <TableRow key={u.id || idx}>
                       <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
@@ -165,12 +161,19 @@ const handleDeleteUser = async (id) => {
                       <TableCell>{(u.roles || []).map(r => r.name).join(", ") || "-"}</TableCell>
                       <TableCell>
                         <ActionButtons
-                          onEdit={() => handleOpenEditUser(u)}
-                          onDelete={() => handleDeleteUser(u.id)}
+                          onEdit={ hasPermission(MODULES.USERS, PERMISSIONS.EDIT) ? () => handleOpenEditUser(u) : null}
+                          onDelete={ hasPermission(MODULES.USERS, PERMISSIONS.DELETE) ? () => handleDeleteUser(u.id) : null}
                         />
                       </TableCell>
                     </TableRow>
                   ))
+                ) 
+                : (
+                  <TableRow>
+                    <TableCell colSpan={5} align="center">
+                      No users found
+                    </TableCell>
+                  </TableRow>
                 )}
               </TableBody>
             </Table>

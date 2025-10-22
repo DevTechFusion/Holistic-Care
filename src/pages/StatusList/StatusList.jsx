@@ -116,20 +116,28 @@ const handleDelete = async (id) => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {statuses.map((status, idx) => (
+                {statuses.length > 0 ? (
+                  statuses.map((status, idx) => (
                   <TableRow key={status.id}>
                     <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
                     <TableCell>{status.name}</TableCell>
                     
                       <TableCell>
                         <ActionButtons
-                          onEdit={() => handleEdit(status)}
-                          onDelete={() => handleDelete(status.id)}
+                          onEdit={ hasPermission(MODULES.STATUSES, PERMISSIONS.EDIT) ? () => handleEdit(status) : null}
+                          onDelete={ hasPermission(MODULES.STATUSES, PERMISSIONS.DELETE) ? () => handleDelete(status.id) : null}
                         />
                       </TableCell>
                     
                   </TableRow>
-                ))}
+                )) 
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={3} align="center">
+                      No statuses found
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
 

@@ -515,7 +515,8 @@ const ReportsPage = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {reports.map((rep, idx) => {
+                  {reports.length > 0 ? (
+                    reports.map((rep, idx) => {
                     const status = rep.status?.name;
                     const bgColor = statusColors[status] || "inherit";
                     return (
@@ -560,7 +561,14 @@ const ReportsPage = () => {
                         <TableCell>{rep.appointment?.payment_mode}</TableCell>
                       </TableRow>
                     );
-                  })}
+                  })
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={13} align="center">
+                        No reports found
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </TableContainer>

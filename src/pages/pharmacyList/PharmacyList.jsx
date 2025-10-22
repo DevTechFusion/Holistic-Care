@@ -354,7 +354,7 @@ const PharmacyList = () => {
                       <TableCell>
                         <ActionButtons
                           onEdit={
-                            hasPermission(MODULES.PHARMACY, PERMISSIONS.UPDATE)
+                            hasPermission(MODULES.PHARMACY, PERMISSIONS.EDIT)
                               ? () => handleEdit(item)
                               : null
                           }

@@ -116,18 +116,26 @@ const handleDelete = async (id) => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {sources.map((src, idx) => (
+                {sources.length > 0 ? ( 
+                  sources.map((src, idx) => (
                   <TableRow key={src.id}>
                     <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
                     <TableCell>{src.name}</TableCell>
                       <TableCell>
                         <ActionButtons
-                          onEdit={() => handleEdit(src)}
-                          onDelete={() => handleDelete(src.id)}
+                          onEdit={ hasPermission(MODULES.SOURCES, PERMISSIONS.EDIT) ? () => handleEdit(src) : null }
+                          onDelete={ hasPermission(MODULES.SOURCES, PERMISSIONS.DELETE) ? () => handleDelete(src.id) : null}
                         />
                       </TableCell>
                   </TableRow>
-                ))}
+                ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={3} align="center">
+                      No sources found
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
 

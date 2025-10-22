@@ -113,30 +113,26 @@ const DepartmentsPage = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {departments.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={4} align="center">
-                      <Typography variant="body2" color="textSecondary" py={3}>
-                        No departments found
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                ) : (
+                {departments.length > 0 ? (
                   departments.map((dept, idx) => (
                     <TableRow key={dept.id}>
                       <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
                       <TableCell>{dept.name}</TableCell>
                       <TableCell>{dept.incentive_percentage}%</TableCell>
-                      {(
                         <TableCell>
                           <ActionButtons
-                            onEdit={() => handleEdit(dept)}
-                            onDelete={() => handleDelete(dept.id)}
+                            onEdit={ hasPermission( MODULES.DEPARTMENTS, PERMISSIONS.EDIT ) ? () => handleEdit(dept) : null}
+                            onDelete={ hasPermission( MODULES.DEPARTMENTS, PERMISSIONS.DELETE ) ? () => handleDelete(dept.id) : null}
                           />
                         </TableCell>
-                      )}
                     </TableRow>
                   ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={4} align="center">
+                      No Departments Found
+                    </TableCell>
+                  </TableRow>
                 )}
               </TableBody>
             </Table>

@@ -20,7 +20,6 @@ import ActionButtons from "../../constants/actionButtons";
 import { useAuth } from "../../contexts/AuthContext";
 import { MODULES, PERMISSIONS } from "../../constants/permissionConstants";
 
-
 const ProceduresPage = () => {
   const [procedures, setProcedures] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -53,29 +52,29 @@ const ProceduresPage = () => {
   }, [page, rowsPerPage]);
 
   const handleDeleteProcedure = async (id) => {
-  try {
-    const res = await deleteProcedure(id);
-    
-    if (res?.status === "error" || (res?.code && res.code !== 200)) {
-      enqueueSnackbar(res.message || "Failed to delete procedure", { 
-        variant: "error" 
-      });
-      return;
+    try {
+      const res = await deleteProcedure(id);
+
+      if (res?.status === "error" || (res?.code && res.code !== 200)) {
+        enqueueSnackbar(res.message || "Failed to delete procedure", {
+          variant: "error",
+        });
+        return;
+      }
+
+      enqueueSnackbar("Procedure deleted successfully", { variant: "success" });
+      fetchProcedures();
+    } catch (err) {
+      console.error("Failed to delete procedure", err);
+      const message =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to delete procedure";
+      enqueueSnackbar(message, { variant: "error" });
+    } finally {
+      setLoading(false); // If you have a loading state
     }
-    
-    enqueueSnackbar("Procedure deleted successfully", { variant: "success" });
-    fetchProcedures();
-  } catch (err) {
-    console.error("Failed to delete procedure", err);
-    const message = 
-      err?.response?.data?.message || 
-      err?.message || 
-      "Failed to delete procedure";
-    enqueueSnackbar(message, { variant: "error" });
-  } finally {
-    setLoading(false); // If you have a loading state
-  }
-};
+  };
   const handleUpdateProcedure = (proc) => {
     setTargetItem(proc);
     setOpenModal(true);
@@ -91,12 +90,11 @@ const ProceduresPage = () => {
         mb={2}
       >
         <Typography variant="h5">Procedures</Typography>
-     { hasPermission(MODULES.PROCEDURES, PERMISSIONS.CREATE) &&
-           <Button variant="contained" onClick={() => setOpenModal(true)}>
-          + Add Procedure
-        </Button>
-      }
-       
+        {hasPermission(MODULES.PROCEDURES, PERMISSIONS.CREATE) && (
+          <Button variant="contained" onClick={() => setOpenModal(true)}>
+            + Add Procedure
+          </Button>
+        )}
       </Box>
 
       {/* Table */}
@@ -113,7 +111,6 @@ const ProceduresPage = () => {
                   <TableCell>Sr#</TableCell>
                   <TableCell>Procedure Name</TableCell>
                   <TableCell>Actions</TableCell>
-              
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -122,15 +119,24 @@ const ProceduresPage = () => {
                     <TableRow key={proc.id || idx}>
                       <TableCell>{page * rowsPerPage + idx + 1}</TableCell>
                       <TableCell>{proc.name}</TableCell>
-                      
-                        <TableCell>
+
+                      <TableCell>
                         <ActionButtons
-                          onEdit={() => handleUpdateProcedure(proc)}
-                          onDelete={() => handleDeleteProcedure(proc.id)}
+                          onEdit={
+                            hasPermission(MODULES.PROCEDURES, PERMISSIONS.EDIT)
+                              ? () => handleUpdateProcedure(proc)
+                              : null
+                          }
+                          onDelete={
+                            hasPermission(
+                              MODULES.PROCEDURES,
+                              PERMISSIONS.DELETE
+                            )
+                              ? () => handleDeleteProcedure(proc.id)
+                              : null
+                          }
                         />
                       </TableCell>
-                      
-                      
                     </TableRow>
                   ))
                 ) : (
