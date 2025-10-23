@@ -14,12 +14,21 @@ import {
   Chip,
   Paper,
   alpha,
+  TextField,
+  InputAdornment,
+  Divider,
+  Tooltip,
+  IconButton,
 } from "@mui/material";
 import { getPermissions, assignPermission, removePermission, getAssignedPermissions } from "../../DAL/permission";
 import { useSnackbar } from "notistack";
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import IndeterminateCheckBoxIcon from '@mui/icons-material/IndeterminateCheckBox';
+import SearchIcon from '@mui/icons-material/Search';
+import ClearIcon from '@mui/icons-material/Clear';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import LockIcon from '@mui/icons-material/Lock';
 
 const PermissionModal = ({ open, onClose, role }) => {
   const { enqueueSnackbar } = useSnackbar();
@@ -29,45 +38,46 @@ const PermissionModal = ({ open, onClose, role }) => {
   const [initialSelected, setInitialSelected] = useState([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-  if (open && role) {
-    setLoading(true);
-    
-    Promise.all([
-      getPermissions(),
-      getAssignedPermissions(role.id)
-    ])
-      .then(([allPermsRes, assignedPermsRes]) => {
-        // Process all available permissions
-        const perms = allPermsRes?.data || [];
-        setPermissions(perms);
-        
-        // Group permissions by module
-        const groupedObj = {};
-        perms.forEach((perm) => {
-          if (!groupedObj[perm.module]) groupedObj[perm.module] = [];
-          groupedObj[perm.module].push(perm);
-        });
-        setGrouped(groupedObj);
-        
-        // Extract assigned permissions from API response
-        const assignedPerms = assignedPermsRes?.data || [];
-        const initialPerms = assignedPerms.map(p => ({
-          name: p.name,
-          module: p.module
-        }));
-        
-        setSelected(initialPerms);
-        setInitialSelected(initialPerms);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch permissions", err);
-        enqueueSnackbar("Failed to load permissions", { variant: "error" });
-      })
-      .finally(() => setLoading(false));
-  }
-}, [open, role, enqueueSnackbar]);
+    if (open && role) {
+      setLoading(true);
+      
+      Promise.all([
+        getPermissions(),
+        getAssignedPermissions(role.id)
+      ])
+        .then(([allPermsRes, assignedPermsRes]) => {
+          // Process all available permissions
+          const perms = allPermsRes?.data || [];
+          setPermissions(perms);
+          
+          // Group permissions by module
+          const groupedObj = {};
+          perms.forEach((perm) => {
+            if (!groupedObj[perm.module]) groupedObj[perm.module] = [];
+            groupedObj[perm.module].push(perm);
+          });
+          setGrouped(groupedObj);
+          
+          // Extract assigned permissions from API response
+          const assignedPerms = assignedPermsRes?.data || [];
+          const initialPerms = assignedPerms.map(p => ({
+            name: p.name,
+            module: p.module
+          }));
+          
+          setSelected(initialPerms);
+          setInitialSelected(initialPerms);
+        })
+        .catch((err) => {
+          console.error("Failed to fetch permissions", err);
+          enqueueSnackbar("Failed to load permissions", { variant: "error" });
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [open, role, enqueueSnackbar]);
 
   const isSelected = (perm) => {
     return selected.some(p => p.name === perm.name && p.module === perm.module);
@@ -96,8 +106,8 @@ const PermissionModal = ({ open, onClose, role }) => {
         
         if (hasOtherPerms) {
           enqueueSnackbar(
-            `Cannot remove view permission while other permissions exist in ${perm.module}`,
-            { variant: "warning" }
+            `Cannot remove View permission while other permissions exist in ${perm.module}. Remove other permissions first.`,
+            { variant: "warning", autoHideDuration: 4000 }
           );
           return;
         }
@@ -118,6 +128,10 @@ const PermissionModal = ({ open, onClose, role }) => {
         
         if (viewPerm && !viewAlreadySelected) {
           newSelected.push({ name: viewPerm.name, module: viewPerm.module });
+          enqueueSnackbar(
+            `View permission automatically added for ${perm.module}`,
+            { variant: "info", autoHideDuration: 2000 }
+          );
         }
       }
       
@@ -152,6 +166,28 @@ const PermissionModal = ({ open, onClose, role }) => {
     const selectedCount = modulePerms.filter(perm => isSelected(perm)).length;
     return selectedCount > 0 && selectedCount < modulePerms.length;
   };
+
+  const filteredGrouped = useMemo(() => {
+    if (!searchQuery.trim()) return grouped;
+    
+    const query = searchQuery.toLowerCase();
+    const filtered = {};
+    
+    Object.keys(grouped).forEach(module => {
+      const moduleMatches = module.toLowerCase().includes(query);
+      const matchingPerms = grouped[module].filter(perm => 
+        moduleMatches || 
+        perm.display_name?.toLowerCase().includes(query) ||
+        perm.name?.toLowerCase().includes(query)
+      );
+      
+      if (matchingPerms.length > 0) {
+        filtered[module] = matchingPerms;
+      }
+    });
+    
+    return filtered;
+  }, [grouped, searchQuery]);
 
   const changes = useMemo(() => {
     const toAdd = selected.filter(sel =>
@@ -190,10 +226,17 @@ const PermissionModal = ({ open, onClose, role }) => {
         .map(s => s.module)
         .filter(m => isDashboardModule(m))
     ));
-    if (dashboardModules.length !== 1) {
+    if (dashboardModules.length === 0) {
       enqueueSnackbar(
-        "Exactly one dashboard module must be assigned to a role.",
-        { variant: "error" }
+        "At least one dashboard module must be assigned to this role.",
+        { variant: "error", autoHideDuration: 4000 }
+      );
+      return;
+    }
+    if (dashboardModules.length > 1) {
+      enqueueSnackbar(
+        `Only one dashboard module allowed. Currently selected: ${dashboardModules.join(', ')}`,
+        { variant: "error", autoHideDuration: 4000 }
       );
       return;
     }
@@ -288,8 +331,21 @@ const PermissionModal = ({ open, onClose, role }) => {
 
   const handleCancel = () => {
     setSelected(initialSelected);
+    setSearchQuery("");
     onClose();
   };
+
+  const handleClearSearch = () => {
+    setSearchQuery("");
+  };
+
+  const isViewPermissionRequired = (perm) => {
+    if (!isViewPermission(perm)) return false;
+    return selected.some(p => p.module === perm.module && !isViewPermission(p));
+  };
+
+  const totalSelected = selected.length;
+  const totalAvailable = permissions.length;
 
   return (
     <Dialog 
@@ -304,28 +360,68 @@ const PermissionModal = ({ open, onClose, role }) => {
         }
       }}
     >
-      <DialogTitle sx={{ pb: 2, mb: 2, borderBottom: 1, borderColor: 'divider' }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2}>
-          <Box>
-            <Typography variant="h5" fontWeight={600} gutterBottom>
-              Manage Permissions
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Configure access permissions for <strong>{role?.name}</strong> role
-            </Typography>
+      <DialogTitle sx={{ pb: 0 }}>
+        <Box>
+          <Box display="flex" justifyContent="space-between" alignItems="flex-start" flexWrap="wrap" gap={2} mb={2} >
+            <Box>
+              <Typography variant="h5" fontWeight={600} gutterBottom>
+                Manage Permissions
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Configure access permissions for <strong>{role?.name}</strong> role
+              </Typography>
+            </Box>
+            <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+              {hasChanges && (
+                <Chip
+                  label={`${changes.toAdd.length} to add • ${changes.toRemove.length} to remove`}
+                  color="primary"
+                  size="small"
+                  sx={{ fontWeight: 600 }}
+                />
+              )}
+              <Chip
+                label={`${totalSelected}/${totalAvailable} selected`}
+                variant="outlined"
+                size="small"
+                sx={{ fontWeight: 500 }}
+              />
+            </Stack>
           </Box>
-          {hasChanges && (
-            <Chip
-              label={`${changes.toAdd.length} to add • ${changes.toRemove.length} to remove`}
-              color="primary"
-              size="small"
-              sx={{ fontWeight: 600, px: 2 }}
-            />
-          )}
+          
+          {/* Search Bar */}
+          <TextField
+            width= "100%"
+            size="small"
+            placeholder="Search modules or permissions..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon fontSize="small" color="action" />
+                </InputAdornment>
+              ),
+              endAdornment: searchQuery && (
+                <InputAdornment position="end">
+                  <IconButton size="small" onClick={handleClearSearch}>
+                    <ClearIcon fontSize="small" />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                backgroundColor: 'background.paper',
+                mb: 2,
+                borderBottom: '1px solid #e0e0e0',
+              }
+            }}
+          />
         </Box>
       </DialogTitle>
       
-      <DialogContent sx={{ p: 3 }}>
+      <DialogContent sx={{ p: 3, pt: 2 }}>
         {loading ? (
           <Box display="flex" justifyContent="center" alignItems="center" minHeight={300}>
             <Stack alignItems="center" spacing={2}>
@@ -342,11 +438,38 @@ const PermissionModal = ({ open, onClose, role }) => {
               There are no permissions to assign at this time
             </Typography>
           </Box>
+        ) : Object.keys(filteredGrouped).length === 0 ? (
+          <Box textAlign="center" py={6}>
+            <SearchIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
+            <Typography variant="h6" color="text.secondary" gutterBottom>
+              No results found
+            </Typography>
+            <Typography variant="body2" color="text.secondary" mb={2}>
+              Try adjusting your search query
+            </Typography>
+            <Button 
+              onClick={handleClearSearch} 
+              variant="outlined"
+              size="small"
+              sx={{ textTransform: 'none' }}
+            >
+              Clear search
+            </Button>
+          </Box>
         ) : (
           <Stack spacing={2.5}>
-            {Object.keys(grouped).sort().map((module) => {
-              const moduleSelectedCount = grouped[module].filter(p => isSelected(p)).length;
-              const moduleTotalCount = grouped[module].length;
+            {searchQuery && (
+              <Box>
+                <Typography variant="body2" color="text.secondary">
+                  Found {Object.keys(filteredGrouped).length} module(s) matching "{searchQuery}"
+                </Typography>
+                <Divider sx={{ mt: 1 }} />
+              </Box>
+            )}
+            {Object.keys(filteredGrouped).sort().map((module) => {
+              const modulePerms = filteredGrouped[module];
+              const moduleSelectedCount = modulePerms.filter(p => isSelected(p)).length;
+              const moduleTotalCount = modulePerms.length;
               const isFullySelected = isModuleFullySelected(module);
               const isPartiallySelected = isModulePartiallySelected(module);
               
@@ -390,16 +513,28 @@ const PermissionModal = ({ open, onClose, role }) => {
                         '& .MuiSvgIcon-root': { fontSize: 28 }
                       }}
                     />
-                    <Typography 
-                      variant="h6" 
-                      fontWeight={600}
-                      sx={{ 
-                        flex: 1,
-                        color: isFullySelected ? 'primary.main' : 'text.primary'
-                      }}
-                    >
-                      {module}
-                    </Typography>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography 
+                        variant="h6" 
+                        fontWeight={600}
+                        sx={{ 
+                          color: isFullySelected ? 'primary.main' : 'text.primary',
+                          mb: 0.5
+                        }}
+                      >
+                        {module}
+                      </Typography>
+                      {isDashboardModule(module) && (
+                        <Chip
+                          icon={<InfoOutlinedIcon sx={{ fontSize: 14 }} />}
+                          label="Dashboard Module"
+                          size="small"
+                          color="info"
+                          variant="outlined"
+                          sx={{ height: 20, fontSize: '0.7rem' }}
+                        />
+                      )}
+                    </Box>
                     <Chip
                       label={`${moduleSelectedCount}/${moduleTotalCount}`}
                       size="small"
@@ -417,8 +552,28 @@ const PermissionModal = ({ open, onClose, role }) => {
                       gap: 1.5,
                     }}
                   >
-                    {grouped[module].map((perm) => {
+                    {modulePerms.map((perm) => {
                       const isChecked = isSelected(perm);
+                      const isRequired = isViewPermissionRequired(perm);
+                      const permLabel = (
+                        <Box display="flex" alignItems="center" gap={0.5}>
+                          <Typography 
+                            variant="body2"
+                            sx={{ 
+                              fontWeight: isChecked ? 500 : 400,
+                              color: isChecked ? 'text.primary' : 'text.secondary'
+                            }}
+                          >
+                            {perm.display_name}
+                          </Typography>
+                          {isRequired && (
+                            <Tooltip title="Required by other permissions" arrow>
+                              <LockIcon sx={{ fontSize: 14, color: 'warning.main' }} />
+                            </Tooltip>
+                          )}
+                        </Box>
+                      );
+                      
                       return (
                         <FormControlLabel
                           key={perm.id}
@@ -434,25 +589,17 @@ const PermissionModal = ({ open, onClose, role }) => {
                               }}
                             />
                           }
-                          label={
-                            <Typography 
-                              variant="body2"
-                              sx={{ 
-                                fontWeight: isChecked ? 500 : 400,
-                                color: isChecked ? 'text.primary' : 'text.secondary'
-                              }}
-                            >
-                              {perm.display_name}
-                            </Typography>
-                          }
+                          label={permLabel}
                           sx={{
                             m: 0,
                             py: 0.5,
                             px: 1.5,
                             borderRadius: 1,
                             transition: 'all 0.15s ease',
+                            border: isRequired ? `1px solid ${alpha('#ed6c02', 0.3)}` : '1px solid transparent',
+                            backgroundColor: isRequired ? alpha('#ed6c02', 0.05) : 'transparent',
                             '&:hover': {
-                              backgroundColor: alpha('#1976d2', 0.04),
+                              backgroundColor: isRequired ? alpha('#ed6c02', 0.1) : alpha('#1976d2', 0.04),
                             }
                           }}
                         />

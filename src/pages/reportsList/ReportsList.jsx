@@ -447,7 +447,7 @@ const ReportsPage = () => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: { xs: "flex-start", md: "flex-end" },
-                flex: "wrap",
+                flex: 1,
                 minWidth: 200,
               }}
             >
@@ -455,7 +455,7 @@ const ReportsPage = () => {
                 direction={{ xs: "column", sm: "row" }}
                 spacing={1}
                 alignItems="center"
-                sx={{ width: "100%" , mt: { xs: 2, md: 3 } }}
+                sx={{ width: "100%" }}
               >
                 <Autocomplete
                   options={paymentModes}

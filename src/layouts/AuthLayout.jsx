@@ -1,4 +1,5 @@
 import { Box, CircularProgress } from "@mui/material";
+import { useState } from "react";
 import Topbar from "../components/topbar/Topbar";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import Sidebar from "../components/sidebar/Sidebar";
@@ -7,6 +8,11 @@ import { useAuth } from "../contexts/AuthContext";
 const AuthLayout = () => {
   const { user, loading, isAuthenticated } = useAuth();
   const location = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
 
   if (loading) {
     return (
@@ -29,7 +35,7 @@ const AuthLayout = () => {
 
   return (
     <Box sx={{ display: "flex" }}>
-      <Sidebar />
+      <Sidebar mobileOpen={mobileOpen} onDrawerToggle={handleDrawerToggle} />
       <Box
         sx={{
           flex: 1,
@@ -46,7 +52,7 @@ const AuthLayout = () => {
           },
         }}
       >
-        <Topbar />
+        <Topbar onMenuClick={handleDrawerToggle} isSidebarOpen={mobileOpen} />
         <Box sx={{ p: 0 }}>
           <Outlet />
         </Box>

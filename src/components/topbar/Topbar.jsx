@@ -1,9 +1,13 @@
-import { Box, Typography, Avatar } from "@mui/material";
+import { Box, Typography, Avatar, IconButton, useMediaQuery, useTheme } from "@mui/material";
+import { Menu as MenuIcon } from "@mui/icons-material";
 import { useAuth } from "../../contexts/AuthContext";
 import { isArray } from "lodash";
 
-const Topbar = () => {
+const Topbar = ({ onMenuClick, isSidebarOpen = false }) => {
   const { user } = useAuth();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
   return (
     <>
       <Box
@@ -13,7 +17,7 @@ const Topbar = () => {
           borderBottom: "2px solid #e0e0e0",
           display: "flex",
           alignItems: "center",
-          justifyContent: "end",
+          justifyContent: "space-between",
           px: 3,
           position: "sticky",
           top: 0,
@@ -21,7 +25,25 @@ const Topbar = () => {
           boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
         }}
       >
-        {/* Left Section - Search Bar */}
+        {/* Left Section - Menu Icon for Mobile */}
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          {isMobile && !isSidebarOpen && (
+            <IconButton
+              onClick={onMenuClick}
+              sx={{
+                color: "text.primary",
+                "&:hover": {
+                  backgroundColor: "primary.main",
+                  color: "white",
+                },
+              }}
+            >
+              <MenuIcon />
+            </IconButton>
+          )}
+        </Box>
+
+        {/* Search Bar (commented out) */}
         {/* <Box sx={{ display: "flex", alignItems: "center", minWidth: 350 }}>
           <TextField
             placeholder="Search..."

@@ -7,11 +7,17 @@ import {
   ListItemIcon,
   ListItemText,
   Collapse,
+  Drawer,
+  IconButton,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import {
   ExpandLess,
   ExpandMore,
   Logout as LogoutIcon,
+  Menu as MenuIcon,
+  Close as CloseIcon,
 } from "@mui/icons-material";
 import { useLocation, useNavigate } from "react-router-dom";
 import SidebarConfig from "./SidebarConfig";
@@ -20,17 +26,26 @@ import { logout } from "../../DAL/auth";
 import { useAuth } from "../../contexts/AuthContext";
 import { PERMISSIONS } from "../../constants/permissionConstants";
 
-const Sidebar = () => {
+const Sidebar = ({ mobileOpen = false, onDrawerToggle }) => {
   const [openDropdowns, setOpenDropdowns] = useState({});
   const { hasPermission } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const handleDropdownToggle = (title) => {
     setOpenDropdowns((prev) => ({
       ...prev,
       [title]: !prev[title],
     }));
+  };
+
+  const handleNavigation = (path) => {
+    navigate(path);
+    if (isMobile && onDrawerToggle) {
+      onDrawerToggle();
+    }
   };
 
   const isActive = (path) => location.pathname === path;
@@ -56,18 +71,16 @@ const Sidebar = () => {
     );
   }, []);
 
-  return (
+  const sidebarContent = (
     <Box
       sx={{
-        width: { xs: "0%", md: "20%" },
+        width: isMobile ? "280px" : "100%",
         height: "100vh",
         background: "white",
         display: "flex",
         flexDirection: "column",
-        position: "fixed",
-        zIndex: 2,
-        boxShadow: "2px 0 8px rgba(0,0,0,0.08)",
-        borderRight: "1px solid #f0f0f0",
+        boxShadow: isMobile ? "none" : "2px 0 8px rgba(0,0,0,0.08)",
+        borderRight: isMobile ? "none" : "1px solid #f0f0f0",
       }}
     >
       {/* Logo Section */}
@@ -76,16 +89,27 @@ const Sidebar = () => {
           flexShrink: 0,
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
-          padding: "10px 0",
+          justifyContent: isMobile ? "space-between" : "center",
+          padding: "10px 16px",
           borderBottom: "1px solid #eee",
         }}
       >
         <img
           src={logo}
           alt="Logo"
-          style={{ width: "100%", height: "59px", objectFit: "contain" }}
+          style={{ width: isMobile ? "150px" : "100%", height: "59px", objectFit: "contain" }}
         />
+        {isMobile && (
+          <IconButton
+            onClick={onDrawerToggle}
+            sx={{
+              color: "text.primary",
+              "&:hover": { backgroundColor: "rgba(0,0,0,0.04)" },
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        )}
       </Box>
 
       {/* Scrollable Menu Area */}
@@ -118,7 +142,7 @@ const Sidebar = () => {
                     onClick={() =>
                       item.children
                         ? handleDropdownToggle(item.title)
-                        : navigate(item.path)
+                        : handleNavigation(item.path)
                     }
                     sx={{
                       borderRadius: "8px",
@@ -175,7 +199,7 @@ const Sidebar = () => {
                         return (
                           <ListItem key={child.title} disablePadding>
                             <ListItemButton
-                              onClick={() => navigate(child.path)}
+                              onClick={() => handleNavigation(child.path)}
                               sx={{
                                 pl: 6,
                                 py: 1.2,
@@ -248,6 +272,43 @@ const Sidebar = () => {
         </List>
       </Box>
     </Box>
+  );
+
+  return (
+    <>
+      {/* Desktop Sidebar */}
+      {!isMobile && (
+        <Box
+          sx={{
+            width: "20%",
+            position: "fixed",
+            zIndex: 2,
+          }}
+        >
+          {sidebarContent}
+        </Box>
+      )}
+
+      {/* Mobile Drawer */}
+      {isMobile && (
+        <Drawer
+          variant="temporary"
+          open={mobileOpen}
+          onClose={onDrawerToggle}
+          ModalProps={{
+            keepMounted: true, // Better open performance on mobile
+          }}
+          sx={{
+            "& .MuiDrawer-paper": {
+              boxSizing: "border-box",
+              width: "280px",
+            },
+          }}
+        >
+          {sidebarContent}
+        </Drawer>
+      )}
+    </>
   );
 };
 
