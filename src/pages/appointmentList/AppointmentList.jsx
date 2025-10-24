@@ -29,9 +29,12 @@ import { getProceduresList } from "../../DAL/procedure";
 import { getDepartmentsList } from "../../DAL/departments";
 import { getAgentList } from "../../DAL/users";
 import { MODULES, PERMISSIONS } from "../../constants/permissionConstants";
-import { has } from "lodash";
+
 const AppointmentsPage = () => {
-  const { hasPermission } = useAuth();
+  const { hasPermission, user } = useAuth();
+  
+  // Check if current user is an agent
+  const isCurrentUserAgent = Array.isArray(user?.roles) && user.roles.some((role) => role.name?.toLowerCase() === "agent");
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
@@ -269,18 +272,20 @@ const AppointmentsPage = () => {
             spacing={2}
             alignItems="center"
           >
-            <Autocomplete
-              options={agents}
-              getOptionLabel={(option) => option.name || ""}
-              value={agents.find((a) => a.id === filters.agent_id) || null}
-              onChange={(e, value) => handleFilterChange("agent_id", value?.id)}
-              renderInput={(params) => (
-                <TextField {...params} label="Agent" size="small" />
-              )}
-              isOptionEqualToValue={(o, v) => o?.id === v?.id}
-              disablePortal
-              sx={{ flex: 1, minWidth: 200 }}
-            />
+            {!isCurrentUserAgent && (
+              <Autocomplete
+                options={agents}
+                getOptionLabel={(option) => option.name || ""}
+                value={agents.find((a) => a.id === filters.agent_id) || null}
+                onChange={(e, value) => handleFilterChange("agent_id", value?.id)}
+                renderInput={(params) => (
+                  <TextField {...params} label="Agent" size="small" />
+                )}
+                isOptionEqualToValue={(o, v) => o?.id === v?.id}
+                disablePortal
+                sx={{ flex: 1, minWidth: 200 }}
+              />
+            )}
 
             <TextField
               select
@@ -355,11 +360,13 @@ const AppointmentsPage = () => {
                     <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Date</TableCell>
                     <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Start Time</TableCell>
                     <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>End Time</TableCell>
-                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Appt. ID</TableCell>
+                    {/* <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Appt. ID</TableCell> */}
                     <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Patient</TableCell>
                     <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Contact</TableCell>
                     <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Doctor</TableCell>
-                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Agent</TableCell>
+                    {!isCurrentUserAgent && (
+                      <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Agent</TableCell>
+                    )}
                     <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Procedure</TableCell>
                     <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Department</TableCell>
                     <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Source</TableCell>
@@ -387,11 +394,13 @@ const AppointmentsPage = () => {
                         </TableCell>
                         <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{appt.start_time}</TableCell>
                         <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{appt.end_time}</TableCell>
-                        <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{appt.id}</TableCell>
+                        {/* <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{appt.id}</TableCell> */}
                         <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{appt.patient_name}</TableCell>
                         <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{appt.contact_number}</TableCell>
                         <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{appt.doctor?.name}</TableCell>
-                        <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{appt.agent?.name}</TableCell>
+                        {!isCurrentUserAgent && (
+                          <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{appt.agent?.name}</TableCell>
+                        )}
                         <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
                           {Array.isArray(appt.procedures) &&
                           appt.procedures.length > 0
@@ -432,7 +441,7 @@ const AppointmentsPage = () => {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={13} align="center">
+                      <TableCell colSpan={isCurrentUserAgent ? 12 : 13} align="center">
                         No appointments found
                       </TableCell>
                     </TableRow>

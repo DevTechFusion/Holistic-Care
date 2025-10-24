@@ -1,12 +1,12 @@
 import { invokeApi } from "../utils/invokeApi";
-export const getAdminDashboard = ( range = 'weekly') => {
-    return invokeApi({ path: `api/dashboard?range=${range}` });
+export const getAdminDashboard = ( start_date = "", end_date = "") => {
+    return invokeApi({ path: `api/dashboard?start_date=${start_date}&end_date=${end_date}` });
 };
 
-export const getAgentDashboard = ( range = 'weekly') => {
-    return invokeApi({ path: `api/agent/dashboard?range=${range}` });
+export const getAgentDashboard = ( start_date = "", end_date = "") => {
+    return invokeApi({ path: `api/agent/dashboard?start_date=${start_date}&end_date=${end_date}` });
 };
 
-export const getManagerDashboard = ( range = 'weekly') => {
-    return invokeApi({ path: `api/manager/dashboard?range=${range}` });
+export const getManagerDashboard = ( start_date = "", end_date = "") => {
+    return invokeApi({ path: `api/manager/dashboard?start_date=${start_date}&end_date=${end_date}` });
 };

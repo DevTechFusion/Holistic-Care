@@ -150,10 +150,10 @@ const DoctorAvailabilityCard = () => {
     <Paper
       elevation={0}
       sx={{
-        maxWidth: "90%",
+        maxWidth: "100%",
         mx: "auto",
-        mt: 4,
-        mb: 4,
+        mt: { xs: 2, sm: 3, md: 4 },
+        mb: { xs: 2, sm: 3, md: 4 },
         borderRadius: 3,
         border: 1,
         borderColor: "divider",
@@ -163,8 +163,16 @@ const DoctorAvailabilityCard = () => {
     >
       <Box p={{ xs: 2, sm: 3, md: 4 }}>
         {/* Header */}
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={4} flexWrap="wrap" gap={3}>
-          <Typography variant="h4" sx={{ fontWeight: 700, color: "text.primary", letterSpacing: "-0.02em" }}>
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={4} flexWrap="wrap" gap={{ xs: 2, sm: 3 }}>
+          <Typography 
+            variant="h4" 
+            sx={{ 
+              fontWeight: 700, 
+              color: "text.primary", 
+              letterSpacing: "-0.02em",
+              fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" }
+            }}
+          >
             Doctor Availability
           </Typography>
 
@@ -179,7 +187,7 @@ const DoctorAvailabilityCard = () => {
             disablePortal
             noOptionsText="No doctors found"
             sx={{
-              minWidth: 280,
+              minWidth: { xs: "100%", sm: 280 },
               "& .MuiOutlinedInput-root": {
                 borderRadius: 2,
                 backgroundColor: (theme) => theme.palette.action.hover,
@@ -209,7 +217,7 @@ const DoctorAvailabilityCard = () => {
         ) : (
           <Grid container spacing={{ xs: 2, sm: 2.5, md: 3 }}>
             {DAYS.map((day) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={day.key}>
+              <Grid item xs={12} sm={6} md={4} xl={3} key={day.key}>
                 <DayScheduleCard day={day} schedule={availability[day.key]} />
               </Grid>
             ))}

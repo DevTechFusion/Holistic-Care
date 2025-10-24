@@ -110,7 +110,7 @@ export default function MistakesCount({ filter }) {
   return (
     <Card
       sx={{
-        mt: 3,
+        mt: { xs: 2, sm: 3 },
         borderRadius: 4,
         boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
         width: "100%",
@@ -118,14 +118,15 @@ export default function MistakesCount({ filter }) {
         background: "linear-gradient(to bottom, #ffffff, #fafafa)",
       }}
     >
-      <CardContent sx={{ p: 4 }}>
+      <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
         <Typography 
           variant="h5" 
           sx={{ 
             fontWeight: 700, 
-            mb: 4,
+            mb: { xs: 2, sm: 3, md: 4 },
             color: "#1a1a1a",
-            letterSpacing: "-0.5px"
+            letterSpacing: "-0.5px",
+            fontSize: { xs: "1.25rem", sm: "1.5rem" }
           }}
         >
           Mistake Count by Agent
@@ -149,8 +150,9 @@ export default function MistakesCount({ filter }) {
           <Box
             sx={{
               display: "flex",
-              gap: 5,
-              alignItems: "flex-start",
+              flexDirection: { xs: "column", lg: "row" },
+              gap: { xs: 3, sm: 4, lg: 5 },
+              alignItems: { xs: "stretch", lg: "flex-start" },
               width: "100%",
               maxWidth: "100%",
             }}
@@ -163,8 +165,9 @@ export default function MistakesCount({ filter }) {
                 boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
                 border: "1px solid #e8e8e8",
                 borderRadius: 3,
-                maxHeight: 550,
+                maxHeight: { xs: 400, sm: 500, lg: 550 },
                 overflowY: "auto",
+                overflowX: "auto",
                 "&::-webkit-scrollbar": {
                   width: "8px",
                 },
@@ -195,7 +198,7 @@ export default function MistakesCount({ filter }) {
                         borderRight: "1px solid #e0e0e0",
                         py: 2.5,
                         px: 3,
-                        minWidth: "160px",
+                        minWidth: { xs: "120px", sm: "160px" },
                       }}
                     >
                       Agent
@@ -213,7 +216,7 @@ export default function MistakesCount({ filter }) {
                           borderRight: "1px solid #e0e0e0",
                           py: 2.5,
                           px: 3,
-                          minWidth: "140px",
+                          minWidth: { xs: "100px", sm: "140px" },
                         }}
                       >
                         {t.key}
@@ -229,7 +232,7 @@ export default function MistakesCount({ filter }) {
                         borderBottom: "2px solid #e0e0e0",
                         py: 2.5,
                         px: 3,
-                        minWidth: "120px",
+                        minWidth: { xs: "80px", sm: "120px" },
                       }}
                     >
                       Total
@@ -319,7 +322,7 @@ export default function MistakesCount({ filter }) {
             {/* Enhanced Chart + Legend */}
             <Box
               sx={{
-                width: 380,
+                width: { xs: "100%", lg: 380 },
                 flexShrink: 0,
                 display: "flex",
                 flexDirection: "column",
@@ -327,7 +330,7 @@ export default function MistakesCount({ filter }) {
                 p: 0,
               }}
             >
-              <Box sx={{ width: "100%", maxWidth: 280, mb: 3 }}>
+              <Box sx={{ width: "100%", maxWidth: { xs: 240, sm: 280 }, mb: 3 }}>
                 <Pie data={pieData} options={pieOptions} />
               </Box>
 

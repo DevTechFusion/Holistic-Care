@@ -203,16 +203,16 @@ const PharmacyList = () => {
         gap={{ xs: 1.5, sm: 0 }}
         mb={{ xs: 2, sm: 2 }}
       >
-        <Typography 
+        <Typography
           variant="h5"
           sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem" } }}
         >
           Pharmacy List
         </Typography>
 
-        <Stack 
-          direction={{ xs: "column", sm: "row" }} 
-          spacing={2} 
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={2}
           alignItems="center"
           sx={{ width: { xs: "100%", sm: "auto" } }}
         >
@@ -225,8 +225,8 @@ const PharmacyList = () => {
               Total Incentive: {Number(totalIncentive).toFixed(2)}
             </Button>
           )}
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             onClick={() => setOpenModal(true)}
             sx={{ width: { xs: "100%", sm: "auto" } }}
           >
@@ -236,92 +236,112 @@ const PharmacyList = () => {
       </Box>
 
       {/* Inline Filters (moved from popover) */}
-      <Paper sx={{ mb: 2, p: { xs: 1.5, sm: 2 } }}>
-        <Stack
-          direction={{ xs: "column", md: "row" }}
-          spacing={2}
-          alignItems="center"
-          flexWrap="wrap"
-        >
-          {/* Agent Autocomplete */}
-          <Autocomplete
-            options={agents}
-            getOptionLabel={(option) => option.name || ""}
-            value={agents.find((a) => a.id === filters.agent_id) || null}
-            onChange={(e, value) => handleFilterChange("agent_id", value?.id)}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Agent"
-                size="small"
-                InputProps={{
-                  ...params.InputProps,
-                  endAdornment: (
-                    <>
-                      {listsLoading ? (
-                        <CircularProgress size={20} sx={{ mr: 1 }} />
-                      ) : null}
-                      {params.InputProps.endAdornment}
-                    </>
-                  ),
-                }}
-              />
-            )}
-            isOptionEqualToValue={(o, v) => o?.id === v?.id}
-            disablePortal
-            sx={{ flex: 1, minWidth: 240 }}
-          />
-
-          {/* Date Filters */}
-          <DatePicker
-            label="Start Date"
-            value={filters.start_date || null}
-            onChange={(val) => handleFilterChange("start_date", val)}
-            slotProps={{
-              textField: {
-                size: "small",
-                sx: { flex: 1, minWidth: 180 },
-              },
-            }}
-          />
-
-          <DatePicker
-            label="End Date"
-            value={filters.end_date || null}
-            onChange={(val) => handleFilterChange("end_date", val)}
-            slotProps={{
-              textField: {
-                size: "small",
-                sx: { flex: 1, minWidth: 180 },
-              },
-            }}
-          />
-
-          {/* Clear Button */}
-          <Box
+      <Paper sx={{ mb: 2, p: { xs: 2, sm: 3 } }}>
+        <Stack spacing={2.5}>
+          {/* Single Row: 3 Fields + Clear Button (Centered) */}
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={2}
             sx={{
-              display: "flex",
-              justifyContent: { xs: "flex-start", md: "flex-end" },
-              width: { xs: "100%", md: "auto" },
-              ml: { xs: 0, md: "auto" },
+              justifyContent: "center",
+              alignItems: "center",
             }}
           >
+            {/* Agent Autocomplete */}
+            <Autocomplete
+              options={agents}
+              getOptionLabel={(option) => option.name || ""}
+              value={agents.find((a) => a.id === filters.agent_id) || null}
+              onChange={(e, value) => handleFilterChange("agent_id", value?.id)}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Agent"
+                  size="small"
+                  InputProps={{
+                    ...params.InputProps,
+                    endAdornment: (
+                      <>
+                        {listsLoading ? (
+                          <CircularProgress size={20} sx={{ mr: 1 }} />
+                        ) : null}
+                        {params.InputProps.endAdornment}
+                      </>
+                    ),
+                  }}
+                />
+              )}
+              isOptionEqualToValue={(o, v) => o?.id === v?.id}
+              disablePortal
+              sx={{
+                flex: 1,
+                width: { xs: "100%", sm: "auto" },
+                minWidth: { sm: 200 },
+              }}
+            />
+
+            {/* Start Date */}
+            <DatePicker
+              label="Start Date"
+              value={filters.start_date || null}
+              onChange={(val) => handleFilterChange("start_date", val)}
+              slotProps={{
+                textField: {
+                  size: "small",
+                  fullWidth: true,
+                  sx: {
+                    flex: 1,
+                    minWidth: { sm: 200 },
+                  },
+                },
+              }}
+            />
+
+            {/* End Date */}
+            <DatePicker
+              label="End Date"
+              value={filters.end_date || null}
+              onChange={(val) => handleFilterChange("end_date", val)}
+              slotProps={{
+                textField: {
+                  size: "small",
+                  fullWidth: true,
+                  sx: {
+                    flex: 1,
+                    minWidth: { sm: 200 },
+                  },
+                },
+              }}
+            />
+
+            {/* Clear Button */}
             <Button
               variant="outlined"
               color="error"
               onClick={clearFilters}
               size="small"
+              sx={{
+                height: 40,
+                px: 4,
+                whiteSpace: "nowrap",
+                width: { xs: "100%", sm: "auto" },
+              }}
             >
-              Clear
+              Clear Filters
             </Button>
-          </Box>
+          </Stack>
         </Stack>
       </Paper>
 
       {/* Table */}
       <Paper sx={{ width: "100%", overflowX: "auto" }}>
         {loading ? (
-          <Box display="flex" justifyContent="center" alignItems="center" p={{ xs: 2, sm: 2 }}>
+          <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            p={{ xs: 2, sm: 2 }}
+          >
             <CircularProgress />
           </Box>
         ) : (
@@ -329,28 +349,82 @@ const PharmacyList = () => {
             <Table fixed sx={{ minWidth: { xs: 700, sm: "auto" } }}>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Sr#</TableCell>
-                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Date</TableCell>
-                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Patient</TableCell>
-                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Phone</TableCell>
-                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Agent</TableCell>
-                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Description</TableCell>
-                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Amount</TableCell>
-                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Payment</TableCell>
-                  <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Actions</TableCell>
+                  <TableCell
+                    sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                  >
+                    Sr#
+                  </TableCell>
+                  <TableCell
+                    sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                  >
+                    Date
+                  </TableCell>
+                  <TableCell
+                    sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                  >
+                    Patient
+                  </TableCell>
+                  <TableCell
+                    sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                  >
+                    Phone
+                  </TableCell>
+                  <TableCell
+                    sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                  >
+                    Agent
+                  </TableCell>
+                  <TableCell
+                    sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                  >
+                    Description
+                  </TableCell>
+                  <TableCell
+                    sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                  >
+                    Amount
+                  </TableCell>
+                  <TableCell
+                    sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                  >
+                    Payment
+                  </TableCell>
+                  <TableCell
+                    sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                  >
+                    Actions
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {data.length > 0 ? (
                   data.map((item, idx) => (
                     <TableRow key={item.id}>
-                      <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{page * rowsPerPage + idx + 1}</TableCell>
-                      <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
+                      <TableCell
+                        sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                      >
+                        {page * rowsPerPage + idx + 1}
+                      </TableCell>
+                      <TableCell
+                        sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                      >
                         {dayjs(item.date).format("DD-MM-YYYY")}
                       </TableCell>
-                      <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{item.patient_name}</TableCell>
-                      <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{item.phone_number}</TableCell>
-                      <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{item.agent?.name || "—"}</TableCell>
+                      <TableCell
+                        sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                      >
+                        {item.patient_name}
+                      </TableCell>
+                      <TableCell
+                        sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                      >
+                        {item.phone_number}
+                      </TableCell>
+                      <TableCell
+                        sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                      >
+                        {item.agent?.name || "—"}
+                      </TableCell>
                       <TableCell
                         sx={{
                           maxWidth: 250,
@@ -366,8 +440,16 @@ const PharmacyList = () => {
                       >
                         {item.description || "—"}
                       </TableCell>
-                      <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{item.amount}</TableCell>
-                      <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{item.payment_mode || "Paid"}</TableCell>
+                      <TableCell
+                        sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                      >
+                        {item.amount}
+                      </TableCell>
+                      <TableCell
+                        sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                      >
+                        {item.payment_mode || "Paid"}
+                      </TableCell>
                       <TableCell>
                         <ActionButtons
                           onEdit={

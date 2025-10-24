@@ -20,7 +20,7 @@ import { createAppointment, updateAppointment, getAppointmentsByDoctor } from ".
 import { getDoctorsList } from "../../DAL/doctors";
 import { getProceduresList } from "../../DAL/procedure";
 import { getCategories } from "../../DAL/category";
-import { getSources } from "../../DAL/source";
+import { getSelectSources } from "../../DAL/source";
 import { getRoles } from "../../DAL/modelRoles";
 import { getAllRemarks1 } from "../../DAL/remarks1";
 import { getAllRemarks2 } from "../../DAL/remarks2";
@@ -72,7 +72,7 @@ const API_ENDPOINTS = [
   { key: "doctors", call: getDoctorsList, errorMsg: "Failed to load doctors. Please refresh and try again." },
   { key: "procedures", call: getProceduresList, errorMsg: "Failed to load procedures. Please refresh and try again." },
   { key: "categories", call: getCategories, errorMsg: "Failed to load categories. Please refresh and try again." },
-  { key: "sources", call: getSources, errorMsg: "Failed to load sources. Please refresh and try again." },
+  { key: "sources", call: getSelectSources, errorMsg: "Failed to load sources. Please refresh and try again." },
   { key: "roles", call: getRoles, errorMsg: "Failed to load agents. Please refresh and try again." },
   { key: "remarks1", call: getAllRemarks1, errorMsg: "Failed to load remarks 1. Please refresh and try again." },
   { key: "remarks2", call: getAllRemarks2, errorMsg: "Failed to load remarks 2. Please refresh and try again." },
@@ -354,21 +354,46 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
 
     return (
       <FormControl fullWidth error={!!errors[fieldId]}>
-        <InputLabel>{label} {required && "*"}</InputLabel>
+        <InputLabel>
+          {label} {required && "*"}
+        </InputLabel>
         {loading ? (
           <Stack direction="row" alignItems="center" spacing={1} p={2}>
             <CircularProgress size={20} />
-            <Typography variant="body2">Loading {label.toLowerCase()}...</Typography>
+            <Typography variant="body2">
+              Loading {label.toLowerCase()}...
+            </Typography>
           </Stack>
         ) : apiError ? (
-          <Typography color="error" variant="body2" p={2}>{apiError}</Typography>
+          <Typography color="error" variant="body2" p={2}>
+            {apiError}
+          </Typography>
         ) : (
-          <Select value={value} onChange={onChange} label={`${label} ${required ? "*" : ""}`} disabled={disabled}>
-            <MenuItem value=""><em>Select {label.toLowerCase()}</em></MenuItem>
-            {data.length > 0 ? data.map((item) => <MenuItem key={item.id} value={item.id}>{item.name}</MenuItem>) : <MenuItem disabled>No {label.toLowerCase()} available</MenuItem>}
+          <Select
+            value={value}
+            onChange={onChange}
+            label={`${label} ${required ? "*" : ""}`}
+            disabled={disabled}
+          >
+            <MenuItem value="">
+              <em>Select {label.toLowerCase()}</em>
+            </MenuItem>
+            {data.length > 0 ? (
+              data.map((item) => (
+                <MenuItem key={item.id || item.value} value={item.id || item.value}>
+                  {item.name || item.label}
+                </MenuItem>
+              ))
+            ) : (
+              <MenuItem disabled>No {label.toLowerCase()} available</MenuItem>
+            )}
           </Select>
         )}
-        {errors[fieldId] && <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 2 }}>{errors[fieldId]}</Typography>}
+        {errors[fieldId] && (
+          <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 2 }}>
+            {errors[fieldId]}
+          </Typography>
+        )}
       </FormControl>
     );
   };

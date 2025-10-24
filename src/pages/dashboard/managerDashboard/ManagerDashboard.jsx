@@ -68,16 +68,14 @@ const ManagerDashboard = () => {
         <ManagerStatsCards filter={filter} />
       </Box>
 
+      {/* Mistakes Count */}
       <Box sx={{ mt: 4, mb: 4 }}>
-        
-          <Grid item xs={12} lg={8}>
-            <MistakesCount filter={filter} />
-          </Grid>
+        <MistakesCount filter={filter} />
+      </Box>
 
-          <Grid item xs={12} lg={4}>
-            <MistakesLog filter={filter} />
-          </Grid>
-        
+      {/* Mistakes Log */}
+      <Box sx={{ mt: 4, mb: 4 }}>
+        <MistakesLog filter={filter} />
       </Box>
     </Box>
   );

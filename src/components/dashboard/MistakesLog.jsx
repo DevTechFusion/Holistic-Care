@@ -20,6 +20,7 @@ import {
 } from "@mui/material";
 import { getManagerDashboard } from "../../DAL/dashboard";
 
+
 export default function MistakeLogTable({ filter }) {
   const [logs, setLogs] = useState([]);
   const [error, setError] = useState(null);
@@ -32,7 +33,7 @@ export default function MistakeLogTable({ filter }) {
       try {
         const res = await getManagerDashboard(filter);
         if (res?.data?.detailed_log?.data) {
-          // ✅ Filter out logs with null agent_id
+          
           const filteredLogs = res.data.detailed_log.data.filter(
             (log) => log.agent_id !== null
           );
@@ -66,13 +67,20 @@ export default function MistakeLogTable({ filter }) {
     <>
       <Card
         sx={{
-          mt: 3,
+          mt: { xs: 2, sm: 3 },
           borderRadius: 3,
           boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
         }}
       >
-        <CardContent sx={{ p: 3 }}>
-          <Typography variant="h6" sx={{ fontWeight: "bold", mb: 3 }}>
+        <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              fontWeight: "bold", 
+              mb: { xs: 2, sm: 3 },
+              fontSize: { xs: "1.125rem", sm: "1.25rem" }
+            }}
+          >
             Detailed Mistake Log
           </Typography>
 
@@ -81,42 +89,79 @@ export default function MistakeLogTable({ filter }) {
           ) : (
             <TableContainer
               component={MuiPaper}
-              sx={{ boxShadow: "none", border: "1px solid #e0e0e0" }}
+              sx={{ 
+                boxShadow: "none", 
+                border: "1px solid #e0e0e0",
+                overflowX: "auto"
+              }}
             >
-              <Table size="small">
+              <Table size="small" sx={{ minWidth: { xs: 600, sm: 650 } }}>
                 <TableHead>
                   <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
                     <TableCell
                       align="center"
-                      sx={{ fontWeight: "bold", borderRight: "1px solid #e0e0e0" }}
+                      sx={{ 
+                        fontWeight: "bold", 
+                        borderRight: "1px solid #e0e0e0",
+                        fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                        px: { xs: 1, sm: 2 }
+                      }}
                     >
                       Date
                     </TableCell>
                     <TableCell
                       align="center"
-                      sx={{ fontWeight: "bold", borderRight: "1px solid #e0e0e0" }}
+                      sx={{ 
+                        fontWeight: "bold", 
+                        borderRight: "1px solid #e0e0e0",
+                        fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                        px: { xs: 1, sm: 2 }
+                      }}
                     >
                       Day
                     </TableCell>
                     <TableCell
                       align="center"
-                      sx={{ fontWeight: "bold", borderRight: "1px solid #e0e0e0" }}
+                      sx={{ 
+                        fontWeight: "bold", 
+                        borderRight: "1px solid #e0e0e0",
+                        fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                        px: { xs: 1, sm: 2 }
+                      }}
                     >
                       Agent
                     </TableCell>
                     <TableCell
                       align="center"
-                      sx={{ fontWeight: "bold", borderRight: "1px solid #e0e0e0", color: "red" }}
+                      sx={{ 
+                        fontWeight: "bold", 
+                        borderRight: "1px solid #e0e0e0", 
+                        color: "red",
+                        fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                        px: { xs: 1, sm: 2 }
+                      }}
                     >
                       Type
                     </TableCell>
                     <TableCell
                       align="center"
-                      sx={{ fontWeight: "bold", borderRight: "1px solid #e0e0e0" }}
+                      sx={{ 
+                        fontWeight: "bold", 
+                        borderRight: "1px solid #e0e0e0",
+                        fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                        px: { xs: 1, sm: 2 }
+                      }}
                     >
                       Description
                     </TableCell>
-                    <TableCell align="center" sx={{ fontWeight: "bold" }}>
+                    <TableCell 
+                      align="center" 
+                      sx={{ 
+                        fontWeight: "bold",
+                        fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                        px: { xs: 1, sm: 2 }
+                      }}
+                    >
                       Status
                     </TableCell>
                   </TableRow>
@@ -125,18 +170,45 @@ export default function MistakeLogTable({ filter }) {
                   {logs.length > 0 ? (
                     logs.map((log) => (
                       <TableRow key={log.id} hover>
-                        <TableCell align="center" sx={{ borderRight: "1px solid #e0e0e0" }}>
+                        <TableCell 
+                          align="center" 
+                          sx={{ 
+                            borderRight: "1px solid #e0e0e0",
+                            fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                            px: { xs: 1, sm: 2 }
+                          }}
+                        >
                           {formatDate(log.occurred_at)}
                         </TableCell>
-                        <TableCell align="center" sx={{ borderRight: "1px solid #e0e0e0" }}>
+                        <TableCell 
+                          align="center" 
+                          sx={{ 
+                            borderRight: "1px solid #e0e0e0",
+                            fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                            px: { xs: 1, sm: 2 }
+                          }}
+                        >
                           {formatDay(log.occurred_at)}
                         </TableCell>
-                        <TableCell align="center" sx={{ borderRight: "1px solid #e0e0e0" }}>
+                        <TableCell 
+                          align="center" 
+                          sx={{ 
+                            borderRight: "1px solid #e0e0e0",
+                            fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                            px: { xs: 1, sm: 2 }
+                          }}
+                        >
                           {log.agent?.name}
                         </TableCell>
                         <TableCell
                           align="center"
-                          sx={{ borderRight: "1px solid #e0e0e0", color: "red", fontWeight: 600 }}
+                          sx={{ 
+                            borderRight: "1px solid #e0e0e0", 
+                            color: "red", 
+                            fontWeight: 600,
+                            fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                            px: { xs: 1, sm: 2 }
+                          }}
                         >
                           {log.complaint_type?.name}
                         </TableCell>
@@ -146,6 +218,8 @@ export default function MistakeLogTable({ filter }) {
                             borderRight: "1px solid #e0e0e0",
                             cursor: log.description?.length > 50 ? "pointer" : "default",
                             color: log.description?.length > 50 ? "primary.main" : "inherit",
+                            fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                            px: { xs: 1, sm: 2 }
                           }}
                           onClick={() =>
                             log.description?.length > 50 &&
@@ -154,7 +228,13 @@ export default function MistakeLogTable({ filter }) {
                         >
                           {truncateText(log.description)}
                         </TableCell>
-                        <TableCell align="center">
+                        <TableCell 
+                          align="center"
+                          sx={{
+                            fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                            px: { xs: 1, sm: 2 }
+                          }}
+                        >
                           <Chip
                             label={log.is_resolved ? "Resolved" : "Pending"}
                             color={log.is_resolved ? "success" : "warning"}
