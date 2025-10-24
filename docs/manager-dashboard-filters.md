@@ -52,15 +52,26 @@ Accept: application/json
 
 **Query Parameters:**
 - `range` (optional): Time range - `daily`, `weekly`, `monthly`, `yearly` (default: `daily`)
+- `start_date` (optional): Custom start date in `YYYY-MM-DD` format (must be used with `end_date`)
+- `end_date` (optional): Custom end date in `YYYY-MM-DD` format (must be used with `start_date`)
 - `agent_id` (optional): Filter by specific agent ID
 - `complaint_type_id` (optional): Filter by specific complaint type ID
 - `platform` (optional): Filter by specific platform
-- `per_page` (optional): Number of items per page for detailed log (default: 10)
-- `page` (optional): Page number for detailed log (default: 1)
+- `per_page` (optional): Number of items per page for detailed log (default: 10, min: 1, max: 100)
+- `page` (optional): Page number for detailed log (default: 1, min: 1)
 
-**Example Request:**
+**Note:** If both `start_date` and `end_date` are provided, they override the `range` parameter.
+
+**Example Requests:**
 ```
+# Using range filter
 GET /api/manager/dashboard?range=weekly&agent_id=5&platform=WhatsApp
+
+# Using custom date range
+GET /api/manager/dashboard?start_date=2025-01-01&end_date=2025-01-31&agent_id=5
+
+# Using custom date range with all filters
+GET /api/manager/dashboard?start_date=2025-01-01&end_date=2025-01-31&agent_id=5&complaint_type_id=2&platform=Instagram
 ```
 
 **Headers:**
@@ -140,13 +151,23 @@ Accept: application/json
 - **Default:** `daily`
 - **Effect:** Determines the time period for all data calculations
 
+### Custom Date Range Filter
+- **Parameters:** `start_date` and `end_date`
+- **Format:** `YYYY-MM-DD` (e.g., `2025-01-01`)
+- **Requirements:** Both parameters must be provided together
+- **Validation:** `end_date` must be equal to or after `start_date`
+- **Effect:** Overrides the `range` parameter when both custom dates are provided
+- **Default:** None (falls back to `range` parameter)
+
 ## Filter Combinations
 
 Filters can be used individually or in combination:
 
 1. **Single Filter:** `?agent_id=5`
 2. **Two Filters:** `?agent_id=5&platform=WhatsApp`
-3. **All Filters:** `?agent_id=5&complaint_type_id=2&platform=WhatsApp&range=weekly`
+3. **All Filters with Range:** `?agent_id=5&complaint_type_id=2&platform=WhatsApp&range=weekly`
+4. **Custom Date Range:** `?start_date=2025-01-01&end_date=2025-01-31`
+5. **Custom Date Range with Filters:** `?start_date=2025-01-01&end_date=2025-01-31&agent_id=5&complaint_type_id=2&platform=Instagram`
 
 ## Implementation Details
 
@@ -198,7 +219,14 @@ const loadFilterOptions = async () => {
 const loadDashboard = async (filters) => {
     const params = new URLSearchParams();
     
-    if (filters.range) params.append('range', filters.range);
+    // Use custom date range if provided, otherwise use range
+    if (filters.startDate && filters.endDate) {
+        params.append('start_date', filters.startDate);
+        params.append('end_date', filters.endDate);
+    } else if (filters.range) {
+        params.append('range', filters.range);
+    }
+    
     if (filters.agentId) params.append('agent_id', filters.agentId);
     if (filters.complaintTypeId) params.append('complaint_type_id', filters.complaintTypeId);
     if (filters.platform) params.append('platform', filters.platform);
@@ -222,10 +250,20 @@ $filterOptions = Http::withToken($token)
     ->get('/api/manager/dashboard/filter-options')
     ->json()['data'];
 
-// Load dashboard with filters
+// Load dashboard with filters (using range)
 $dashboardData = Http::withToken($token)
     ->get('/api/manager/dashboard', [
         'range' => 'weekly',
+        'agent_id' => 5,
+        'platform' => 'WhatsApp'
+    ])
+    ->json()['data'];
+
+// Load dashboard with custom date range
+$dashboardData = Http::withToken($token)
+    ->get('/api/manager/dashboard', [
+        'start_date' => '2025-01-01',
+        'end_date' => '2025-01-31',
         'agent_id' => 5,
         'platform' => 'WhatsApp'
     ])
@@ -248,6 +286,7 @@ The API includes proper error handling:
 
 - **400 Bad Request:** Invalid filter parameters
 - **401 Unauthorized:** Missing or invalid authentication token
+- **422 Unprocessable Entity:** Validation errors (e.g., invalid date format, end_date before start_date)
 - **500 Internal Server Error:** Server-side errors
 
 All errors return a consistent format:
@@ -259,6 +298,19 @@ All errors return a consistent format:
 }
 ```
 
+### Validation Error Example (422)
+```json
+{
+    "status": "error",
+    "message": "Validation failed for manager dashboard request: The end date must be after or equal to the start date.",
+    "errors": {
+        "end_date": [
+            "The end date must be after or equal to the start date."
+        ]
+    }
+}
+```
+
 ## Performance Considerations
 
 - Filters are applied at the database level for optimal performance
@@ -266,11 +318,19 @@ All errors return a consistent format:
 - Date range queries are optimized using the existing `buildDateRangeQuery` method
 - Filter combinations are handled efficiently with conditional WHERE clauses
 
+## Recent Enhancements
+
+### Custom Date Range Filter (Added)
+- Support for custom start and end dates
+- Proper validation with FormRequest classes
+- Date range overrides the predefined range parameter
+- Both dates must be provided together for validation
+
 ## Future Enhancements
 
 Potential future improvements:
 - Filter persistence across sessions
-- Advanced filtering (date ranges, multiple agents, etc.)
+- Advanced filtering (multiple agents, date presets, etc.)
 - Filter analytics and usage tracking
 - Export filtered data to CSV/Excel
 - Real-time filter updates

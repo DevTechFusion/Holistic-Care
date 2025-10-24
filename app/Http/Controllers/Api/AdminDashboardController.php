@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Dashboard\AdminDashboardRequest;
 use App\Services\AppointmentService;
 use App\Services\DepartmentService;
 use Carbon\Carbon;
@@ -35,14 +36,27 @@ class AdminDashboardController extends Controller
     /**
      * Admin dashboard data with single time range filter.
      * Query param: range = daily|weekly|monthly|yearly (default: daily)
+     * Query param: start_date = custom start date (optional, format: Y-m-d)
+     * Query param: end_date = custom end date (optional, format: Y-m-d)
      * Query param: department_id = filter doctors by department (optional)
+     * Note: If start_date and end_date are provided, they override the range parameter
      */
-    public function index(Request $request)
+    public function index(AdminDashboardRequest $request)
     {
-        $range = $request->query('range', 'daily');
-        $departmentId = $request->query('department_id');
+        $validated = $request->validated();
+        
+        $range = $validated['range'] ?? 'daily';
+        $departmentId = $validated['department_id'] ?? null;
+        $customStartDate = $validated['start_date'] ?? null;
+        $customEndDate = $validated['end_date'] ?? null;
 
-        [$startDate, $endDate] = $this->resolveDateRange($range);
+        // If custom dates are provided, use them; otherwise use range
+        if ($customStartDate && $customEndDate) {
+            $startDate = $customStartDate;
+            $endDate = $customEndDate;
+        } else {
+            [$startDate, $endDate] = $this->resolveDateRange($range);
+        }
 
         // Cards and counters
         $statusCounters = $this->appointmentService->getStatusCountersInRange($startDate, $endDate);
