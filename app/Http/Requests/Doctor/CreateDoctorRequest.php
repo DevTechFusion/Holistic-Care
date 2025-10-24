@@ -22,8 +22,8 @@ class CreateDoctorRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // 'name' => 'required|string|max:255',
-            'name' => 'required|string|max:255|regex:/^[a-zA-Z\s]+$/',
+            'name' => 'required|string|max:255',
+            // 'name' => 'required|string|max:255|regex:/^[a-zA-Z\s]+$/',
             'phone_number' => 'required|string|max:20',
             'department_id' => 'required|exists:departments,id',
             // 'procedures' => 'required|array|min:1',
