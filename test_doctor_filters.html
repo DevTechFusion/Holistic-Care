@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Filters Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        input, select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button.clear {
+            background-color: #f44336;
+        }
+        button.clear:hover {
+            background-color: #da190b;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .info {
+            background-color: #e3f2fd;
+            padding: 10px;
+            border-left: 4px solid #2196F3;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .doctor-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+        .doctor-card h3 {
+            margin: 0 0 10px 0;
+            color: #4CAF50;
+        }
+        .doctor-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .filters-applied {
+            background-color: #fff3cd;
+            padding: 10px;
+            border-left: 4px solid #ffc107;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🩺 Doctor Filters Test</h1>
+        
+        <div class="info">
+            <strong>Instructions:</strong><br>
+            1. Enter your authentication token below<br>
+            2. Use the filters to filter doctors by department and/or procedure<br>
+            3. Click "Fetch Doctors" to get filtered results<br>
+            4. The filters can be used individually or combined
+        </div>
+
+        <div class="filters">
+            <div class="filter-group">
+                <label for="token">Auth Token:</label>
+                <input type="text" id="token" placeholder="Enter your bearer token" />
+            </div>
+            
+            <div class="filter-group">
+                <label for="department_id">Department ID:</label>
+                <input type="number" id="department_id" placeholder="e.g., 1" />
+            </div>
+            
+            <div class="filter-group">
+                <label for="procedure_id">Procedure ID:</label>
+                <input type="number" id="procedure_id" placeholder="e.g., 2" />
+            </div>
+            
+            <div class="filter-group">
+                <label for="per_page">Per Page:</label>
+                <input type="number" id="per_page" placeholder="Default: 15" value="15" min="1" max="100" />
+            </div>
+            
+            <div class="filter-group">
+                <label for="page">Page:</label>
+                <input type="number" id="page" placeholder="Default: 1" value="1" min="1" />
+            </div>
+        </div>
+
+        <div>
+            <button onclick="fetchDoctors()">Fetch Doctors</button>
+            <button class="clear" onclick="clearFilters()">Clear Filters</button>
+        </div>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://127.0.0.1:8000/api/doctors';
+
+        async function fetchDoctors() {
+            const token = document.getElementById('token').value;
+            const departmentId = document.getElementById('department_id').value;
+            const procedureId = document.getElementById('procedure_id').value;
+            const perPage = document.getElementById('per_page').value;
+            const page = document.getElementById('page').value;
+            const resultDiv = document.getElementById('result');
+
+            if (!token) {
+                resultDiv.innerHTML = '<div class="info" style="background-color: #ffebee; border-left-color: #f44336;">Please enter your authentication token</div>';
+                return;
+            }
+
+            // Build query string
+            const queryParams = new URLSearchParams();
+            if (departmentId) queryParams.append('department_id', departmentId);
+            if (procedureId) queryParams.append('procedure_id', procedureId);
+            if (perPage) queryParams.append('per_page', perPage);
+            if (page) queryParams.append('page', page);
+            
+            const queryString = queryParams.toString();
+            const url = `${API_URL}${queryString ? `?${queryString}` : ''}`;
+
+            resultDiv.innerHTML = '<p>Loading...</p>';
+
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayResults(data);
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="info" style="background-color: #ffebee; border-left-color: #f44336;">
+                            <strong>Error ${response.status}:</strong><br>
+                            ${data.message || 'An error occurred'}
+                            ${data.errors ? '<br><br><strong>Validation Errors:</strong><br>' + JSON.stringify(data.errors, null, 2) : ''}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="info" style="background-color: #ffebee; border-left-color: #f44336;">
+                        <strong>Network Error:</strong><br>
+                        ${error.message}<br><br>
+                        Make sure the API server is running at ${API_URL}
+                    </div>
+                `;
+            }
+        }
+
+        function displayResults(data) {
+            const resultDiv = document.getElementById('result');
+            let html = '';
+
+            // Show filters applied
+            if (data.filters_applied && Object.keys(data.filters_applied).length > 0) {
+                html += `
+                    <div class="filters-applied">
+                        <strong>Filters Applied:</strong><br>
+                        ${JSON.stringify(data.filters_applied, null, 2)}
+                    </div>
+                `;
+            }
+
+            // Show pagination info
+            if (data.data.total !== undefined) {
+                html += `
+                    <div class="info">
+                        <strong>Results:</strong> Showing ${data.data.from || 0} to ${data.data.to || 0} of ${data.data.total} doctors (Page ${data.data.current_page} of ${data.data.last_page})
+                    </div>
+                `;
+            }
+
+            // Display doctors
+            if (data.data.data && data.data.data.length > 0) {
+                data.data.data.forEach(doctor => {
+                    html += `
+                        <div class="doctor-card">
+                            <h3>${doctor.name}</h3>
+                            <div class="doctor-info">
+                                <div><strong>ID:</strong> ${doctor.id}</div>
+                                <div><strong>Phone:</strong> ${doctor.phone_number}</div>
+                                <div><strong>Department:</strong> ${doctor.department ? doctor.department.name : 'N/A'}</div>
+                            </div>
+                            ${doctor.procedures && doctor.procedures.length > 0 ? `
+                                <div style="margin-top: 10px;">
+                                    <strong>Procedures:</strong> ${doctor.procedures.map(p => p.name).join(', ')}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+            } else {
+                html += '<div class="info">No doctors found matching the filters</div>';
+            }
+
+            // Show raw JSON
+            html += `
+                <details style="margin-top: 20px;">
+                    <summary style="cursor: pointer; font-weight: bold; padding: 10px; background-color: #f0f0f0; border-radius: 4px;">
+                        View Raw JSON Response
+                    </summary>
+                    <pre style="background-color: #f5f5f5; padding: 15px; border-radius: 4px; margin-top: 10px;">${JSON.stringify(data, null, 2)}</pre>
+                </details>
+            `;
+
+            resultDiv.innerHTML = html;
+        }
+
+        function clearFilters() {
+            document.getElementById('department_id').value = '';
+            document.getElementById('procedure_id').value = '';
+            document.getElementById('per_page').value = '15';
+            document.getElementById('page').value = '1';
+            document.getElementById('result').innerHTML = '';
+        }
+
+        // Save token to localStorage
+        document.getElementById('token').addEventListener('change', function() {
+            if (this.value) {
+                localStorage.setItem('doctor_filter_token', this.value);
+            }
+        });
+
+        // Load token from localStorage
+        window.addEventListener('load', function() {
+            const savedToken = localStorage.getItem('doctor_filter_token');
+            if (savedToken) {
+                document.getElementById('token').value = savedToken;
+            }
+        });
+    </script>
+</body>
+</html>
+

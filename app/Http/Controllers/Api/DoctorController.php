@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Doctor\CreateDoctorRequest;
+use App\Http\Requests\Doctor\IndexDoctorRequest;
 use App\Http\Requests\Doctor\UpdateDoctorRequest;
 use App\Services\DoctorService;
 use Illuminate\Http\Request;
@@ -20,16 +21,23 @@ class DoctorController extends Controller
     /**
      * Display a listing of doctors
      */
-    public function index()
+    public function index(IndexDoctorRequest $request)
     {
         try {
-            $perPage = request()->get('per_page', 15);
-            $page = request()->get('page', 1);
-            $doctors = $this->doctorService->getAllDoctors($perPage, $page);
+            $validated = $request->validated();
+            $perPage = $validated['per_page'] ?? 15;
+            $page = $validated['page'] ?? 1;
+            $filters = [
+                'department_id' => $validated['department_id'] ?? null,
+                'procedure_id' => $validated['procedure_id'] ?? null,
+            ];
+            
+            $doctors = $this->doctorService->getAllDoctors($perPage, $page, $filters);
 
             return response()->json([
                 'status' => 'success',
-                'data' => $doctors
+                'data' => $doctors,
+                'filters_applied' => array_filter($filters)
             ], 200);
         } catch (\Exception $e) {
             return response()->json([

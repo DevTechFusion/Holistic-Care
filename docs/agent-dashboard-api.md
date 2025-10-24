@@ -8,9 +8,13 @@
   - `total_incentive` permission for `AgentDashboard` module (optional, for total_incentive field)
 - **Query Params**:
   - **range**: `daily` | `weekly` | `monthly` | `yearly` (default: `daily`)
+  - **start_date**: Custom start date in `YYYY-MM-DD` format (optional, must be used with `end_date`)
+  - **end_date**: Custom end date in `YYYY-MM-DD` format (optional, must be used with `start_date`)
   - **department_id**: integer (optional, filters today's appointments and leaderboard by department)
-  - **per_page**: integer (default: 20)
-  - **page**: integer (default: 1)
+  - **per_page**: integer (default: 20, min: 1, max: 100)
+  - **page**: integer (default: 1, min: 1)
+  
+- **Note**: If both `start_date` and `end_date` are provided, they override the `range` parameter. Both custom dates must be provided together.
 
 ### Behavior
 - **Range filter**: Applies across the entire dashboard (cards and appointments table).
@@ -106,6 +110,37 @@ curl -s "$BASE/api/agent/dashboard?range=daily&per_page=20" \
 curl -s "$BASE/api/agent/dashboard?range=monthly&department_id=5" \
   -H "Accept: application/json" \
   -H "Authorization: Bearer $TOKEN" | jq .
+
+# Get custom date range dashboard
+curl -s "$BASE/api/agent/dashboard?start_date=2025-01-01&end_date=2025-01-31&per_page=20" \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer $TOKEN" | jq .
+
+# Get custom date range with department filter
+curl -s "$BASE/api/agent/dashboard?start_date=2025-01-01&end_date=2025-01-31&department_id=5" \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer $TOKEN" | jq .
+```
+
+### Validation Rules
+- `range`: Must be one of `daily`, `weekly`, `monthly`, or `yearly`
+- `start_date`: Must be a valid date in `YYYY-MM-DD` format. Required when `end_date` is provided.
+- `end_date`: Must be a valid date in `YYYY-MM-DD` format, equal to or after `start_date`. Required when `start_date` is provided.
+- `department_id`: Must be a valid integer and exist in the departments table
+- `per_page`: Must be an integer between 1 and 100
+- `page`: Must be an integer greater than or equal to 1
+
+### Error Response (422 - Validation Error)
+```json
+{
+  "status": "error",
+  "message": "Validation failed for agent dashboard request: The end date must be after or equal to the start date.",
+  "errors": {
+    "end_date": [
+      "The end date must be after or equal to the start date."
+    ]
+  }
+}
 ```
 
 

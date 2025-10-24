@@ -14,9 +14,27 @@ class DoctorService extends CrudeService
     /**
      * Get all doctors with pagination
      */
-    public function getAllDoctors($perPage = 15, $page = 1, $orderBy = 'name', $format = 'asc')
+    public function getAllDoctors($perPage = 15, $page = 1, $filters = [])
     {
-        return $this->_paginate($perPage, $page, null, ['department', 'procedures']);
+        $query = $this->model->with(['department', 'procedures']);
+
+        // Apply department filter
+        if (!empty($filters['department_id'])) {
+            $query->where('department_id', $filters['department_id']);
+        }
+
+        // Apply procedure filter
+        if (!empty($filters['procedure_id'])) {
+            $query->whereHas('procedures', function ($q) use ($filters) {
+                $q->where('procedures.id', $filters['procedure_id']);
+            });
+        }
+
+        // Order by name
+        $query->orderBy('name', 'asc');
+
+        // Paginate the results
+        return $query->paginate($perPage, ['*'], 'page', $page);
     }
 
     /**

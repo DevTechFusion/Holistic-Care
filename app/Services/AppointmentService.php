@@ -823,7 +823,8 @@ class AppointmentService extends CrudeService
      */
     public function getAgentCounters(int $agentId, string $startDate, string $endDate): array
     {
-        $base = $this->model->byDateRange($startDate, $endDate)->where('appointments.agent_id', $agentId);
+        // $base = $this->model->byDateRange($startDate, $endDate)->where('appointments.agent_id', $agentId);
+        $base = $this->model->byDateRange($startDate, $endDate);
 
         $total = (clone $base)->count();
 
@@ -888,8 +889,8 @@ class AppointmentService extends CrudeService
     public function getAgentTodayLeaderboard(int $agentId, int $limit = 5, ?int $departmentId = null)
     {
         $query = $this->model
-            ->whereDate('date', now()->toDateString())
-            ->where('appointments.agent_id', $agentId);
+            ->whereDate('date', now()->toDateString());
+            // ->where('appointments.agent_id', $agentId);
         
         // Apply department filter if provided
         if ($departmentId) {
@@ -910,8 +911,8 @@ class AppointmentService extends CrudeService
     public function getAgentTodayAppointments(int $agentId, int $limit = 10, ?int $departmentId = null)
     {
         $query = $this->model
-            ->whereDate('date', now()->toDateString())
-            ->where('appointments.agent_id', $agentId);
+            ->whereDate('date', now()->toDateString());
+            // ->where('appointments.agent_id', $agentId);
         
         // Apply department filter if provided
         if ($departmentId) {

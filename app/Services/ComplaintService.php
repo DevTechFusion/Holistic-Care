@@ -144,21 +144,26 @@ class ComplaintService extends CrudeService
      */
     private function buildDateRangeQuery($query, string $startDateTime, string $endDateTime)
     {
-        return $query->where(function ($q) use ($startDateTime, $endDateTime) {
-            $q->where(function ($q1) use ($startDateTime, $endDateTime) {
-                $q1->whereNotNull('occurred_at')
-                   ->whereBetween('occurred_at', [$startDateTime, $endDateTime]);
-            })->orWhere(function ($q2) use ($startDateTime, $endDateTime) {
-                $q2->where(function ($q3) use ($startDateTime, $endDateTime) {
-                    $q3->whereNull('occurred_at')
-                       ->whereBetween('created_at', [$startDateTime, $endDateTime]);
-                })->orWhere(function ($q4) use ($startDateTime, $endDateTime) {
-                    $q4->whereNotNull('occurred_at')
-                       ->whereNotBetween('occurred_at', [$startDateTime, $endDateTime])
-                       ->whereBetween('created_at', [$startDateTime, $endDateTime]);
-                });
-            });
-        });
+        // return $query->where(function ($q) use ($startDateTime, $endDateTime) {
+        //     $q->where(function ($q1) use ($startDateTime, $endDateTime) {
+        //         $q1->whereNotNull('occurred_at')
+        //            ->whereBetween('occurred_at', [$startDateTime, $endDateTime]);
+        //     })->orWhere(function ($q2) use ($startDateTime, $endDateTime) {
+        //         $q2->where(function ($q3) use ($startDateTime, $endDateTime) {
+        //             $q3->whereNull('occurred_at')
+        //                ->whereBetween('created_at', [$startDateTime, $endDateTime]);
+        //         })->orWhere(function ($q4) use ($startDateTime, $endDateTime) {
+        //             $q4->whereNotNull('occurred_at')
+        //                ->whereNotBetween('occurred_at', [$startDateTime, $endDateTime])
+        //                ->whereBetween('created_at', [$startDateTime, $endDateTime]);
+        //         });
+        //     });
+        // });
+
+        // return $query->whereNotNull('occurred_at')
+        //     ->whereBetween('occurred_at', [$startDateTime, $endDateTime]);        
+            
+        return $query->whereBetween('occurred_at', [$startDateTime, $endDateTime]);
     }
 
     /**

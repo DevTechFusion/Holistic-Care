@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Dashboard\AgentDashboardRequest;
 use App\Services\AppointmentService;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AgentDashboardController extends Controller
@@ -41,36 +41,42 @@ class AgentDashboardController extends Controller
      * Agent dashboard with date range and department filters.
      * Query: 
      * - range = daily|weekly|monthly|yearly (default: daily)
+     * - start_date = custom start date (optional, format: Y-m-d)
+     * - end_date = custom end date (optional, format: Y-m-d)
      * - department_id = integer (optional, filters today's appointments and leaderboard by department)
+     * - per_page = integer (optional, default: 20)
+     * - page = integer (optional, default: 1)
+     * 
      * When department_id is not provided, shows data from all departments.
+     * Note: If start_date and end_date are provided, they override the range parameter
      * 
      * Returns combined appointments and complaints data in the format:
      * - procedure_date, complaint_date, pt_name, mr#, platform, procedure, doctor, staff_name, complaint
      */
-    public function index(Request $request)
+    public function index(AgentDashboardRequest $request)
     {
         $agent = Auth::user();
-        $range = $request->query('range', 'daily');
+        $validated = $request->validated();
         
-        // Validate and default to daily if invalid range
-        if (!in_array($range, ['daily', 'weekly', 'monthly', 'yearly'])) {
-            $range = 'daily';
+        // $range = $validated['range'] ?? 'daily';
+        $departmentId = $validated['department_id'] ?? null;
+        $customStartDate = $validated['start_date'] ?? null;
+        $customEndDate = $validated['end_date'] ?? null;
+        
+        // If custom dates are provided, use them; otherwise use range
+        if ($customStartDate && $customEndDate) {
+            $startDate = $customStartDate;
+            $endDate = $customEndDate;
+        } else {
+            // [$startDate, $endDate] = $this->resolveDateRange($range);
         }
-        
-        // Get department filter
-        $departmentId = $request->query('department_id');
-        if ($departmentId) {
-            $departmentId = (int) $departmentId;
-        }
-        
-        [$startDate, $endDate] = $this->resolveDateRange($range);
 
         $counters = $this->appointmentService->getAgentCounters($agent->id, $startDate, $endDate);
         $leaderboardToday = $this->appointmentService->getAgentTodayLeaderboard($agent->id, 5, $departmentId);
         $todayAppointments = $this->appointmentService->getAgentTodayAppointments($agent->id, 10, $departmentId);
 
-        $perPage = (int) $request->query('per_page', 20);
-        $page = (int) $request->query('page', 1);
+        $perPage = $validated['per_page'] ?? 20;
+        $page = $validated['page'] ?? 1;
         $table = $this->appointmentService->getAgentAppointmentsComplaintsTable($agent->id, $startDate, $endDate, $perPage, $page);
 
         $cards = [
@@ -90,7 +96,7 @@ class AgentDashboardController extends Controller
             'status' => 'success',
             'data' => [
                 'filters' => [
-                    'range' => $range,
+                    // 'range' => $range,
                     'start_date' => $startDate,
                     'end_date' => $endDate,
                     'department_id' => $departmentId,

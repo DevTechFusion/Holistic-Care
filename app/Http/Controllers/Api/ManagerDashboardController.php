@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Dashboard\ManagerDashboardRequest;
 use App\Services\AppointmentService;
 use App\Services\ComplaintService;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 
 class ManagerDashboardController extends Controller
 {
@@ -20,19 +20,40 @@ class ManagerDashboardController extends Controller
     }
 
     /**
-     * Manager dashboard data with single time range filter.
+     * Manager dashboard data with time range and filter options.
      * Query param: range = daily|weekly|monthly|yearly (default: daily)
+     * Query param: start_date = custom start date (optional, format: Y-m-d)
+     * Query param: end_date = custom end date (optional, format: Y-m-d)
+     * Query param: agent_id = filter by agent (optional)
+     * Query param: complaint_type_id = filter by complaint type (optional)
+     * Query param: platform = filter by platform (optional)
+     * Query param: per_page = pagination limit (optional, default: 10)
+     * Query param: page = page number (optional, default: 1)
+     * Note: If start_date and end_date are provided, they override the range parameter
      */
-    public function index(Request $request)
+    public function index(ManagerDashboardRequest $request)
     {
-        $range = $request->query('range', 'daily');
+        $validated = $request->validated();
+        
+        $range = $validated['range'] ?? 'daily';
+        $customStartDate = $validated['start_date'] ?? null;
+        $customEndDate = $validated['end_date'] ?? null;
+        
+        // If custom dates are provided, use them; otherwise use range
+        if ($customStartDate && $customEndDate) {
+            // For custom dates, convert to datetime strings with time
+            $startDate = Carbon::parse($customStartDate)->startOfDay()->toDateTimeString();
+            $endDate = Carbon::parse($customEndDate)->endOfDay()->toDateTimeString();
+        } else {
+            [$startDate, $endDate] = $this->resolveDateRange($range);
+        }
 
         // Get filter parameters
-        $agentId = $request->query('agent_id') ? (int) $request->query('agent_id') : null;
-        $complaintTypeId = $request->query('complaint_type_id') ? (int) $request->query('complaint_type_id') : null;
-        $platform = $request->query('platform');
-
-        [$startDate, $endDate] = $this->resolveDateRange($range);
+        $agentId = $validated['agent_id'] ?? null;
+        $complaintTypeId = $validated['complaint_type_id'] ?? null;
+        $platform = $validated['platform'] ?? null;
+        $perPage = $validated['per_page'] ?? 10;
+        $page = $validated['page'] ?? 1;
 
         // Use filtered methods if any filters are applied
         if ($agentId || $complaintTypeId || $platform) {
@@ -41,7 +62,7 @@ class ManagerDashboardController extends Controller
             $topAgent = $this->complaintService->topAgentByMistakesWithFilters($startDate, $endDate, $agentId, $complaintTypeId, $platform);
             $newClients = $this->appointmentService->countNewClientsInRange($startDate, $endDate);
 
-            $log = $this->complaintService->getDetailedLogWithFilters($startDate, $endDate, (int) $request->get('per_page', 10), (int) $request->get('page', 1), $agentId, $complaintTypeId, $platform);
+            $log = $this->complaintService->getDetailedLogWithFilters($startDate, $endDate, $perPage, $page, $agentId, $complaintTypeId, $platform);
             $agentCounts = $this->complaintService->mistakeCountByAgentWithTypeNamesWithFilters($startDate, $endDate, $agentId, $complaintTypeId, $platform);
             $mistakeTypePercentages = $this->complaintService->getMistakeTypePercentagesWithFilters($startDate, $endDate, $agentId, $complaintTypeId, $platform);
         } else {
@@ -50,7 +71,7 @@ class ManagerDashboardController extends Controller
             $topAgent = $this->complaintService->topAgentByMistakes($startDate, $endDate);
             $newClients = $this->appointmentService->countNewClientsInRange($startDate, $endDate);
 
-            $log = $this->complaintService->getDetailedLog($startDate, $endDate, (int) $request->get('per_page', 10), (int) $request->get('page', 1));
+            $log = $this->complaintService->getDetailedLog($startDate, $endDate, $perPage, $page);
             $agentCounts = $this->complaintService->mistakeCountByAgentWithTypeNames($startDate, $endDate);
             $mistakeTypePercentages = $this->complaintService->getMistakeTypePercentages($startDate, $endDate);
         }

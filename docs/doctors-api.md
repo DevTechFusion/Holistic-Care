@@ -44,6 +44,30 @@ GET /api/doctors
 Authorization: Bearer {token}
 ```
 
+**Query Parameters (all optional):**
+- `department_id` (integer): Filter doctors by department ID
+- `procedure_id` (integer): Filter doctors by procedure ID
+- `per_page` (integer): Number of results per page (default: 15, max: 100)
+- `page` (integer): Page number (default: 1)
+
+**Example Requests:**
+```http
+# Get all doctors (paginated)
+GET /api/doctors
+
+# Filter by department
+GET /api/doctors?department_id=1
+
+# Filter by procedure
+GET /api/doctors?procedure_id=2
+
+# Filter by both department and procedure
+GET /api/doctors?department_id=1&procedure_id=2
+
+# With pagination
+GET /api/doctors?department_id=1&per_page=20&page=2
+```
+
 **Response:**
 ```json
 {
@@ -107,9 +131,15 @@ Authorization: Bearer {token}
         }
       ]
     }
-  ]
+  ],
+  "filters_applied": {
+    "department_id": 1,
+    "procedure_id": 2
+  }
 }
 ```
+
+**Note:** The `filters_applied` field in the response shows which filters were actually applied to the query. It will only contain filters that have values.
 
 ### Create Doctor
 ```http
@@ -319,6 +349,22 @@ Authorization: Bearer {token}
 ## Error Responses
 
 ### Validation Errors (422)
+
+**For GET /api/doctors (Index) - Filter Validation:**
+```json
+{
+  "status": "error",
+  "message": "Validation failed for doctor index request: The selected department does not exist.",
+  "errors": {
+    "department_id": ["The selected department does not exist."],
+    "procedure_id": ["The selected procedure does not exist."],
+    "per_page": ["The per page value must be at least 1.", "The per page value may not be greater than 100."],
+    "page": ["The page value must be at least 1."]
+  }
+}
+```
+
+**For POST/PUT Requests - Create/Update Validation:**
 ```json
 {
   "status": "error",
@@ -402,11 +448,21 @@ createDoctor({
 
 ### JavaScript - Get All Doctors
 ```javascript
-const getDoctors = async () => {
+const getDoctors = async (filters = {}) => {
   try {
     const token = localStorage.getItem('auth_token');
     
-    const response = await fetch('http://127.0.0.1:8000/api/doctors', {
+    // Build query string from filters
+    const queryParams = new URLSearchParams();
+    if (filters.department_id) queryParams.append('department_id', filters.department_id);
+    if (filters.procedure_id) queryParams.append('procedure_id', filters.procedure_id);
+    if (filters.per_page) queryParams.append('per_page', filters.per_page);
+    if (filters.page) queryParams.append('page', filters.page);
+    
+    const queryString = queryParams.toString();
+    const url = `http://127.0.0.1:8000/api/doctors${queryString ? `?${queryString}` : ''}`;
+    
+    const response = await fetch(url, {
       headers: {
         'Accept': 'application/json',
         'Authorization': `Bearer ${token}`
@@ -416,6 +472,7 @@ const getDoctors = async () => {
     const data = await response.json();
     
     if (response.ok) {
+      console.log('Filters applied:', data.filters_applied);
       return data.data;
     } else {
       throw new Error(data.message);
@@ -425,6 +482,22 @@ const getDoctors = async () => {
     throw error;
   }
 };
+
+// Usage examples
+// Get all doctors
+getDoctors();
+
+// Filter by department
+getDoctors({ department_id: 1 });
+
+// Filter by procedure
+getDoctors({ procedure_id: 2 });
+
+// Filter by both department and procedure
+getDoctors({ department_id: 1, procedure_id: 2 });
+
+// With pagination
+getDoctors({ department_id: 1, per_page: 20, page: 2 });
 ```
 
 ### JavaScript - Get Doctors by Department
