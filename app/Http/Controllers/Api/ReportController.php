@@ -85,6 +85,9 @@ class ReportController extends Controller
             $orderBy = $request->get('order_by', 'generated_at');
             $orderDirection = $request->get('order_direction', 'desc');
 
+            // Calculate metrics based on filters
+            $metrics = $this->reportService->calculateMetrics($filters);
+
             // Use filtered reports if any filters are provided, otherwise use regular method
             if (!empty($filters)) {
                 $reports = $this->reportService->getFilteredReports(
@@ -94,6 +97,7 @@ class ReportController extends Controller
                 return response()->json([
                     'status' => 'success',
                     'data' => $reports,
+                    'metrics' => $metrics,
                     'filters_applied' => $filters
                 ], 200);
             } else {
@@ -102,7 +106,8 @@ class ReportController extends Controller
                 
                 return response()->json([
                     'status' => 'success',
-                    'data' => $reports
+                    'data' => $reports,
+                    'metrics' => $metrics
                 ], 200);
             }
         } catch (\Exception $e) {
