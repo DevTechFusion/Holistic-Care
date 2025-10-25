@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Reports with Metrics</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .clear-btn {
+            background: #6c757d;
+        }
+        .clear-btn:hover {
+            background: #545b62;
+        }
+        #results {
+            margin-top: 20px;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 8px;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .metric-card:nth-child(2) {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .metric-card:nth-child(3) {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        .metric-card:nth-child(4) {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        .metric-card:nth-child(5) {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+        .metric-card:nth-child(6) {
+            background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+        }
+        .metric-label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+        .metric-value {
+            font-size: 28px;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #333;
+        }
+        tr:hover {
+            background: #f8f9fa;
+        }
+        .status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            max-height: 400px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Reports API with New Metrics</h1>
+        <p>This test demonstrates the new metrics added to the reports index endpoint.</p>
+        
+        <h2>Authentication</h2>
+        <div class="form-group">
+            <label for="token">Bearer Token:</label>
+            <input type="text" id="token" placeholder="Enter your authentication token">
+        </div>
+
+        <h2>Filter Options</h2>
+        <div class="filter-grid">
+            <div class="form-group">
+                <label for="start_date">Start Date:</label>
+                <input type="date" id="start_date">
+            </div>
+            <div class="form-group">
+                <label for="end_date">End Date:</label>
+                <input type="date" id="end_date">
+            </div>
+            <div class="form-group">
+                <label for="doctor_id">Doctor ID:</label>
+                <input type="number" id="doctor_id" placeholder="Optional">
+            </div>
+            <div class="form-group">
+                <label for="department_id">Department ID:</label>
+                <input type="number" id="department_id" placeholder="Optional">
+            </div>
+            <div class="form-group">
+                <label for="agent_id">Agent ID:</label>
+                <input type="number" id="agent_id" placeholder="Optional">
+            </div>
+            <div class="form-group">
+                <label for="status_id">Status ID:</label>
+                <input type="number" id="status_id" placeholder="Optional">
+            </div>
+        </div>
+
+        <div style="margin-top: 15px;">
+            <button onclick="fetchReports()">Fetch Reports with Metrics</button>
+            <button class="clear-btn" onclick="clearFilters()">Clear Filters</button>
+        </div>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        // Set today's date as default
+        document.getElementById('start_date').valueAsDate = new Date();
+        document.getElementById('end_date').valueAsDate = new Date();
+
+        function clearFilters() {
+            document.getElementById('start_date').value = '';
+            document.getElementById('end_date').value = '';
+            document.getElementById('doctor_id').value = '';
+            document.getElementById('department_id').value = '';
+            document.getElementById('agent_id').value = '';
+            document.getElementById('status_id').value = '';
+            document.getElementById('results').innerHTML = '';
+        }
+
+        async function fetchReports() {
+            const token = document.getElementById('token').value.trim();
+            if (!token) {
+                alert('Please enter your authentication token');
+                return;
+            }
+
+            // Build filter parameters
+            const params = new URLSearchParams();
+            
+            const startDate = document.getElementById('start_date').value;
+            const endDate = document.getElementById('end_date').value;
+            const doctorId = document.getElementById('doctor_id').value;
+            const departmentId = document.getElementById('department_id').value;
+            const agentId = document.getElementById('agent_id').value;
+            const statusId = document.getElementById('status_id').value;
+
+            if (startDate) params.append('start_date', startDate);
+            if (endDate) params.append('end_date', endDate);
+            if (doctorId) params.append('doctor_id', doctorId);
+            if (departmentId) params.append('department_id', departmentId);
+            if (agentId) params.append('agent_id', agentId);
+            if (statusId) params.append('status_id', statusId);
+
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="container"><p>Loading...</p></div>';
+
+            try {
+                const response = await fetch(`http://localhost:8000/api/reports?${params.toString()}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                displayResults(data, response.status);
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="container">
+                        <h2 class="error">Error</h2>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function displayResults(data, status) {
+            const resultsDiv = document.getElementById('results');
+            let html = '<div class="container">';
+            
+            html += `<h2 class="${data.status === 'success' ? 'success' : 'error'}">Response Status: ${status}</h2>`;
+            
+            if (data.status === 'success') {
+                // Display metrics
+                if (data.metrics) {
+                    html += '<h3>📊 Metrics Dashboard</h3>';
+                    html += '<div class="metrics-grid">';
+                    html += `
+                        <div class="metric-card">
+                            <div class="metric-label">Total Booking</div>
+                            <div class="metric-value">${data.metrics.total_booking}</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Arrived Ratio</div>
+                            <div class="metric-value">${data.metrics.arrived_ratio}</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Booked Revenue</div>
+                            <div class="metric-value">$${data.metrics.booked_revenue}</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Arrived Revenue</div>
+                            <div class="metric-value">$${data.metrics.arrived_revenue}</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Unique Agents</div>
+                            <div class="metric-value">${data.metrics.total_agent_booking}</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Unique Doctors</div>
+                            <div class="metric-value">${data.metrics.total_doctor_booking}</div>
+                        </div>
+                    `;
+                    html += '</div>';
+                }
+
+                // Display filters if applied
+                if (data.filters_applied) {
+                    html += '<h3>🔍 Applied Filters</h3>';
+                    html += '<pre>' + JSON.stringify(data.filters_applied, null, 2) + '</pre>';
+                }
+
+                // Display reports summary
+                if (data.data) {
+                    html += '<h3>📋 Reports Summary</h3>';
+                    html += `<p><strong>Total Reports:</strong> ${data.data.total || 0}</p>`;
+                    html += `<p><strong>Per Page:</strong> ${data.data.per_page}</p>`;
+                    html += `<p><strong>Current Page:</strong> ${data.data.current_page}</p>`;
+                    
+                    if (data.data.data && data.data.data.length > 0) {
+                        html += '<h3>Reports Data (First 5)</h3>';
+                        html += '<table><thead><tr>';
+                        html += '<th>ID</th><th>Type</th><th>Patient</th><th>Amount</th><th>Status</th><th>Doctor</th>';
+                        html += '</tr></thead><tbody>';
+                        
+                        data.data.data.slice(0, 5).forEach(report => {
+                            html += '<tr>';
+                            html += `<td>${report.id}</td>`;
+                            html += `<td>${report.report_type || 'N/A'}</td>`;
+                            html += `<td>${report.appointment?.patient_name || 'N/A'}</td>`;
+                            html += `<td>$${report.amount || '0.00'}</td>`;
+                            html += `<td>${report.status?.name || 'N/A'}</td>`;
+                            html += `<td>${report.appointment?.doctor?.name || 'N/A'}</td>`;
+                            html += '</tr>';
+                        });
+                        
+                        html += '</tbody></table>';
+                    }
+                }
+            } else {
+                html += `<p class="error">Error: ${data.message}</p>`;
+                if (data.error) {
+                    html += `<pre>${data.error}</pre>`;
+                }
+            }
+
+            // Display full JSON response
+            html += '<h3>Full JSON Response</h3>';
+            html += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            
+            html += '</div>';
+            resultsDiv.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
+

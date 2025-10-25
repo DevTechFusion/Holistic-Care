@@ -521,6 +521,122 @@ class ReportService extends CrudeService
     }
 
     /**
+     * Calculate metrics based on filters
+     */
+    public function calculateMetrics(array $filters = [])
+    {
+        // Build the base query for appointments
+        $appointmentQuery = Appointment::query();
+
+        // Apply the same filters as in getFilteredReports but on appointments
+        if (!empty($filters['start_date']) || !empty($filters['end_date'])) {
+            if (!empty($filters['start_date']) && !empty($filters['end_date'])) {
+                $appointmentQuery->whereBetween('date', [$filters['start_date'], $filters['end_date']]);
+            } elseif (!empty($filters['start_date'])) {
+                $appointmentQuery->where('date', '>=', $filters['start_date']);
+            } elseif (!empty($filters['end_date'])) {
+                $appointmentQuery->where('date', '<=', $filters['end_date']);
+            }
+        }
+
+        if (!empty($filters['doctor_id'])) {
+            $appointmentQuery->where('doctor_id', $filters['doctor_id']);
+        }
+
+        if (!empty($filters['department_id'])) {
+            $appointmentQuery->where('department_id', $filters['department_id']);
+        }
+
+        if (!empty($filters['procedure_id'])) {
+            $appointmentQuery->whereHas('procedures', function($q) use ($filters) {
+                $q->where('procedures.id', $filters['procedure_id']);
+            });
+        }
+
+        if (!empty($filters['category_id'])) {
+            $appointmentQuery->where('category_id', $filters['category_id']);
+        }
+
+        if (!empty($filters['source_id'])) {
+            $appointmentQuery->where('source_id', $filters['source_id']);
+        }
+
+        if (!empty($filters['agent_id'])) {
+            $appointmentQuery->where('agent_id', $filters['agent_id']);
+        }
+
+        if (!empty($filters['status_id'])) {
+            $appointmentQuery->where('status_id', $filters['status_id']);
+        }
+
+        if (!empty($filters['patient_name'])) {
+            $appointmentQuery->where('patient_name', 'like', '%' . $filters['patient_name'] . '%');
+        }
+
+        if (!empty($filters['contact_number'])) {
+            $appointmentQuery->where('contact_number', 'like', '%' . $filters['contact_number'] . '%');
+        }
+
+        if (!empty($filters['mr_number'])) {
+            $appointmentQuery->where('mr_number', 'like', '%' . $filters['mr_number'] . '%');
+        }
+
+        if (!empty($filters['start_time']) || !empty($filters['end_time'])) {
+            if (!empty($filters['start_time']) && !empty($filters['end_time'])) {
+                $appointmentQuery->whereBetween('start_time', [$filters['start_time'], $filters['end_time']]);
+            } elseif (!empty($filters['start_time'])) {
+                $appointmentQuery->where('start_time', '>=', $filters['start_time']);
+            } elseif (!empty($filters['end_time'])) {
+                $appointmentQuery->where('start_time', '<=', $filters['end_time']);
+            }
+        }
+
+        if (!empty($filters['duration'])) {
+            $appointmentQuery->where('duration', $filters['duration']);
+        }
+
+        // Load status relationship for checking "Arrived" status
+        $appointments = $appointmentQuery->with('status')->get();
+
+        // Calculate metrics
+        $totalBooking = $appointments->count();
+        
+        $arrivedAppointments = $appointments->filter(function($appointment) {
+            return $appointment->status && $appointment->status->name === 'Arrived';
+        });
+        
+        $arrivedCount = $arrivedAppointments->count();
+        $arrivedRatio = $totalBooking > 0 ? round(($arrivedCount / $totalBooking) * 100, 2) : 0;
+        
+        $bookedRevenue = $appointments->sum(function($appointment) {
+            return (float) ($appointment->amount ?? 0);
+        });
+        
+        $arrivedRevenue = $arrivedAppointments->sum(function($appointment) {
+            return (float) ($appointment->amount ?? 0);
+        });
+        
+        // Total unique agents (count of unique agent_id values)
+        $totalAgentBooking = $appointments->filter(function($appointment) {
+            return !empty($appointment->agent_id);
+        })->pluck('agent_id')->unique()->count();
+        
+        // Total unique doctors (count of unique doctor_id values)
+        $totalDoctorBooking = $appointments->filter(function($appointment) {
+            return !empty($appointment->doctor_id);
+        })->pluck('doctor_id')->unique()->count();
+
+        return [
+            'total_booking' => $totalBooking,
+            'arrived_ratio' => $arrivedRatio . '%',
+            'booked_revenue' => number_format($bookedRevenue, 2),
+            'arrived_revenue' => number_format($arrivedRevenue, 2),
+            'total_agent_booking' => $totalAgentBooking,
+            'total_doctor_booking' => $totalDoctorBooking,
+        ];
+    }
+
+    /**
      * Export reports to CSV format
      */
     public function exportToCsv($range = 'daily', array $filters = [], $orderBy = 'generated_at', $orderDirection = 'desc')
