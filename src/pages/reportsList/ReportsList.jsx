@@ -1,5 +1,11 @@
 import { useEffect, useState, useCallback } from "react";
+
 import {
+  Grid,
+  Card,
+  CardActions,
+  CardContent,
+  CardMedia,
   Box,
   Typography,
   CircularProgress,
@@ -48,6 +54,7 @@ const paymentModes = [
 
 const ReportsPage = () => {
   const [reports, setReports] = useState([]);
+  console.log("reports::", reports);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [page, setPage] = useState(0);
@@ -80,7 +87,9 @@ const ReportsPage = () => {
   const [statuses, setStatuses] = useState([]);
   const [remarks1, setRemarks1] = useState([]);
   const [remarks2, setRemarks2] = useState([]);
+  const [metrics, setMetrics] = useState([]);
   const [listsLoading, setListsLoading] = useState(false);
+  console.log("metrics", metrics);
 
   const fetchFilterLists = useCallback(async () => {
     setListsLoading(true);
@@ -163,6 +172,7 @@ const ReportsPage = () => {
 
       setReports(res?.data?.data || []);
       setTotal(res?.data?.total || 0);
+      setMetrics(res?.metrics || {});
     } catch (err) {
       console.error("Failed to fetch reports", err);
       enqueueSnackbar?.("Failed to fetch reports", { variant: "error" });
@@ -505,6 +515,232 @@ const ReportsPage = () => {
           </Box>
         ) : (
           <>
+            <Grid container spacing={2} paddingTop={2} paddingBottom={2} paddingLeft={2} paddingRight={2}>
+              <Grid size={{ xs: 12, sm: 3, md: 3, lg: 3 }} >
+                <Card fullWidth
+                  sx={{
+                    maxWidth: 345,
+                    backgroundColor: "#F7F7F7",
+                    boxShadow: 3,
+                    borderRadius: "12px",
+                    width: "100%",
+                  }}
+                >
+                  <CardContent >
+                    <Typography
+                      gutterBottom
+                      variant="h6"
+                      component="div"
+                      sx={{
+                        fontFamily: '"Inter", sans-serif',
+                        textAlign: "center",
+                      }}
+                    >
+                      Arrived Ratio
+                    </Typography>
+                    <Typography
+                      sx={{
+                        textAlign: "center",
+                        color: "#23C7B7",
+                        fontFamily: '"Inter", sans-serif',
+                        textAlign: "center",
+                      }}
+                      gutterBottom
+                      variant="h6"
+                      component="div"
+                    >
+                      {metrics.arrived_ratio}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 3, md: 3, lg: 3 }} >
+                <Card
+                  sx={{
+                    maxWidth: 345,
+                    backgroundColor: "#F7F7F7",
+                    boxShadow: 3,
+                    borderRadius: "12px",
+                  }}
+                >
+                  <CardContent>
+                    <Typography
+                      gutterBottom
+                      variant="h6"
+                      component="div"
+                      sx={{
+                        fontFamily: '"Inter", sans-serif',
+                        textAlign: "center",
+                      }}
+                    >
+                      Arrived Revenue
+                    </Typography>
+                    <Typography
+                      sx={{
+                        textAlign: "center",
+                        color: "#23C7B7",
+                        fontFamily: '"Inter", sans-serif',
+                        textAlign: "center",
+                      }}
+                      gutterBottom
+                      variant="h6"
+                      component="div"
+                    >
+                      {metrics.arrived_revenue}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 3, md: 3, lg: 3 }} >
+                <Card
+                  sx={{
+                    maxWidth: 345,
+                    backgroundColor: "#F7F7F7",
+                    boxShadow: 3,
+                    borderRadius: "12px",
+                  }}
+                >
+                  <CardContent>
+                    <Typography
+                      gutterBottom
+                      variant="h6"
+                      component="div"
+                      sx={{
+                        fontFamily: '"Inter", sans-serif',
+                        textAlign: "center",
+                      }}
+                    >
+                      Booked Revenue
+                    </Typography>
+                    <Typography
+                      sx={{
+                        textAlign: "center",
+                        color: "#23C7B7",
+                        fontFamily: '"Inter", sans-serif',
+                        textAlign: "center",
+                      }}
+                      gutterBottom
+                      variant="h6"
+                      component="div"
+                    >
+                      {metrics.booked_revenue}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 3, md: 3, lg: 3 }} >
+                <Card
+                  sx={{
+                    maxWidth: 345,
+                    backgroundColor: "#F7F7F7",
+                    boxShadow: 3,
+                    borderRadius: "12px",
+                  }}
+                >
+                  <CardContent>
+                    <Typography
+                      gutterBottom
+                      variant="h6"
+                      component="div"
+                      sx={{
+                        fontFamily: '"Inter", sans-serif',
+                        textAlign: "center",
+                      }}
+                    >
+                      Total Agent Booking
+                    </Typography>
+                    <Typography
+                      sx={{
+                        textAlign: "center",
+                        color: "#23C7B7",
+                        fontFamily: '"Inter", sans-serif',
+                        textAlign: "center",
+                      }}
+                      gutterBottom
+                      variant="h6"
+                      component="div"
+                    >
+                      {metrics.total_agent_booking}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 3, md: 3, lg: 3 }} >
+                <Card
+                  sx={{
+                    maxWidth: 345,
+                    backgroundColor: "#F7F7F7",
+                    boxShadow: 3,
+                    borderRadius: "12px",
+                  }}
+                >
+                  <CardContent>
+                    <Typography
+                      gutterBottom
+                      variant="h6"
+                      component="div"
+                      sx={{
+                        fontFamily: '"Inter", sans-serif',
+                        textAlign: "center",
+                      }}
+                    >
+                      Total Booking
+                    </Typography>
+                    <Typography
+                      sx={{
+                        textAlign: "center",
+                        color: "#23C7B7",
+                        fontFamily: '"Inter", sans-serif',
+                        textAlign: "center",
+                      }}
+                      gutterBottom
+                      variant="h6"
+                      component="div"
+                    >
+                      {metrics.total_booking}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 3, md: 3, lg: 3 }} >
+                <Card
+                  sx={{
+                    maxWidth: 345,
+                    backgroundColor: "#F7F7F7",
+                    boxShadow: 3,
+                    borderRadius: "12px",
+                  }}
+                >
+                  <CardContent>
+                    <Typography
+                      gutterBottom
+                      variant="h6"
+                      component="div"
+                      sx={{
+                        fontFamily: '"Inter", sans-serif',
+                        textAlign: "center",
+                      }}
+                    >
+                      Total Doctor Booking
+                    </Typography>
+                    <Typography
+                      sx={{
+                        textAlign: "center",
+                        color: "#23C7B7",
+                        fontFamily: '"Inter", sans-serif',
+                        textAlign: "center",
+                      }}
+                      gutterBottom
+                      variant="h6"
+                      component="div"
+                    >
+                      {metrics.total_doctor_booking}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+
             <TableContainer sx={{ maxHeight: { xs: 500, sm: 600, md: 700 } }}>
               <Table stickyHeader sx={{ minWidth: { xs: 900, sm: "auto" } }}>
                 <TableHead>
