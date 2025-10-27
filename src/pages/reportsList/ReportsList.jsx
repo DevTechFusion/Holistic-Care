@@ -520,18 +520,20 @@ const ReportsPage = () => {
           </Box>
         ) : (
           <>
-            <Grid container spacing={2} paddingTop={2} paddingBottom={2} paddingLeft={2} paddingRight={2}>
-              <Grid size={{ xs: 12, sm: 3, md: 3, lg: 3 }} >
-                <Card fullWidth
+            <Grid container spacing={{ xs: 2, sm: 2, md: 3 }} sx={{ p: { xs: 2, sm: 2, md: 3 } }}>
+              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }}>
+                <Card
                   sx={{
-                    maxWidth: 345,
                     backgroundColor: "#F7F7F7",
                     boxShadow: 3,
                     borderRadius: "12px",
                     width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
                   }}
                 >
-                  <CardContent >
+                  <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "center", p: { xs: 2, sm: 2.5, md: 3 } }}>
                     <Typography
                       gutterBottom
                       variant="h6"
@@ -539,6 +541,7 @@ const ReportsPage = () => {
                       sx={{
                         fontFamily: '"Inter", sans-serif',
                         textAlign: "center",
+                        fontSize: { xs: "1rem", sm: "1.1rem", md: "1.25rem" },
                       }}
                     >
                       Arrived Ratio
@@ -548,10 +551,10 @@ const ReportsPage = () => {
                         textAlign: "center",
                         color: "#23C7B7",
                         fontFamily: '"Inter", sans-serif',
-                        textAlign: "center",
+                        fontSize: { xs: "1.25rem", sm: "1.4rem", md: "1.5rem" },
+                        fontWeight: 600,
                       }}
-                      gutterBottom
-                      variant="h6"
+                      variant="h5"
                       component="div"
                     >
                       {metrics.arrived_ratio}
@@ -559,16 +562,19 @@ const ReportsPage = () => {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid size={{ xs: 12, sm: 3, md: 3, lg: 3 }} >
+              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }}>
                 <Card
                   sx={{
-                    maxWidth: 345,
                     backgroundColor: "#F7F7F7",
                     boxShadow: 3,
                     borderRadius: "12px",
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
                   }}
                 >
-                  <CardContent>
+                  <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "center", p: { xs: 2, sm: 2.5, md: 3 } }}>
                     <Typography
                       gutterBottom
                       variant="h6"
@@ -576,6 +582,7 @@ const ReportsPage = () => {
                       sx={{
                         fontFamily: '"Inter", sans-serif',
                         textAlign: "center",
+                        fontSize: { xs: "1rem", sm: "1.1rem", md: "1.25rem" },
                       }}
                     >
                       Arrived Revenue
@@ -585,10 +592,10 @@ const ReportsPage = () => {
                         textAlign: "center",
                         color: "#23C7B7",
                         fontFamily: '"Inter", sans-serif',
-                        textAlign: "center",
+                        fontSize: { xs: "1.25rem", sm: "1.4rem", md: "1.5rem" },
+                        fontWeight: 600,
                       }}
-                      gutterBottom
-                      variant="h6"
+                      variant="h5"
                       component="div"
                     >
                       {metrics.arrived_revenue}
@@ -596,16 +603,19 @@ const ReportsPage = () => {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid size={{ xs: 12, sm: 3, md: 3, lg: 3 }} >
+              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }}>
                 <Card
                   sx={{
-                    maxWidth: 345,
                     backgroundColor: "#F7F7F7",
                     boxShadow: 3,
                     borderRadius: "12px",
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
                   }}
                 >
-                  <CardContent>
+                  <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "center", p: { xs: 2, sm: 2.5, md: 3 } }}>
                     <Typography
                       gutterBottom
                       variant="h6"
@@ -613,6 +623,7 @@ const ReportsPage = () => {
                       sx={{
                         fontFamily: '"Inter", sans-serif',
                         textAlign: "center",
+                        fontSize: { xs: "1rem", sm: "1.1rem", md: "1.25rem" },
                       }}
                     >
                       Booked Revenue
@@ -622,10 +633,10 @@ const ReportsPage = () => {
                         textAlign: "center",
                         color: "#23C7B7",
                         fontFamily: '"Inter", sans-serif',
-                        textAlign: "center",
+                        fontSize: { xs: "1.25rem", sm: "1.4rem", md: "1.5rem" },
+                        fontWeight: 600,
                       }}
-                      gutterBottom
-                      variant="h6"
+                      variant="h5"
                       component="div"
                     >
                       {metrics.booked_revenue}
@@ -633,16 +644,19 @@ const ReportsPage = () => {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid size={{ xs: 12, sm: 3, md: 3, lg: 3 }} >
+              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }}>
                 <Card
                   sx={{
-                    maxWidth: 345,
                     backgroundColor: "#F7F7F7",
                     boxShadow: 3,
                     borderRadius: "12px",
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
                   }}
                 >
-                  <CardContent>
+                  <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "center", p: { xs: 2, sm: 2.5, md: 3 } }}>
                     <Typography
                       gutterBottom
                       variant="h6"
@@ -650,6 +664,7 @@ const ReportsPage = () => {
                       sx={{
                         fontFamily: '"Inter", sans-serif',
                         textAlign: "center",
+                        fontSize: { xs: "1rem", sm: "1.1rem", md: "1.25rem" },
                       }}
                     >
                       Total Agent Booking
@@ -659,10 +674,10 @@ const ReportsPage = () => {
                         textAlign: "center",
                         color: "#23C7B7",
                         fontFamily: '"Inter", sans-serif',
-                        textAlign: "center",
+                        fontSize: { xs: "1.25rem", sm: "1.4rem", md: "1.5rem" },
+                        fontWeight: 600,
                       }}
-                      gutterBottom
-                      variant="h6"
+                      variant="h5"
                       component="div"
                     >
                       {metrics.total_agent_booking}
@@ -670,16 +685,19 @@ const ReportsPage = () => {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid size={{ xs: 12, sm: 3, md: 3, lg: 3 }} >
+              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }}>
                 <Card
                   sx={{
-                    maxWidth: 345,
                     backgroundColor: "#F7F7F7",
                     boxShadow: 3,
                     borderRadius: "12px",
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
                   }}
                 >
-                  <CardContent>
+                  <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "center", p: { xs: 2, sm: 2.5, md: 3 } }}>
                     <Typography
                       gutterBottom
                       variant="h6"
@@ -687,6 +705,7 @@ const ReportsPage = () => {
                       sx={{
                         fontFamily: '"Inter", sans-serif',
                         textAlign: "center",
+                        fontSize: { xs: "1rem", sm: "1.1rem", md: "1.25rem" },
                       }}
                     >
                       Total Booking
@@ -696,10 +715,10 @@ const ReportsPage = () => {
                         textAlign: "center",
                         color: "#23C7B7",
                         fontFamily: '"Inter", sans-serif',
-                        textAlign: "center",
+                        fontSize: { xs: "1.25rem", sm: "1.4rem", md: "1.5rem" },
+                        fontWeight: 600,
                       }}
-                      gutterBottom
-                      variant="h6"
+                      variant="h5"
                       component="div"
                     >
                       {metrics.total_booking}
@@ -707,16 +726,19 @@ const ReportsPage = () => {
                   </CardContent>
                 </Card>
               </Grid>
-              <Grid size={{ xs: 12, sm: 3, md: 3, lg: 3 }} >
+              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }}>
                 <Card
                   sx={{
-                    maxWidth: 345,
                     backgroundColor: "#F7F7F7",
                     boxShadow: 3,
                     borderRadius: "12px",
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
                   }}
                 >
-                  <CardContent>
+                  <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "center", p: { xs: 2, sm: 2.5, md: 3 } }}>
                     <Typography
                       gutterBottom
                       variant="h6"
@@ -724,6 +746,7 @@ const ReportsPage = () => {
                       sx={{
                         fontFamily: '"Inter", sans-serif',
                         textAlign: "center",
+                        fontSize: { xs: "1rem", sm: "1.1rem", md: "1.25rem" },
                       }}
                     >
                       Total Doctor Booking
@@ -733,10 +756,10 @@ const ReportsPage = () => {
                         textAlign: "center",
                         color: "#23C7B7",
                         fontFamily: '"Inter", sans-serif',
-                        textAlign: "center",
+                        fontSize: { xs: "1.25rem", sm: "1.4rem", md: "1.5rem" },
+                        fontWeight: 600,
                       }}
-                      gutterBottom
-                      variant="h6"
+                      variant="h5"
                       component="div"
                     >
                       {metrics.total_doctor_booking}

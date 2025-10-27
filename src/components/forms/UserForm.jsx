@@ -104,11 +104,9 @@ const UserForm = ({ open, onClose, isEditing = false, data = {} }) => {
       if (error) newErrors[field] = error;
     });
 
-    // Role validation - always required for creation
-    if (!isEditing) {
-      const roleError = validateField('role', formData.role);
-      if (roleError) newErrors.role = roleError;
-    }
+    // Role validation - always required
+    const roleError = validateField('role', formData.role);
+    if (roleError) newErrors.role = roleError;
 
     return newErrors;
   }, [formData, isEditing, validateField]);
@@ -348,58 +346,35 @@ const UserForm = ({ open, onClose, isEditing = false, data = {} }) => {
               Role Assignment
             </Typography>
             
-            {/* Show role dropdown when creating */}
-            {!isEditing && (
-              <FormControl fullWidth error={!!errors.role} disabled={loadingRoles}>
-                <InputLabel>Role *</InputLabel>
-                <Select
-                  value={formData.role}
-                  onChange={(e) => handleChange("role", e.target.value)}
-                  label="Role *"
-                  startAdornment={
-                    loadingRoles ? (
-                      <InputAdornment position="start">
-                        <CircularProgress size={20} />
-                      </InputAdornment>
-                    ) : null
-                  }
-                >
-                  <MenuItem value="">
-                    <em>Select a role</em>
+            <FormControl fullWidth error={!!errors.role} disabled={loadingRoles}>
+              <InputLabel>Role *</InputLabel>
+              <Select
+                value={formData.role}
+                onChange={(e) => handleChange("role", e.target.value)}
+                label="Role *"
+                startAdornment={
+                  loadingRoles ? (
+                    <InputAdornment position="start">
+                      <CircularProgress size={20} />
+                    </InputAdornment>
+                  ) : null
+                }
+              >
+                <MenuItem value="">
+                  <em>Select a role</em>
+                </MenuItem>
+                {roles.map((role) => (
+                  <MenuItem key={role.id} value={role.name}>
+                    {formatRoleName(role.name)}
                   </MenuItem>
-                  {roles.map((role) => (
-                    <MenuItem key={role.id} value={role.name}>
-                      {formatRoleName(role.name)}
-                    </MenuItem>
-                  ))}
-                </Select>
-                {errors.role && (
-                  <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 2 }}>
-                    {errors.role}
-                  </Typography>
-                )}
-              </FormControl>
-            )}
-
-            {/* Show current role when editing */}
-            {isEditing && (
-              <Box sx={{ 
-                p: 2, 
-                backgroundColor: 'grey.50', 
-                borderRadius: 1,
-                border: '1px solid',
-                borderColor: 'grey.200'
-              }}>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
-                    Current Role:
-                  </Typography>
-                  <Typography variant="body2" color="text.primary" sx={{ fontWeight: 500 }}>
-                    {formData.role ? formatRoleName(formData.role) : 'Not assigned'}
-                  </Typography>
-                </Stack>
-              </Box>
-            )}
+                ))}
+              </Select>
+              {errors.role && (
+                <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 2 }}>
+                  {errors.role}
+                </Typography>
+              )}
+            </FormControl>
           </Stack>
         </Stack>
       </Stack>
