@@ -239,6 +239,14 @@ class Appointment extends Model
     }
 
     /**
+     * Scope to get appointments by payment mode.
+     */
+    public function scopeByPaymentMode($query, $paymentMode)
+    {
+        return $query->where('payment_mode', $paymentMode);
+    }
+
+    /**
      * Get the formatted time slot (for backward compatibility).
      */
     public function getTimeSlotAttribute()

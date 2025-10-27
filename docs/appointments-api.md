@@ -121,6 +121,9 @@ Responses for list/detail also include related `remarks1`, `remarks2`, and `stat
 - `contact_number` - Search by contact number (partial match)
 - `mr_number` - Search by MR number (partial match)
 
+**💳 Payment Filters:**
+- `payment_mode` - Filter by payment mode (exact match, e.g., "Cash", "Card", "Insurance")
+
 **📄 Pagination & Ordering:**
 - `per_page` - Results per page (1-100, default 20)
 - `page` - Page number (default 1)
@@ -179,6 +182,21 @@ GET /api/appointments?status_id=1
 GET /api/appointments?remarks_1_id=2&start_date=2024-01-01&end_date=2024-01-31
 ```
 
+**Filter by payment mode:**
+```
+GET /api/appointments?payment_mode=Cash
+```
+
+**Filter by payment mode and status:**
+```
+GET /api/appointments?payment_mode=Card&status_id=1
+```
+
+**Complex filtering with payment mode:**
+```
+GET /api/appointments?payment_mode=Insurance&doctor_id=5&start_date=2024-01-01&end_date=2024-01-31
+```
+
 #### Example Response (with filters):
 ```json
 {
@@ -193,6 +211,8 @@ GET /api/appointments?remarks_1_id=2&start_date=2024-01-01&end_date=2024-01-31
         "end_time": "11:00:00",
         "patient_name": "John Doe",
         "contact_number": "9876543210",
+        "amount": 1500.00,
+        "payment_mode": "Cash",
         "doctor": {"id": 5, "name": "Dr. Smith"},
         "department": {"id": 1, "name": "Cardiology"},
         "procedure": {"id": 3, "name": "Echocardiogram"},
@@ -210,7 +230,8 @@ GET /api/appointments?remarks_1_id=2&start_date=2024-01-01&end_date=2024-01-31
     "department_id": "1",
     "doctor_id": "5",
     "status_id": "1",
-    "remarks_1_id": "2"
+    "remarks_1_id": "2",
+    "payment_mode": "Cash"
   }
 }
 ```

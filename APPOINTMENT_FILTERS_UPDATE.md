@@ -1,24 +1,27 @@
 # Appointment Filters Update
 
 ## Overview
-Added support for filtering appointments by `remarks_1_id`, `remarks_2_id`, and `status_id` in the appointments index endpoint.
+Added support for filtering appointments by `remarks_1_id`, `remarks_2_id`, `status_id`, and `payment_mode` in the appointments index endpoint.
 
 ## Changes Made
 
 ### 1. Backend Implementation
 
 #### AppointmentController.php
-- Added validation rules for `remarks_1_id` and `remarks_2_id` filters
+- Added validation rules for `remarks_1_id`, `remarks_2_id`, and `payment_mode` filters
 - Added these fields to the filters extraction array
 - Filters validate against `remarks_1` and `remarks_2` tables respectively
+- `payment_mode` is a string field (no table validation)
 
 #### Appointment.php (Model)
 - Added `scopeByRemarks1()` method to filter by Remarks1
 - Added `scopeByRemarks2()` method to filter by Remarks2
+- Added `scopeByPaymentMode()` method to filter by payment mode
 
 #### AppointmentService.php
 - Added filter handling for `remarks_1_id`
 - Added filter handling for `remarks_2_id`
+- Added filter handling for `payment_mode`
 - Status filter (`status_id`) was already implemented
 
 ### 2. Documentation Updates
@@ -57,6 +60,9 @@ All appointments can now be filtered using the following parameters via `GET /ap
 - `contact_number` - Search by contact number
 - `mr_number` - Search by MR number
 
+### 💳 Payment Filters
+- `payment_mode` - Filter by payment mode (exact match) ✨ **NEW**
+
 ### 📄 Pagination & Ordering
 - `per_page` - Results per page (1-100, default 20)
 - `page` - Page number
@@ -80,14 +86,24 @@ GET /api/appointments?status_id=1
 GET /api/appointments?remarks_1_id=2&start_date=2024-01-01&end_date=2024-01-31
 ```
 
+### Filter by Payment Mode
+```
+GET /api/appointments?payment_mode=Cash
+```
+
+### Filter by Payment Mode and Status
+```
+GET /api/appointments?payment_mode=Card&status_id=1
+```
+
 ### Complex Filtering
 ```
-GET /api/appointments?doctor_id=5&status_id=1&remarks_1_id=2&start_date=2024-01-01&end_date=2024-01-31&per_page=20
+GET /api/appointments?doctor_id=5&status_id=1&remarks_1_id=2&payment_mode=Insurance&start_date=2024-01-01&end_date=2024-01-31&per_page=20
 ```
 
 ## Response Format
 
-The response includes the related `remarks1`, `remarks2`, and `status` objects when available:
+The response includes the related `remarks1`, `remarks2`, `status`, and `payment_mode` when available:
 
 ```json
 {
@@ -99,6 +115,8 @@ The response includes the related `remarks1`, `remarks2`, and `status` objects w
         "id": 123,
         "date": "2024-01-20",
         "patient_name": "John Doe",
+        "amount": 1500.00,
+        "payment_mode": "Cash",
         "doctor": {"id": 5, "name": "Dr. Smith"},
         "status": {"id": 1, "name": "Arrived"},
         "remarks1": {"id": 2, "name": "Follow-up required"},
@@ -110,7 +128,8 @@ The response includes the related `remarks1`, `remarks2`, and `status` objects w
   },
   "filters_applied": {
     "status_id": "1",
-    "remarks_1_id": "2"
+    "remarks_1_id": "2",
+    "payment_mode": "Cash"
   }
 }
 ```
@@ -121,6 +140,7 @@ All filter parameters are validated:
 - `remarks_1_id`: Must exist in `remarks_1` table
 - `remarks_2_id`: Must exist in `remarks_2` table
 - `status_id`: Must exist in `statuses` table
+- `payment_mode`: String field (max 255 characters, no table validation)
 
 Invalid IDs will return a 422 validation error.
 
@@ -143,8 +163,12 @@ curl -X GET "http://your-api.com/api/appointments?status_id=1" \
 curl -X GET "http://your-api.com/api/appointments?remarks_1_id=2&remarks_2_id=3" \
   -H "Authorization: Bearer YOUR_TOKEN"
 
+# Filter by payment mode
+curl -X GET "http://your-api.com/api/appointments?payment_mode=Cash" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
 # Combined filters
-curl -X GET "http://your-api.com/api/appointments?status_id=1&remarks_1_id=2&doctor_id=5" \
+curl -X GET "http://your-api.com/api/appointments?status_id=1&remarks_1_id=2&payment_mode=Card&doctor_id=5" \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 

@@ -108,6 +108,10 @@ class AppointmentService extends CrudeService
             $query->where('mr_number', 'like', '%' . $filters['mr_number'] . '%');
         }
 
+        if (!empty($filters['payment_mode'])) {
+            $query->byPaymentMode($filters['payment_mode']);
+        }
+
         // Apply ordering
         $query->orderBy($orderBy, $orderDirection);
 
