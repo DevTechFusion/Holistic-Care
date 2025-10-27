@@ -42,11 +42,14 @@ class AppointmentController extends Controller
                 'source_id' => 'nullable|exists:sources,id',
                 'status_id' => 'nullable|exists:statuses,id',
                 'agent_id' => 'nullable|exists:users,id',
+                'remarks_1_id' => 'nullable|exists:remarks_1,id',
+                'remarks_2_id' => 'nullable|exists:remarks_2,id',
                 
                 // Text search filters
                 'patient_name' => 'nullable|string|max:255',
                 'contact_number' => 'nullable|string|max:255',
                 'mr_number' => 'nullable|string|max:255',
+                'payment_mode' => 'nullable|string|max:255',
                 
                 // Pagination and ordering
                 'per_page' => 'nullable|integer|min:1|max:100',
@@ -59,8 +62,8 @@ class AppointmentController extends Controller
             $filters = $request->only([
                 'start_date', 'end_date', 'start_time', 'end_time', 'duration',
                 'doctor_id', 'department_id', 'procedure_id', 'category_id', 
-                'source_id', 'status_id', 'agent_id', 'patient_name', 
-                'contact_number', 'mr_number'
+                'source_id', 'status_id', 'agent_id', 'remarks_1_id', 'remarks_2_id',
+                'patient_name', 'contact_number', 'mr_number', 'payment_mode'
             ]);
 
             // Remove empty filters

@@ -80,6 +80,14 @@ class AppointmentService extends CrudeService
             $query->byAgent($filters['agent_id']);
         }
 
+        if (!empty($filters['remarks_1_id'])) {
+            $query->byRemarks1($filters['remarks_1_id']);
+        }
+
+        if (!empty($filters['remarks_2_id'])) {
+            $query->byRemarks2($filters['remarks_2_id']);
+        }
+
         if (!empty($filters['start_time']) && !empty($filters['end_time'])) {
             $query->byTimeRange($filters['start_time'], $filters['end_time']);
         }
@@ -98,6 +106,10 @@ class AppointmentService extends CrudeService
 
         if (!empty($filters['mr_number'])) {
             $query->where('mr_number', 'like', '%' . $filters['mr_number'] . '%');
+        }
+
+        if (!empty($filters['payment_mode'])) {
+            $query->byPaymentMode($filters['payment_mode']);
         }
 
         // Apply ordering
