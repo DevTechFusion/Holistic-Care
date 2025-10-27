@@ -16,6 +16,7 @@ import {
   TextField,
   Autocomplete,
   MenuItem,
+  TableSortLabel,
 } from "@mui/material";
 import { getAppointments, deleteAppointment } from "../../DAL/appointments";
 import CreateAppointmentModal from "../../components/forms/AppointmentForm";
@@ -28,6 +29,9 @@ import { getDoctorsList } from "../../DAL/doctors";
 import { getProceduresList } from "../../DAL/procedure";
 import { getDepartmentsList } from "../../DAL/departments";
 import { getAgentList } from "../../DAL/users";
+import { getSelectStatuses } from "../../DAL/status";
+import { getSelectRemarks1 } from "../../DAL/remarks1";
+import { getSelectRemarks2 } from "../../DAL/remarks2";
 import { MODULES, PERMISSIONS } from "../../constants/permissionConstants";
 
 const AppointmentsPage = () => {
@@ -54,7 +58,11 @@ const AppointmentsPage = () => {
     procedure_id: "",
     patient_name: "",
     contact_number: "",
-    order_by: "created_at",
+    status_id: "",
+    remarks_1_id: "",
+    remarks_2_id: "",
+    payment_method: "",
+    order_by: "date", // Default sort by booking date
     order_direction: "desc",
   });
 
@@ -63,21 +71,56 @@ const AppointmentsPage = () => {
   const [agents, setAgents] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [procedures, setProcedures] = useState([]);
+  const [statuses, setStatuses] = useState([]);
+  const [remarks1, setRemarks1] = useState([]);
+  const [remarks2, setRemarks2] = useState([]);
+  const [paymentMethods] = useState([
+    { id: "cash", name: "Cash" },
+    { id: "card", name: "Card" },
+    { id: "online", name: "Online" },
+    { id: "not_paid", name: "Not Paid" },
+  ]);
   const [listsLoading, setListsLoading] = useState(false);
 
   const fetchFilterLists = async () => {
     setListsLoading(true);
     try {
-      const [docRes, agentRes, deptRes, procRes] = await Promise.all([
+      const [
+        docRes, 
+        agentRes, 
+        deptRes, 
+        procRes, 
+        statusRes, 
+        remarks1Res, 
+        remarks2Res
+      ] = await Promise.all([
         getDoctorsList(),
         getAgentList(),
         getDepartmentsList(),
         getProceduresList(),
+        getSelectStatuses(),
+        getSelectRemarks1(),
+        getSelectRemarks2(),
       ]);
       setDoctors(Array.isArray(docRes?.data) ? docRes.data : []);
       setAgents(Array.isArray(agentRes?.data) ? agentRes.data : []);
       setDepartments(Array.isArray(deptRes?.data) ? deptRes.data : []);
       setProcedures(Array.isArray(procRes?.data) ? procRes.data : []);
+      setStatuses(
+        Array.isArray(statusRes?.data)
+          ? statusRes.data.map((s) => ({ id: s.value, name: s.label }))
+          : []
+      );
+      setRemarks1(
+        Array.isArray(remarks1Res?.data)
+          ? remarks1Res.data.map((r) => ({ id: r.value, name: r.label }))
+          : []
+      );
+      setRemarks2(
+        Array.isArray(remarks2Res?.data)
+          ? remarks2Res.data.map((r) => ({ id: r.value, name: r.label }))
+          : []
+      );
     } catch (err) {
       console.error("Error fetching filter lists:", err);
       setDoctors([]);
@@ -104,6 +147,10 @@ const AppointmentsPage = () => {
         apiFilters.procedure_id,
         apiFilters.patient_name,
         apiFilters.contact_number,
+        apiFilters.status_id,
+        apiFilters.remarks_1_id,
+        apiFilters.remarks_2_id,
+        apiFilters.payment_method,
         apiFilters.order_by,
         apiFilters.order_direction
       );
@@ -349,6 +396,77 @@ const AppointmentsPage = () => {
             />
           </Stack>
 
+          {/* Third Row */}
+          <Stack
+            direction={{ xs: "column", md: "row" }}
+            spacing={2}
+            alignItems="stretch"
+          >
+            <TextField
+              select
+              label="Status"
+              value={filters.status_id}
+              onChange={(e) => handleFilterChange("status_id", e.target.value)}
+              size="small"
+              sx={{ flex: 1 }}
+            >
+              <MenuItem value="">All Statuses</MenuItem>
+              {statuses.map((status) => (
+                <MenuItem key={status.id} value={status.id}>
+                  {status.name}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            <TextField
+              select
+              label="Remarks #1"
+              value={filters.remarks_1_id}
+              onChange={(e) => handleFilterChange("remarks_1_id", e.target.value)}
+              size="small"
+              sx={{ flex: 1 }}
+            >
+              <MenuItem value="">All Remarks #1</MenuItem>
+              {remarks1.map((remark) => (
+                <MenuItem key={remark.id} value={remark.id}>
+                  {remark.name}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            <TextField
+              select
+              label="Remarks #2"
+              value={filters.remarks_2_id}
+              onChange={(e) => handleFilterChange("remarks_2_id", e.target.value)}
+              size="small"
+              sx={{ flex: 1 }}
+            >
+              <MenuItem value="">All Remarks #2</MenuItem>
+              {remarks2.map((remark) => (
+                <MenuItem key={remark.id} value={remark.id}>
+                  {remark.name}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            <TextField
+              select
+              label="Payment Method"
+              value={filters.payment_method}
+              onChange={(e) => handleFilterChange("payment_method", e.target.value)}
+              size="small"
+              sx={{ flex: 1 }}
+            >
+              <MenuItem value="">All Payment Methods</MenuItem>
+              {paymentMethods.map((method) => (
+                <MenuItem key={method.id} value={method.id}>
+                  {method.name}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Stack>
+
           {/* Actions Row */}
           <Box
             display="flex"
@@ -416,14 +534,36 @@ const AppointmentsPage = () => {
                       Sr#
                     </TableCell>
                     <TableCell
+                      sortDirection={filters.order_by === 'date' ? filters.order_direction : false}
                       sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
                     >
-                      Booking   Date
+                      <TableSortLabel
+                        active={filters.order_by === 'date'}
+                        direction={filters.order_direction}
+                        onClick={() => {
+                          const direction = filters.order_by === 'date' && filters.order_direction === 'asc' ? 'desc' : 'asc';
+                          handleFilterChange('order_by', 'date');
+                          handleFilterChange('order_direction', direction);
+                        }}
+                      >
+                        Booking Date
+                      </TableSortLabel>
                     </TableCell>
                     <TableCell
+                      sortDirection={filters.order_by === 'created_at' ? filters.order_direction : false}
                       sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
                     >
-                      Created Date
+                      <TableSortLabel
+                        active={filters.order_by === 'created_at'}
+                        direction={filters.order_direction}
+                        onClick={() => {
+                          const direction = filters.order_by === 'created_at' && filters.order_direction === 'asc' ? 'desc' : 'asc';
+                          handleFilterChange('order_by', 'created_at');
+                          handleFilterChange('order_direction', direction);
+                        }}
+                      >
+                        Created Date
+                      </TableSortLabel>
                     </TableCell>
                     <TableCell
                       sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
