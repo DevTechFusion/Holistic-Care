@@ -205,6 +205,22 @@ class Appointment extends Model
     }
 
     /**
+     * Scope to get appointments by remarks1.
+     */
+    public function scopeByRemarks1($query, $remarks1Id)
+    {
+        return $query->where('remarks_1_id', $remarks1Id);
+    }
+
+    /**
+     * Scope to get appointments by remarks2.
+     */
+    public function scopeByRemarks2($query, $remarks2Id)
+    {
+        return $query->where('remarks_2_id', $remarks2Id);
+    }
+
+    /**
      * Scope to get appointments by procedure.
      */
     public function scopeByProcedure($query, $procedureId)

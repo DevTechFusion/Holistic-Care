@@ -113,6 +113,8 @@ Responses for list/detail also include related `remarks1`, `remarks2`, and `stat
 - `source_id` - Filter by source (integer)
 - `status_id` - Filter by appointment status (integer)
 - `agent_id` - Filter by agent/user (integer)
+- `remarks_1_id` - Filter by Remarks1 (integer)
+- `remarks_2_id` - Filter by Remarks2 (integer)
 
 **🔍 Text Search Filters:**
 - `patient_name` - Search by patient name (partial match)
@@ -162,6 +164,21 @@ GET /api/appointments?duration=60
 GET /api/appointments?start_time=09:00:00&end_time=12:00:00&procedure_id=3&department_id=1
 ```
 
+**Filter by status and remarks:**
+```
+GET /api/appointments?status_id=1&remarks_1_id=2&remarks_2_id=3
+```
+
+**Filter by status only:**
+```
+GET /api/appointments?status_id=1
+```
+
+**Filter by remarks1 and date range:**
+```
+GET /api/appointments?remarks_1_id=2&start_date=2024-01-01&end_date=2024-01-31
+```
+
 #### Example Response (with filters):
 ```json
 {
@@ -179,7 +196,9 @@ GET /api/appointments?start_time=09:00:00&end_time=12:00:00&procedure_id=3&depar
         "doctor": {"id": 5, "name": "Dr. Smith"},
         "department": {"id": 1, "name": "Cardiology"},
         "procedure": {"id": 3, "name": "Echocardiogram"},
-        "status": {"id": 1, "name": "Arrived"}
+        "status": {"id": 1, "name": "Arrived"},
+        "remarks1": {"id": 2, "name": "Follow-up required"},
+        "remarks2": {"id": 3, "name": "Patient satisfied"}
       }
     ],
     "per_page": 10,
@@ -189,7 +208,9 @@ GET /api/appointments?start_time=09:00:00&end_time=12:00:00&procedure_id=3&depar
     "start_date": "2024-01-01",
     "end_date": "2024-01-31",
     "department_id": "1",
-    "doctor_id": "5"
+    "doctor_id": "5",
+    "status_id": "1",
+    "remarks_1_id": "2"
   }
 }
 ```
