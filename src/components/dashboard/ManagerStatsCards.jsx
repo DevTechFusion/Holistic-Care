@@ -3,14 +3,14 @@ import { Box, Grid, Card, CardContent, Typography, CircularProgress } from "@mui
 import { CalendarToday, Person, MiscellaneousServicesOutlined, Update } from "@mui/icons-material";
 import { getManagerDashboard } from "../../DAL/dashboard";
 
-const StatsCards = ({ filter }) => {
+const StatsCards = ({ startDate, endDate }) => {
   const [cards, setCards] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const response = await getManagerDashboard(filter);
+        const response = await getManagerDashboard(startDate, endDate);
         if (response?.status === "success") {
           setCards(response.data.cards);
           console.log("fetched manager dashboard:", response.data.cards);
@@ -23,7 +23,7 @@ const StatsCards = ({ filter }) => {
     };
 
     fetchDashboard();
-  }, [filter]);
+  }, [startDate, endDate]);
 
   if (loading) {
     return (

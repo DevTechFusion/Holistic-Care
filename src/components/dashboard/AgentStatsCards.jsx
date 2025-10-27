@@ -3,13 +3,13 @@ import { Box, Grid, Card, CardContent, Typography, CircularProgress } from "@mui
 import { CalendarToday, Person, PersonOff, Update } from "@mui/icons-material";
 import { getAgentDashboard } from "../../DAL/dashboard";
 
-const AgentStatsCards = ({ filter }) => {
+const AgentStatsCards = ({ startDate, endDate }) => {
   const [cards, setCards] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const fetchDashboard = async () => {
     try {
-      const response = await getAgentDashboard(filter);
+      const response = await getAgentDashboard(startDate, endDate);
       if (response?.status === "success") {
         setCards(response.data.cards);
         console.log("fetched agent dashboard:", response.data.cards);
@@ -23,7 +23,7 @@ const AgentStatsCards = ({ filter }) => {
 
   useEffect(() => {
     fetchDashboard();
-  }, [filter]);
+  }, [startDate, endDate]);
 
   if (loading) {
     return (

@@ -8,7 +8,7 @@ import {
   Box,
   Button,
   Stack,
-  Select,
+  TextField,
   useTheme,
   alpha,
   Typography,
@@ -39,7 +39,10 @@ const Dashboard = () => {
   const [openModal, setOpenModal] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const { enqueueSnackbar } = useSnackbar();
-  const [filter, setFilter] = useState("weekly");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [appliedStartDate, setAppliedStartDate] = useState("");
+  const [appliedEndDate, setAppliedEndDate] = useState("");
   const theme = useTheme();
 
   const handleClick = (event) => setAnchorEl(event.currentTarget);
@@ -58,6 +61,18 @@ const Dashboard = () => {
     } else if (message) {
       enqueueSnackbar(message, { variant: "error", autoHideDuration: 3000 });
     }
+  };
+
+  const handleApplyFilters = () => {
+    setAppliedStartDate(startDate);
+    setAppliedEndDate(endDate);
+  };
+
+  const handleClearFilters = () => {
+    setStartDate("");
+    setEndDate("");
+    setAppliedStartDate("");
+    setAppliedEndDate("");
   };
 
   return (
@@ -170,29 +185,6 @@ const Dashboard = () => {
           alignItems="center"
           sx={{ width: { xs: "100%", sm: "auto" } }}
         >
-          <Select
-            size="small"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            sx={{
-              minWidth: { xs: "100%", sm: 120 },
-              borderRadius: 2,
-              fontWeight: "medium",
-              bgcolor: "background.paper",
-              boxShadow: theme.shadows[1],
-              "& .MuiOutlinedInput-notchedOutline": {
-                border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-              },
-              "&:hover": {
-                bgcolor: alpha(theme.palette.primary.main, 0.03),
-              },
-            }}
-          >
-            <MenuItem value="daily">Daily</MenuItem>
-            <MenuItem value="weekly">Weekly</MenuItem>
-            <MenuItem value="monthly">Monthly</MenuItem>
-          </Select>
-
           <Button
             variant="contained"
             onClick={handleClick}
@@ -212,6 +204,64 @@ const Dashboard = () => {
             }}
           >
             Create New
+          </Button>
+          <TextField
+            label="Start Date"
+            type="date"
+            size="small"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            sx={{
+              minWidth: { xs: "100%", sm: 160 },
+              bgcolor: "background.paper",
+              borderRadius: 2,
+            }}
+          />
+
+          <TextField
+            label="End Date"
+            type="date"
+            size="small"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            sx={{
+              minWidth: { xs: "100%", sm: 160 },
+              bgcolor: "background.paper",
+              borderRadius: 2,
+            }}
+          />
+
+          <Button
+            variant="contained"
+            onClick={handleApplyFilters}
+            sx={{
+              borderRadius: 2,
+              textTransform: "none",
+              fontWeight: 600,
+              px: 3,
+              py: 1,
+              minWidth: { xs: "100%", sm: "auto" },
+            }}
+          >
+            Apply
+          </Button>
+
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={handleClearFilters}
+            sx={{
+              borderRadius: 2,
+              textTransform: "none",
+              fontWeight: 600,
+              px: 3,
+              py: 1,
+              minWidth: { xs: "100%", sm: "auto" },
+            }}
+          >
+            Clear
           </Button>
         </Stack>
       </Stack>
@@ -236,17 +286,20 @@ const Dashboard = () => {
           >
             Statistics Overview
           </Typography>
-          <StatsCards filter={filter} />
+          <StatsCards startDate={appliedStartDate} endDate={appliedEndDate} />
         </Box>
 
         <Box sx={{ flex: 1 }}>
-          <DoctorLeaderboard filter={filter} />
+          <DoctorLeaderboard
+            startDate={appliedStartDate}
+            endDate={appliedEndDate}
+          />
         </Box>
       </Box>
 
       {/* Revenue Section */}
       <Box sx={{ mb: { xs: 3, sm: 4 } }}>
-        <RevenueSection filter={filter} />
+        <RevenueSection startDate={appliedStartDate} endDate={appliedEndDate} />
       </Box>
 
       {/* Bookings Section */}
@@ -273,15 +326,24 @@ const Dashboard = () => {
           }
         >
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <AgentWiseBookings filter={filter} />
+            <AgentWiseBookings
+              startDate={appliedStartDate}
+              endDate={appliedEndDate}
+            />
           </Box>
 
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <SourceWiseBookings filter={filter} />
+            <SourceWiseBookings
+              startDate={appliedStartDate}
+              endDate={appliedEndDate}
+            />
           </Box>
 
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <DoctorWiseBooking filter={filter} />
+            <DoctorWiseBooking
+              startDate={appliedStartDate}
+              endDate={appliedEndDate}
+            />
           </Box>
         </Stack>
       </Box>

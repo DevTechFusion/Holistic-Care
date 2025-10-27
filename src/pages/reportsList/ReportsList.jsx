@@ -55,7 +55,10 @@ const ReportsPage = () => {
   const [total, setTotal] = useState(0);
 
   const { enqueueSnackbar } = useSnackbar();
-  const { hasPermission } = useAuth();
+  const { hasPermission, user } = useAuth();
+  
+  // Check if current user is an agent
+  const isCurrentUserAgent = Array.isArray(user?.roles) && user.roles.some((role) => role.name?.toLowerCase() === "agent");
 
   const [filters, setFilters] = useState({
     start_date: "",
@@ -336,18 +339,20 @@ const ReportsPage = () => {
               fullWidth
             />
 
-            <Autocomplete
-              options={agents}
-              getOptionLabel={(option) => option.name || ""}
-              value={agents.find((a) => a.id === filters.agent_id) || null}
-              onChange={(e, value) => handleFilterChange("agent_id", value?.id)}
-              renderInput={(params) => (
-                <TextField {...params} label="Agent" size="small" />
-              )}
-              isOptionEqualToValue={(o, v) => o?.id === v?.id}
-              disablePortal
-              fullWidth
-            />
+            {!isCurrentUserAgent && (
+              <Autocomplete
+                options={agents}
+                getOptionLabel={(option) => option.name || ""}
+                value={agents.find((a) => a.id === filters.agent_id) || null}
+                onChange={(e, value) => handleFilterChange("agent_id", value?.id)}
+                renderInput={(params) => (
+                  <TextField {...params} label="Agent" size="small" />
+                )}
+                isOptionEqualToValue={(o, v) => o?.id === v?.id}
+                disablePortal
+                fullWidth
+              />
+            )}
           </Stack>
 
           {/* Row 2: 4 Fields */}
@@ -544,11 +549,13 @@ const ReportsPage = () => {
                     >
                       Department
                     </TableCell>
-                    <TableCell
-                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                    >
-                      Agent
-                    </TableCell>
+                    {!isCurrentUserAgent && (
+                      <TableCell
+                        sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                      >
+                        Agent
+                      </TableCell>
+                    )}
                     <TableCell
                       sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
                     >
@@ -641,11 +648,13 @@ const ReportsPage = () => {
                           >
                             {rep.appointment?.department?.name}
                           </TableCell>
-                          <TableCell
-                            sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                          >
-                            {rep.appointment?.agent?.name}
-                          </TableCell>
+                          {!isCurrentUserAgent && (
+                            <TableCell
+                              sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                            >
+                              {rep.appointment?.agent?.name}
+                            </TableCell>
+                          )}
                           <TableCell
                             sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
                           >
@@ -681,7 +690,7 @@ const ReportsPage = () => {
                     })
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={13} align="center">
+                      <TableCell colSpan={isCurrentUserAgent ? 13 : 14} align="center">
                         No reports found
                       </TableCell>
                     </TableRow>

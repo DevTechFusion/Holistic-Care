@@ -20,7 +20,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-export default function MistakesCount({ filter }) {
+export default function MistakesCount({ startDate, endDate }) {
   const [count, setCount] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -31,7 +31,7 @@ export default function MistakesCount({ filter }) {
       try {
         setLoading(true);
         setError(null);
-        const res = await getManagerDashboard(filter);
+        const res = await getManagerDashboard(startDate, endDate);
         if (res?.data?.mistake_count_by_agent) {
           setCount(res.data.mistake_count_by_agent);
         } else {
@@ -46,7 +46,7 @@ export default function MistakesCount({ filter }) {
     };
 
     fetchCount();
-  }, [filter]);
+  }, [startDate, endDate]);
 
   const mistakeTypes = [
     { key: "Missed reply", color: "#ec3058ff" },
@@ -86,15 +86,15 @@ export default function MistakesCount({ filter }) {
   };
 
   const pieOptions = {
-    plugins: { 
+    plugins: {
       legend: { display: false },
       tooltip: {
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        backgroundColor: "rgba(0, 0, 0, 0.8)",
         padding: 12,
-        titleFont: { size: 14, weight: 'bold' },
+        titleFont: { size: 14, weight: "bold" },
         bodyFont: { size: 13 },
         cornerRadius: 8,
-      }
+      },
     },
     maintainAspectRatio: true,
     responsive: true,
@@ -119,14 +119,14 @@ export default function MistakesCount({ filter }) {
       }}
     >
       <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
-        <Typography 
-          variant="h5" 
-          sx={{ 
-            fontWeight: 700, 
+        <Typography
+          variant="h5"
+          sx={{
+            fontWeight: 700,
             mb: { xs: 2, sm: 3, md: 4 },
             color: "#1a1a1a",
             letterSpacing: "-0.5px",
-            fontSize: { xs: "1.25rem", sm: "1.5rem" }
+            fontSize: { xs: "1.25rem", sm: "1.5rem" },
           }}
         >
           Mistake Count by Agent
@@ -137,11 +137,11 @@ export default function MistakesCount({ filter }) {
             <CircularProgress size={48} thickness={4} />
           </Box>
         ) : error ? (
-          <Alert 
-            severity="error" 
-            sx={{ 
+          <Alert
+            severity="error"
+            sx={{
               borderRadius: 3,
-              fontSize: "0.95rem"
+              fontSize: "0.95rem",
             }}
           >
             {error}
@@ -244,8 +244,8 @@ export default function MistakesCount({ filter }) {
                     count
                       .filter((row) => row.agent_id)
                       .map((row, idx) => (
-                        <TableRow 
-                          key={row.agent_id} 
+                        <TableRow
+                          key={row.agent_id}
                           hover
                           sx={{
                             "&:hover": {
@@ -254,7 +254,8 @@ export default function MistakesCount({ filter }) {
                             "&:last-child td": {
                               borderBottom: 0,
                             },
-                            backgroundColor: idx % 2 === 0 ? "#ffffff" : "#fafbfc",
+                            backgroundColor:
+                              idx % 2 === 0 ? "#ffffff" : "#fafbfc",
                           }}
                         >
                           <TableCell
@@ -292,8 +293,8 @@ export default function MistakesCount({ filter }) {
                           ))}
                           <TableCell
                             align="center"
-                            sx={{ 
-                              fontWeight: 700, 
+                            sx={{
+                              fontWeight: 700,
                               fontSize: "0.95rem",
                               color: "#23C7B7",
                               py: 2.5,
@@ -330,15 +331,17 @@ export default function MistakesCount({ filter }) {
                 p: 0,
               }}
             >
-              <Box sx={{ width: "100%", maxWidth: { xs: 240, sm: 280 }, mb: 3 }}>
+              <Box
+                sx={{ width: "100%", maxWidth: { xs: 240, sm: 280 }, mb: 3 }}
+              >
                 <Pie data={pieData} options={pieOptions} />
               </Box>
 
               {/* Enhanced Interactive Legend */}
-              <Box 
-                sx={{ 
+              <Box
+                sx={{
                   width: "100%",
-                  display: "flex", 
+                  display: "flex",
                   flexDirection: "column",
                   gap: 1.5,
                 }}
@@ -356,27 +359,39 @@ export default function MistakesCount({ filter }) {
                       borderRadius: 2,
                       cursor: "pointer",
                       opacity: activeTypes[t.key] ? 1 : 0.5,
-                      backgroundColor: activeTypes[t.key] ? "#f8f9fa" : "#fafafa",
-                      border: `1px solid ${activeTypes[t.key] ? t.color + "40" : "#e0e0e0"}`,
+                      backgroundColor: activeTypes[t.key]
+                        ? "#f8f9fa"
+                        : "#fafafa",
+                      border: `1px solid ${
+                        activeTypes[t.key] ? t.color + "40" : "#e0e0e0"
+                      }`,
                       transition: "all 0.2s ease",
                       "&:hover": {
-                        backgroundColor: activeTypes[t.key] ? "#f0f1f3" : "#f5f5f5",
+                        backgroundColor: activeTypes[t.key]
+                          ? "#f0f1f3"
+                          : "#f5f5f5",
                         transform: "translateX(4px)",
                       },
                     }}
                   >
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                    <Box
+                      sx={{ display: "flex", alignItems: "center", gap: 1.5 }}
+                    >
                       <Box
                         sx={{
                           width: 16,
                           height: 16,
                           borderRadius: "4px",
-                          backgroundColor: activeTypes[t.key] ? t.color : "#d0d0d0",
-                          boxShadow: activeTypes[t.key] ? `0 2px 8px ${t.color}40` : "none",
+                          backgroundColor: activeTypes[t.key]
+                            ? t.color
+                            : "#d0d0d0",
+                          boxShadow: activeTypes[t.key]
+                            ? `0 2px 8px ${t.color}40`
+                            : "none",
                           transition: "all 0.2s ease",
                         }}
                       />
-                      <Typography 
+                      <Typography
                         variant="body2"
                         sx={{
                           fontWeight: 500,

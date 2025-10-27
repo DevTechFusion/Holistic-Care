@@ -3,8 +3,8 @@ import {
   Box, 
   Grid, 
   Stack, 
-  Select, 
-  MenuItem,
+  TextField,
+  Button,
   useTheme,
   alpha,
 } from "@mui/material";
@@ -17,8 +17,23 @@ import {
 
 
 const ManagerDashboard = () => {
-  const [filter, setFilter] = useState("weekly");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [appliedStartDate, setAppliedStartDate] = useState("");
+  const [appliedEndDate, setAppliedEndDate] = useState("");
   const theme = useTheme();
+
+  const handleApplyFilters = () => {
+    setAppliedStartDate(startDate);
+    setAppliedEndDate(endDate);
+  };
+
+  const handleClearFilters = () => {
+    setStartDate("");
+    setEndDate("");
+    setAppliedStartDate("");
+    setAppliedEndDate("");
+  };
 
   return (
     <Box sx={{ minHeight: "100vh", backgroundColor: "background.default", p: { xs: 2, sm: 3 } }}>
@@ -38,44 +53,76 @@ const ManagerDashboard = () => {
           alignItems="center"
           sx={{ width: { xs: "100%", sm: "auto" } }}
         >
-          <Select
+          <TextField
+            label="Start Date"
+            type="date"
             size="small"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            InputLabelProps={{ shrink: true }}
             sx={{
-              minWidth: { xs: "100%", sm: 120 },
+              minWidth: { xs: "100%", sm: 160 },
+              bgcolor: "background.paper",
+              borderRadius: 2,
+            }}
+          />
+
+          <TextField
+            label="End Date"
+            type="date"
+            size="small"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            sx={{
+              minWidth: { xs: "100%", sm: 160 },
+              bgcolor: "background.paper",
+              borderRadius: 2,
+            }}
+          />
+
+          <Button
+            variant="contained"
+            onClick={handleApplyFilters}
+            sx={{
               borderRadius: 2,
               fontWeight: "medium",
-              bgcolor: "background.paper",
-              boxShadow: theme.shadows[1],
-              "& .MuiOutlinedInput-notchedOutline": {
-                border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-              },
-              "&:hover": {
-                bgcolor: alpha(theme.palette.primary.main, 0.03),
-              },
+              px: 3,
+              minWidth: { xs: "100%", sm: "auto" },
             }}
           >
-            <MenuItem value="daily">Daily</MenuItem>
-            <MenuItem value="weekly">Weekly</MenuItem>
-            <MenuItem value="monthly">Monthly</MenuItem>
-          </Select>
+            Apply
+          </Button>
+
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={handleClearFilters}
+            sx={{
+              borderRadius: 2,
+              fontWeight: "medium",
+              px: 3,
+              minWidth: { xs: "100%", sm: "auto" },
+            }}
+          >
+            Clear
+          </Button>
         </Stack>
       </Stack>
 
       {/* Stats Cards */}
       <Box sx={{ mt: 4, mb: 4 }}>
-        <ManagerStatsCards filter={filter} />
+        <ManagerStatsCards startDate={appliedStartDate} endDate={appliedEndDate} />
       </Box>
 
       {/* Mistakes Count */}
       <Box sx={{ mt: 4, mb: 4 }}>
-        <MistakesCount filter={filter} />
+        <MistakesCount startDate={appliedStartDate} endDate={appliedEndDate} />
       </Box>
 
       {/* Mistakes Log */}
       <Box sx={{ mt: 4, mb: 4 }}>
-        <MistakesLog filter={filter} />
+        <MistakesLog startDate={appliedStartDate} endDate={appliedEndDate} />
       </Box>
     </Box>
   );

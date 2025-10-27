@@ -14,7 +14,7 @@ import {
 import { getAdminDashboard } from "../../DAL/dashboard";
 import { getAllDepartments } from "../../DAL/departments";
 
-const DoctorLeaderboard = ({ filter }) => {
+const DoctorLeaderboard = ({ startDate, endDate }) => {
   const [doctors, setDoctors] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [selectedDepartment, setSelectedDepartment] = useState("all");
@@ -42,7 +42,7 @@ const DoctorLeaderboard = ({ filter }) => {
         setLoading(true);
         setError(null);
 
-        const response = await getAdminDashboard(filter);
+        const response = await getAdminDashboard(startDate, endDate);
         const doctorData = response?.data?.doctor_leaderboard ?? [];
 
         const sortedDoctors = [...doctorData].sort(
@@ -60,7 +60,7 @@ const DoctorLeaderboard = ({ filter }) => {
     };
 
     fetchDoctors();
-  }, [filter]);
+  }, [startDate, endDate]);
 
   const handleDepartmentChange = (event) => {
     setSelectedDepartment(event.target.value);
@@ -98,11 +98,11 @@ const DoctorLeaderboard = ({ filter }) => {
       >
         <Typography
           variant="h6"
-          sx={{ 
-            fontWeight: 700, 
-            color: "#111827", 
+          sx={{
+            fontWeight: 700,
+            color: "#111827",
             letterSpacing: 0,
-            fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' }
+            fontSize: { xs: "1rem", sm: "1.125rem", md: "1.25rem" },
           }}
         >
           Doctor Booking Leaderboard
@@ -162,7 +162,7 @@ const DoctorLeaderboard = ({ filter }) => {
           color="text.secondary"
           textAlign="center"
           mt={2}
-          sx={{ fontSize: { xs: '0.8125rem', sm: '0.875rem' } }}
+          sx={{ fontSize: { xs: "0.8125rem", sm: "0.875rem" } }}
         >
           No booking data available.
         </Typography>
@@ -186,7 +186,11 @@ const DoctorLeaderboard = ({ filter }) => {
               }}
             >
               {/* Left side */}
-              <Box display="flex" alignItems="center" gap={{ xs: 1.25, sm: 1.5 }}>
+              <Box
+                display="flex"
+                alignItems="center"
+                gap={{ xs: 1.25, sm: 1.5 }}
+              >
                 <Avatar
                   src={doc.doctor?.profile_picture || "/placeholder-user.jpg"}
                   alt={doc.doctor?.name}
@@ -203,7 +207,7 @@ const DoctorLeaderboard = ({ filter }) => {
                       fontWeight: 600,
                       color: "#111827",
                       lineHeight: 1.2,
-                      fontSize: { xs: '0.875rem', sm: '1rem' }
+                      fontSize: { xs: "0.875rem", sm: "1rem" },
                     }}
                   >
                     {doc.doctor?.name || "Unknown Doctor"}
@@ -214,14 +218,18 @@ const DoctorLeaderboard = ({ filter }) => {
                       color: "#6B7280",
                       mt: 0.25,
                       display: "inline-block",
-                      fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                      fontSize: { xs: "0.75rem", sm: "0.875rem" },
                     }}
                   >
                     {"Bookings: "}
                     <Typography
                       component="span"
                       variant="body2"
-                      sx={{ color: "#23C7B7", fontWeight: 700, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+                      sx={{
+                        color: "#23C7B7",
+                        fontWeight: 700,
+                        fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                      }}
                     >
                       {formatTwoDigits(doc.bookings)}
                     </Typography>
@@ -251,21 +259,21 @@ const DoctorLeaderboard = ({ filter }) => {
                 >
                   {doc.doctor?.department_name || "N/A"}
                 </Box>
-                <Typography 
-                  variant="caption" 
-                  sx={{ 
+                <Typography
+                  variant="caption"
+                  sx={{
                     color: "#6B7280",
-                    fontSize: { xs: "0.6875rem", sm: "0.75rem" }
+                    fontSize: { xs: "0.6875rem", sm: "0.75rem" },
                   }}
                 >
                   {"Agent: "}
                   <Typography
                     component="span"
                     variant="caption"
-                    sx={{ 
-                      color: "#111827", 
+                    sx={{
+                      color: "#111827",
                       fontWeight: 600,
-                      fontSize: { xs: "0.6875rem", sm: "0.75rem" }
+                      fontSize: { xs: "0.6875rem", sm: "0.75rem" },
                     }}
                   >
                     {doc.agent?.name || "N/A"}

@@ -43,7 +43,10 @@ const PharmacyList = () => {
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [total, setTotal] = useState(0);
 
-  const { hasPermission } = useAuth();
+  const { hasPermission, user } = useAuth();
+  
+  // Check if current user is an agent
+  const isCurrentUserAgent = Array.isArray(user?.roles) && user.roles.some((role) => role.name?.toLowerCase() === "agent");
 
   // filters (removed search)
   const [filters, setFilters] = useState({
@@ -248,37 +251,39 @@ const PharmacyList = () => {
             }}
           >
             {/* Agent Autocomplete */}
-            <Autocomplete
-              options={agents}
-              getOptionLabel={(option) => option.name || ""}
-              value={agents.find((a) => a.id === filters.agent_id) || null}
-              onChange={(e, value) => handleFilterChange("agent_id", value?.id)}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Agent"
-                  size="small"
-                  InputProps={{
-                    ...params.InputProps,
-                    endAdornment: (
-                      <>
-                        {listsLoading ? (
-                          <CircularProgress size={20} sx={{ mr: 1 }} />
-                        ) : null}
-                        {params.InputProps.endAdornment}
-                      </>
-                    ),
-                  }}
-                />
-              )}
-              isOptionEqualToValue={(o, v) => o?.id === v?.id}
-              disablePortal
-              sx={{
-                flex: 1,
-                width: { xs: "100%", sm: "auto" },
-                minWidth: { sm: 200 },
-              }}
-            />
+            {!isCurrentUserAgent && (
+              <Autocomplete
+                options={agents}
+                getOptionLabel={(option) => option.name || ""}
+                value={agents.find((a) => a.id === filters.agent_id) || null}
+                onChange={(e, value) => handleFilterChange("agent_id", value?.id)}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Agent"
+                    size="small"
+                    InputProps={{
+                      ...params.InputProps,
+                      endAdornment: (
+                        <>
+                          {listsLoading ? (
+                            <CircularProgress size={20} sx={{ mr: 1 }} />
+                          ) : null}
+                          {params.InputProps.endAdornment}
+                        </>
+                      ),
+                    }}
+                  />
+                )}
+                isOptionEqualToValue={(o, v) => o?.id === v?.id}
+                disablePortal
+                sx={{
+                  flex: 1,
+                  width: { xs: "100%", sm: "auto" },
+                  minWidth: { sm: 200 },
+                }}
+              />
+            )}
 
             {/* Start Date */}
             <DatePicker
@@ -369,11 +374,13 @@ const PharmacyList = () => {
                   >
                     Phone
                   </TableCell>
-                  <TableCell
-                    sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                  >
-                    Agent
-                  </TableCell>
+                  {!isCurrentUserAgent && (
+                    <TableCell
+                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                    >
+                      Agent
+                    </TableCell>
+                  )}
                   <TableCell
                     sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
                   >
@@ -420,11 +427,13 @@ const PharmacyList = () => {
                       >
                         {item.phone_number}
                       </TableCell>
-                      <TableCell
-                        sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                      >
-                        {item.agent?.name || "—"}
-                      </TableCell>
+                      {!isCurrentUserAgent && (
+                        <TableCell
+                          sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                        >
+                          {item.agent?.name || "—"}
+                        </TableCell>
+                      )}
                       <TableCell
                         sx={{
                           maxWidth: 250,
@@ -468,7 +477,7 @@ const PharmacyList = () => {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={9} align="center">
+                    <TableCell colSpan={isCurrentUserAgent ? 8 : 9} align="center">
                       No pharmacy records found
                     </TableCell>
                   </TableRow>

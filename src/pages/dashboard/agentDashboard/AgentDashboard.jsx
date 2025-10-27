@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import {
   Box,
   Stack,
-  Select,
-  MenuItem,
+  TextField,
   Button,
   CircularProgress,
   Typography,
@@ -17,7 +16,10 @@ import {
 import { getAgentDashboard } from "../../../DAL/dashboard";
 
 const AgentDashboard = () => {
-  const [filter, setFilter] = useState("weekly");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [appliedStartDate, setAppliedStartDate] = useState("");
+  const [appliedEndDate, setAppliedEndDate] = useState("");
   const [incentive, setIncentive] = useState(0);
   const [loading, setLoading] = useState(false);
 
@@ -26,7 +28,7 @@ const AgentDashboard = () => {
     const fetchDashboard = async () => {
       setLoading(true);
       try {
-        const res = await getAgentDashboard(filter);
+        const res = await getAgentDashboard(appliedStartDate, appliedEndDate);
         const incentiveValue = res?.data?.cards?.total_incentive ?? 0;
         setIncentive(incentiveValue);
       } catch (err) {
@@ -37,7 +39,19 @@ const AgentDashboard = () => {
     };
 
     fetchDashboard();
-  }, [filter]);
+  }, [appliedStartDate, appliedEndDate]);
+
+  const handleApplyFilters = () => {
+    setAppliedStartDate(startDate);
+    setAppliedEndDate(endDate);
+  };
+
+  const handleClearFilters = () => {
+    setStartDate("");
+    setEndDate("");
+    setAppliedStartDate("");
+    setAppliedEndDate("");
+  };
 
   return (
     <Box sx={{ minHeight: "100vh", backgroundColor: "background.default", p: { xs: 2, sm: 3 } }}>
@@ -51,47 +65,67 @@ const AgentDashboard = () => {
       >
         <WelcomeSection />
 
-        {/* Filter & Incentive */}
+        {/* Date Filters */}
         <Stack
           direction={{ xs: "column", sm: "row" }}
           spacing={2}
           alignItems="center"
           sx={{ width: { xs: "100%", sm: "auto" } }}
         >
-          <Select
+          <TextField
+            label="Start Date"
+            type="date"
             size="small"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            InputLabelProps={{ shrink: true }}
             sx={{
-              minWidth: { xs: "100%", sm: 120 },
-              borderRadius: "12px",
-              fontWeight: "bold",
+              minWidth: { xs: "100%", sm: 160 },
               bgcolor: "#fff",
-              boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
-              px: 2,
+              borderRadius: "12px",
             }}
-          >
-            <MenuItem value="daily">Daily</MenuItem>
-            <MenuItem value="weekly">Weekly</MenuItem>
-            <MenuItem value="monthly">Monthly</MenuItem>
-          </Select>
+          />
 
-          {/* <Button
+          <TextField
+            label="End Date"
+            type="date"
+            size="small"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            sx={{
+              minWidth: { xs: "100%", sm: 160 },
+              bgcolor: "#fff",
+              borderRadius: "12px",
+            }}
+          />
+
+          <Button
             variant="contained"
+            onClick={handleApplyFilters}
             sx={{
               borderRadius: "12px",
               fontWeight: "bold",
               px: 3,
-              width: { xs: "100%", sm: "auto" },
+              minWidth: { xs: "100%", sm: "auto" },
             }}
-            disabled={loading}
           >
-            {loading ? (
-              <CircularProgress size={18} color="inherit" />
-            ) : (
-              `Incentive: ${incentive} Rs.`
-            )}
-          </Button> */}
+            Apply
+          </Button>
+
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={handleClearFilters}
+            sx={{
+              borderRadius: "12px",
+              fontWeight: "bold",
+              px: 3,
+              minWidth: { xs: "100%", sm: "auto" },
+            }}
+          >
+            Clear
+          </Button>
         </Stack>
       </Stack>
 
@@ -111,16 +145,16 @@ const AgentDashboard = () => {
           >
             Stat Cards
           </Typography>
-          <AgentStatsCards filter={filter} />
+          <AgentStatsCards startDate={appliedStartDate} endDate={appliedEndDate} />
         </Box>
 
         <Box sx={{ mb: 4, width: { xs: "100%", lg: "55%" } }}>
-          <AgentAppointmentLeaderboard filter={filter} />
+          <AgentAppointmentLeaderboard startDate={appliedStartDate} endDate={appliedEndDate} />
         </Box>
       </Stack>
 
       <Box sx={{ mt: 4, mb: 4, pl: { xs: 0, lg: 8 }, width: { xs: "100%", lg: "95%" } }}>
-        <DoctorsAvailabilityCard filter={filter} />
+        <DoctorsAvailabilityCard startDate={appliedStartDate} endDate={appliedEndDate} />
       </Box>
     </Box>
   );  
