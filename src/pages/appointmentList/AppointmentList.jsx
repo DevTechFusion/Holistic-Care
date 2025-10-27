@@ -52,6 +52,8 @@ const AppointmentsPage = () => {
     agent_id: "",
     department_id: "",
     procedure_id: "",
+    patient_name: "",
+    contact_number: "",
     order_by: "created_at",
     order_direction: "desc",
   });
@@ -100,6 +102,8 @@ const AppointmentsPage = () => {
         apiFilters.agent_id,
         apiFilters.department_id,
         apiFilters.procedure_id,
+        apiFilters.patient_name,
+        apiFilters.contact_number,
         apiFilters.order_by,
         apiFilters.order_direction
       );
@@ -185,6 +189,8 @@ const AppointmentsPage = () => {
       agent_id: "",
       department_id: "",
       procedure_id: "",
+      patient_name: "",
+      contact_number: "",
       order_by: "created_at",
       order_direction: "desc",
     };
@@ -202,7 +208,7 @@ const AppointmentsPage = () => {
         gap={{ xs: 1.5, sm: 0 }}
         mb={{ xs: 2, sm: 2 }}
       >
-        <Typography 
+        <Typography
           variant="h5"
           sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem" } }}
         >
@@ -210,8 +216,8 @@ const AppointmentsPage = () => {
         </Typography>
         <Box display="flex" gap={2}>
           {hasPermission(MODULES.APPOINTMENTS, PERMISSIONS.CREATE) && (
-            <Button 
-              variant="contained" 
+            <Button
+              variant="contained"
               onClick={handleCreateAppointment}
               sx={{ width: { xs: "100%", sm: "auto" } }}
             >
@@ -228,7 +234,7 @@ const AppointmentsPage = () => {
           <Stack
             direction={{ xs: "column", md: "row" }}
             spacing={2}
-            alignItems="center"
+            alignItems="stretch"
           >
             <TextField
               label="Start Date"
@@ -237,9 +243,8 @@ const AppointmentsPage = () => {
               onChange={(e) => handleFilterChange("start_date", e.target.value)}
               InputLabelProps={{ shrink: true }}
               size="small"
-              sx={{ flex: 1, minWidth: 200 }}
+              sx={{ flex: 1 }}
             />
-
             <TextField
               label="End Date"
               type="date"
@@ -247,7 +252,17 @@ const AppointmentsPage = () => {
               onChange={(e) => handleFilterChange("end_date", e.target.value)}
               InputLabelProps={{ shrink: true }}
               size="small"
-              sx={{ flex: 1, minWidth: 200 }}
+              sx={{ flex: 1 }}
+            />
+            <TextField
+              label="Patient Name"
+              value={filters.patient_name}
+              onChange={(e) =>
+                handleFilterChange("patient_name", e.target.value)
+              }
+              
+              size="small"
+              sx={{ flex: 1 }}
             />
 
             <Autocomplete
@@ -262,7 +277,7 @@ const AppointmentsPage = () => {
               )}
               isOptionEqualToValue={(o, v) => o?.id === v?.id}
               disablePortal
-              sx={{ flex: 1, minWidth: 200 }}
+              sx={{ flex: 1 }}
             />
           </Stack>
 
@@ -270,20 +285,33 @@ const AppointmentsPage = () => {
           <Stack
             direction={{ xs: "column", md: "row" }}
             spacing={2}
-            alignItems="center"
+            alignItems="stretch"
           >
+            <TextField
+              label="Contact Number"
+              value={filters.contact_number}
+              onChange={(e) =>
+                handleFilterChange("contact_number", e.target.value)
+              }
+              
+              size="small"
+              sx={{ flex: 1 }}
+            />
+
             {!isCurrentUserAgent && (
               <Autocomplete
                 options={agents}
                 getOptionLabel={(option) => option.name || ""}
                 value={agents.find((a) => a.id === filters.agent_id) || null}
-                onChange={(e, value) => handleFilterChange("agent_id", value?.id)}
+                onChange={(e, value) =>
+                  handleFilterChange("agent_id", value?.id)
+                }
                 renderInput={(params) => (
                   <TextField {...params} label="Agent" size="small" />
                 )}
                 isOptionEqualToValue={(o, v) => o?.id === v?.id}
                 disablePortal
-                sx={{ flex: 1, minWidth: 200 }}
+                sx={{ flex: 1 }}
               />
             )}
 
@@ -295,7 +323,7 @@ const AppointmentsPage = () => {
                 handleFilterChange("department_id", e.target.value)
               }
               size="small"
-              sx={{ flex: 1, minWidth: 200 }}
+              sx={{ flex: 1 }}
             >
               <MenuItem value="">All Departments</MenuItem>
               {departments.map((d) => (
@@ -305,49 +333,66 @@ const AppointmentsPage = () => {
               ))}
             </TextField>
 
-            <Stack
-              direction="row"
-              spacing={2}
-              alignItems="center"
-              sx={{ flex: 1, minWidth: 200 }}
-            >
-              <Autocomplete
-                options={procedures}
-                getOptionLabel={(option) => option.name || ""}
-                value={
-                  procedures.find((p) => p.id === filters.procedure_id) || null
-                }
-                onChange={(e, value) =>
-                  handleFilterChange("procedure_id", value?.id)
-                }
-                renderInput={(params) => (
-                  <TextField {...params} label="Procedure" size="small" />
-                )}
-                isOptionEqualToValue={(o, v) => o?.id === v?.id}
-                disablePortal
-                sx={{ flex: 1 }}
-              />
-
-              <Button
-                variant="outlined"
-                color="error"
-                onClick={clearFilters}
-                size="small"
-                sx={{
-                  whiteSpace: "nowrap",
-                  flexShrink: 0,
-                }}
-              >
-                Clear
-              </Button>
-            </Stack>
+            <Autocomplete
+              options={procedures}
+              getOptionLabel={(option) => option.name || ""}
+              value={
+                procedures.find((p) => p.id === filters.procedure_id) || null
+              }
+              onChange={(e, value) =>
+                handleFilterChange("procedure_id", value?.id)
+              }
+              renderInput={(params) => (
+                <TextField {...params} label="Procedure" size="small" />
+              )}
+              isOptionEqualToValue={(o, v) => o?.id === v?.id}
+              disablePortal
+              sx={{ flex: 1 }}
+            />
           </Stack>
+
+          {/* Actions Row */}
+          <Box display="flex" justifyContent="space-between" alignItems="center">
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={() => handleFilterChange("order_direction", filters.order_direction === 'asc' ? 'desc' : 'asc')}
+              size="small"
+              startIcon={filters.order_direction === 'asc' ? '↑' : '↓'}
+              sx={{
+                whiteSpace: "nowrap",
+                minWidth: 120,
+                height: 36,
+              }}
+            >
+              {filters.order_direction === 'asc' ? 'Oldest First' : 'Newest First'}
+            </Button>
+            
+            <Button
+              variant="outlined"
+              color="error"
+              onClick={clearFilters}
+              size="small"
+              sx={{ 
+                whiteSpace: "nowrap",
+                height: 36,
+                px: 2,
+              }}
+            >
+              Clear
+            </Button>
+          </Box>
         </Stack>
       </Paper>
 
       <Paper sx={{ overflowX: "auto" }}>
         {loading ? (
-          <Box display="flex" justifyContent="center" alignItems="center" p={{ xs: 2, sm: 3 }}>
+          <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            p={{ xs: 2, sm: 3 }}
+          >
             <CircularProgress />
           </Box>
         ) : (
@@ -356,21 +401,69 @@ const AppointmentsPage = () => {
               <Table fixed sx={{ minWidth: { xs: 800, sm: "auto" } }}>
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Sr#</TableCell>
-                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Date</TableCell>
-                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Start Time</TableCell>
-                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>End Time</TableCell>
+                    <TableCell
+                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                    >
+                      Sr#
+                    </TableCell>
+                    <TableCell
+                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                    >
+                      Date
+                    </TableCell>
+                    <TableCell
+                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                    >
+                      Start Time
+                    </TableCell>
+                    <TableCell
+                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                    >
+                      End Time
+                    </TableCell>
                     {/* <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Appt. ID</TableCell> */}
-                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Patient</TableCell>
-                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Contact</TableCell>
-                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Doctor</TableCell>
+                    <TableCell
+                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                    >
+                      Patient
+                    </TableCell>
+                    <TableCell
+                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                    >
+                      Contact
+                    </TableCell>
+                    <TableCell
+                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                    >
+                      Doctor
+                    </TableCell>
                     {!isCurrentUserAgent && (
-                      <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Agent</TableCell>
+                      <TableCell
+                        sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                      >
+                        Agent
+                      </TableCell>
                     )}
-                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Procedure</TableCell>
-                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Department</TableCell>
-                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Source</TableCell>
-                    <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Actions</TableCell>
+                    <TableCell
+                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                    >
+                      Procedure
+                    </TableCell>
+                    <TableCell
+                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                    >
+                      Department
+                    </TableCell>
+                    <TableCell
+                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                    >
+                      Source
+                    </TableCell>
+                    <TableCell
+                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                    >
+                      Actions
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -389,26 +482,62 @@ const AppointmentsPage = () => {
                         >
                           {page * rowsPerPage + idx + 1}
                         </TableCell>
-                        <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
+                        <TableCell
+                          sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                        >
                           {dayjs(appt.date).format("DD-MM-YYYY")}
                         </TableCell>
-                        <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{appt.start_time}</TableCell>
-                        <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{appt.end_time}</TableCell>
+                        <TableCell
+                          sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                        >
+                          {appt.start_time}
+                        </TableCell>
+                        <TableCell
+                          sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                        >
+                          {appt.end_time}
+                        </TableCell>
                         {/* <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{appt.id}</TableCell> */}
-                        <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{appt.patient_name}</TableCell>
-                        <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{appt.contact_number}</TableCell>
-                        <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{appt.doctor?.name}</TableCell>
+                        <TableCell
+                          sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                        >
+                          {appt.patient_name}
+                        </TableCell>
+                        <TableCell
+                          sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                        >
+                          {appt.contact_number}
+                        </TableCell>
+                        <TableCell
+                          sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                        >
+                          {appt.doctor?.name}
+                        </TableCell>
                         {!isCurrentUserAgent && (
-                          <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{appt.agent?.name}</TableCell>
+                          <TableCell
+                            sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                          >
+                            {appt.agent?.name}
+                          </TableCell>
                         )}
-                        <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
+                        <TableCell
+                          sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                        >
                           {Array.isArray(appt.procedures) &&
                           appt.procedures.length > 0
                             ? appt.procedures.map((p) => p.name).join(", ")
                             : appt.procedure?.name || "-"}
                         </TableCell>
-                        <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{appt.department?.name}</TableCell>
-                        <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{appt.source?.name}</TableCell>
+                        <TableCell
+                          sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                        >
+                          {appt.department?.name}
+                        </TableCell>
+                        <TableCell
+                          sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                        >
+                          {appt.source?.name}
+                        </TableCell>
                         <TableCell>
                           <ActionButtons
                             onEdit={
@@ -441,7 +570,10 @@ const AppointmentsPage = () => {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={isCurrentUserAgent ? 12 : 13} align="center">
+                      <TableCell
+                        colSpan={isCurrentUserAgent ? 12 : 13}
+                        align="center"
+                      >
                         No appointments found
                       </TableCell>
                     </TableRow>

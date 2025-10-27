@@ -259,7 +259,7 @@ const DoctorLeaderboard = ({ startDate, endDate }) => {
                 >
                   {doc.doctor?.department_name || "N/A"}
                 </Box>
-                <Typography
+                {/* <Typography
                   variant="caption"
                   sx={{
                     color: "#6B7280",
@@ -278,7 +278,7 @@ const DoctorLeaderboard = ({ startDate, endDate }) => {
                   >
                     {doc.agent?.name || "N/A"}
                   </Typography>
-                </Typography>
+                </Typography> */}
               </Box>
             </Box>
           ))}

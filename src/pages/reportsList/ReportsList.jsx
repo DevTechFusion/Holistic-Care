@@ -78,6 +78,8 @@ const ReportsPage = () => {
     remarks_1_id: "",
     remarks_2_id: "",
     payment_mode: "",
+    patient_name: "",
+    contact_number: "",
     order_by: "created_at",
     order_direction: "desc",
   });
@@ -170,7 +172,9 @@ const ReportsPage = () => {
         apiFilters.remarks_2_id,
         apiFilters.payment_mode,
         apiFilters.order_by,
-        apiFilters.order_direction
+        apiFilters.order_direction,
+        apiFilters.patient_name,
+        apiFilters.contact_number
       );
 
       setReports(res?.data?.data || []);
@@ -210,7 +214,9 @@ const ReportsPage = () => {
         apiFilters.remarks_2_id,
         apiFilters.payment_mode,
         apiFilters.order_by,
-        apiFilters.order_direction
+        apiFilters.order_direction,
+        apiFilters.patient_name,
+        apiFilters.contact_number
       );
 
       const blob =
@@ -261,6 +267,8 @@ const ReportsPage = () => {
       remarks_1_id: "",
       remarks_2_id: "",
       payment_mode: "",
+      patient_name: "",
+      contact_number: "",
       order_by: "created_at",
       order_direction: "desc",
     };
@@ -303,14 +311,14 @@ const ReportsPage = () => {
       {/* Inline Filters */}
       <Paper sx={{ mb: 2, p: { xs: 2, sm: 3 } }}>
         <Stack spacing={2.5}>
-          {/* Row 1: 4 Fields */}
+          {/* Row 1 */}
           <Stack
             direction={{ xs: "column", sm: "row" }}
-            spacing={2}
+            spacing={2.5}
             sx={{
               "& > *": {
                 flex: 1,
-                minWidth: { xs: "100%", sm: 0 },
+                minWidth: { xs: "100%", sm: "0" },
               },
             }}
           >
@@ -321,7 +329,6 @@ const ReportsPage = () => {
               onChange={(e) => handleFilterChange("start_date", e.target.value)}
               InputLabelProps={{ shrink: true }}
               size="small"
-              fullWidth
             />
 
             <TextField
@@ -331,9 +338,40 @@ const ReportsPage = () => {
               onChange={(e) => handleFilterChange("end_date", e.target.value)}
               InputLabelProps={{ shrink: true }}
               size="small"
-              fullWidth
             />
 
+            <TextField
+              label="Patient Name"
+              placeholder="Search by patient name..."
+              value={filters.patient_name}
+              onChange={(e) =>
+                handleFilterChange("patient_name", e.target.value)
+              }
+              size="small"
+            />
+
+            <TextField
+              label="Contact Number"
+              placeholder="Search by contact number..."
+              value={filters.contact_number}
+              onChange={(e) =>
+                handleFilterChange("contact_number", e.target.value)
+              }
+              size="small"
+            />
+          </Stack>
+
+          {/* Row 2 */}
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={2.5}
+            sx={{
+              "& > *": {
+                flex: 1,
+                minWidth: { xs: "100%", sm: "0" },
+              },
+            }}
+          >
             <Autocomplete
               options={doctors}
               getOptionLabel={(option) => option.name || ""}
@@ -346,7 +384,6 @@ const ReportsPage = () => {
               )}
               isOptionEqualToValue={(o, v) => o?.id === v?.id}
               disablePortal
-              fullWidth
             />
 
             {!isCurrentUserAgent && (
@@ -354,28 +391,17 @@ const ReportsPage = () => {
                 options={agents}
                 getOptionLabel={(option) => option.name || ""}
                 value={agents.find((a) => a.id === filters.agent_id) || null}
-                onChange={(e, value) => handleFilterChange("agent_id", value?.id)}
+                onChange={(e, value) =>
+                  handleFilterChange("agent_id", value?.id)
+                }
                 renderInput={(params) => (
                   <TextField {...params} label="Agent" size="small" />
                 )}
                 isOptionEqualToValue={(o, v) => o?.id === v?.id}
                 disablePortal
-                fullWidth
               />
             )}
-          </Stack>
 
-          {/* Row 2: 4 Fields */}
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            spacing={2}
-            sx={{
-              "& > *": {
-                flex: 1,
-                minWidth: { xs: "100%", sm: 0 },
-              },
-            }}
-          >
             <TextField
               select
               label="Department"
@@ -384,7 +410,6 @@ const ReportsPage = () => {
                 handleFilterChange("department_id", e.target.value)
               }
               size="small"
-              fullWidth
             >
               <MenuItem value="">All Departments</MenuItem>
               {departments.map((d) => (
@@ -408,9 +433,20 @@ const ReportsPage = () => {
               )}
               isOptionEqualToValue={(o, v) => o?.id === v?.id}
               disablePortal
-              fullWidth
             />
+          </Stack>
 
+          {/* Row 3 */}
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={2.5}
+            sx={{
+              "& > *": {
+                flex: 1,
+                minWidth: { xs: "100%", sm: "0" },
+              },
+            }}
+          >
             <Autocomplete
               options={statuses}
               getOptionLabel={(option) => option.name || ""}
@@ -421,7 +457,6 @@ const ReportsPage = () => {
               )}
               isOptionEqualToValue={(o, v) => o?.id === v?.id}
               disablePortal
-              fullWidth
             />
 
             <Autocomplete
@@ -438,19 +473,8 @@ const ReportsPage = () => {
               )}
               isOptionEqualToValue={(o, v) => o?.id === v?.id}
               disablePortal
-              fullWidth
             />
-          </Stack>
 
-          {/* Row 3: 2 Fields + Clear Button (Centered) */}
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            spacing={2}
-            sx={{
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
             <Autocomplete
               options={remarks2}
               getOptionLabel={(option) => option.name || ""}
@@ -465,9 +489,6 @@ const ReportsPage = () => {
               )}
               isOptionEqualToValue={(o, v) => o?.id === v?.id}
               disablePortal
-              sx={{
-                width: { xs: "100%", sm: "calc(25% - 8px)" },
-              }}
             />
 
             <Autocomplete
@@ -484,11 +505,27 @@ const ReportsPage = () => {
               )}
               isOptionEqualToValue={(o, v) => o?.id === v?.id}
               disablePortal
-              sx={{
-                width: { xs: "100%", sm: "calc(25% - 8px)" },
-              }}
             />
+          </Stack>
 
+          {/* Action Buttons */}
+          <Box display="flex" justifyContent="space-between" mt={1}>
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={() => handleFilterChange("order_direction", filters.order_direction === 'asc' ? 'desc' : 'asc')}
+              size="small"
+              startIcon={filters.order_direction === 'asc' ? '↑' : '↓'}
+              sx={{
+                height: 40,
+                px: 3,
+                whiteSpace: "nowrap",
+                minWidth: 120,
+              }}
+            >
+              {filters.order_direction === 'asc' ? 'Oldest First' : 'Newest First'}
+            </Button>
+            
             <Button
               variant="outlined"
               color="error"
@@ -498,12 +535,11 @@ const ReportsPage = () => {
                 height: 40,
                 px: 4,
                 whiteSpace: "nowrap",
-                width: { xs: "100%", sm: "auto" },
               }}
             >
               Clear Filters
             </Button>
-          </Stack>
+          </Box>
         </Stack>
       </Paper>
 
@@ -520,255 +556,332 @@ const ReportsPage = () => {
           </Box>
         ) : (
           <>
-            <Grid container spacing={{ xs: 2, sm: 2, md: 3 }} sx={{ p: { xs: 2, sm: 2, md: 3 } }}>
-              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }}>
-                <Card
-                  sx={{
-                    backgroundColor: "#F7F7F7",
-                    boxShadow: 3,
-                    borderRadius: "12px",
-                    width: "100%",
-                    height: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "center", p: { xs: 2, sm: 2.5, md: 3 } }}>
-                    <Typography
-                      gutterBottom
-                      variant="h6"
-                      component="div"
+            {!isCurrentUserAgent && (
+              <Grid
+                container
+                spacing={{ xs: 2, sm: 2, md: 3 }}
+                sx={{ p: { xs: 2, sm: 2, md: 3 } }}
+              >
+                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }}>
+                  <Card
+                    sx={{
+                      backgroundColor: "#F7F7F7",
+                      boxShadow: 3,
+                      borderRadius: "12px",
+                      width: "100%",
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <CardContent
                       sx={{
-                        fontFamily: '"Inter", sans-serif',
-                        textAlign: "center",
-                        fontSize: { xs: "1rem", sm: "1.1rem", md: "1.25rem" },
+                        flexGrow: 1,
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                        p: { xs: 2, sm: 2.5, md: 3 },
                       }}
                     >
-                      Arrived Ratio
-                    </Typography>
-                    <Typography
+                      <Typography
+                        gutterBottom
+                        variant="h6"
+                        component="div"
+                        sx={{
+                          fontFamily: '"Inter", sans-serif',
+                          textAlign: "center",
+                          fontSize: { xs: "1rem", sm: "1.1rem", md: "1.25rem" },
+                        }}
+                      >
+                        Arrived Ratio
+                      </Typography>
+                      <Typography
+                        sx={{
+                          textAlign: "center",
+                          color: "#23C7B7",
+                          fontFamily: '"Inter", sans-serif',
+                          fontSize: {
+                            xs: "1.25rem",
+                            sm: "1.4rem",
+                            md: "1.5rem",
+                          },
+                          fontWeight: 600,
+                        }}
+                        variant="h5"
+                        component="div"
+                      >
+                        {metrics.arrived_ratio}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }}>
+                  <Card
+                    sx={{
+                      backgroundColor: "#F7F7F7",
+                      boxShadow: 3,
+                      borderRadius: "12px",
+                      width: "100%",
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <CardContent
                       sx={{
-                        textAlign: "center",
-                        color: "#23C7B7",
-                        fontFamily: '"Inter", sans-serif',
-                        fontSize: { xs: "1.25rem", sm: "1.4rem", md: "1.5rem" },
-                        fontWeight: 600,
+                        flexGrow: 1,
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                        p: { xs: 2, sm: 2.5, md: 3 },
                       }}
-                      variant="h5"
-                      component="div"
                     >
-                      {metrics.arrived_ratio}
-                    </Typography>
-                  </CardContent>
-                </Card>
+                      <Typography
+                        gutterBottom
+                        variant="h6"
+                        component="div"
+                        sx={{
+                          fontFamily: '"Inter", sans-serif',
+                          textAlign: "center",
+                          fontSize: { xs: "1rem", sm: "1.1rem", md: "1.25rem" },
+                        }}
+                      >
+                        Arrived Revenue
+                      </Typography>
+                      <Typography
+                        sx={{
+                          textAlign: "center",
+                          color: "#23C7B7",
+                          fontFamily: '"Inter", sans-serif',
+                          fontSize: {
+                            xs: "1.25rem",
+                            sm: "1.4rem",
+                            md: "1.5rem",
+                          },
+                          fontWeight: 600,
+                        }}
+                        variant="h5"
+                        component="div"
+                      >
+                        {metrics.arrived_revenue}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }}>
+                  <Card
+                    sx={{
+                      backgroundColor: "#F7F7F7",
+                      boxShadow: 3,
+                      borderRadius: "12px",
+                      width: "100%",
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <CardContent
+                      sx={{
+                        flexGrow: 1,
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                        p: { xs: 2, sm: 2.5, md: 3 },
+                      }}
+                    >
+                      <Typography
+                        gutterBottom
+                        variant="h6"
+                        component="div"
+                        sx={{
+                          fontFamily: '"Inter", sans-serif',
+                          textAlign: "center",
+                          fontSize: { xs: "1rem", sm: "1.1rem", md: "1.25rem" },
+                        }}
+                      >
+                        Booked Revenue
+                      </Typography>
+                      <Typography
+                        sx={{
+                          textAlign: "center",
+                          color: "#23C7B7",
+                          fontFamily: '"Inter", sans-serif',
+                          fontSize: {
+                            xs: "1.25rem",
+                            sm: "1.4rem",
+                            md: "1.5rem",
+                          },
+                          fontWeight: 600,
+                        }}
+                        variant="h5"
+                        component="div"
+                      >
+                        {metrics.booked_revenue}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }}>
+                  <Card
+                    sx={{
+                      backgroundColor: "#F7F7F7",
+                      boxShadow: 3,
+                      borderRadius: "12px",
+                      width: "100%",
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <CardContent
+                      sx={{
+                        flexGrow: 1,
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                        p: { xs: 2, sm: 2.5, md: 3 },
+                      }}
+                    >
+                      <Typography
+                        gutterBottom
+                        variant="h6"
+                        component="div"
+                        sx={{
+                          fontFamily: '"Inter", sans-serif',
+                          textAlign: "center",
+                          fontSize: { xs: "1rem", sm: "1.1rem", md: "1.25rem" },
+                        }}
+                      >
+                        Total Agent Booking
+                      </Typography>
+                      <Typography
+                        sx={{
+                          textAlign: "center",
+                          color: "#23C7B7",
+                          fontFamily: '"Inter", sans-serif',
+                          fontSize: {
+                            xs: "1.25rem",
+                            sm: "1.4rem",
+                            md: "1.5rem",
+                          },
+                          fontWeight: 600,
+                        }}
+                        variant="h5"
+                        component="div"
+                      >
+                        {metrics.total_agent_booking}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }}>
+                  <Card
+                    sx={{
+                      backgroundColor: "#F7F7F7",
+                      boxShadow: 3,
+                      borderRadius: "12px",
+                      width: "100%",
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <CardContent
+                      sx={{
+                        flexGrow: 1,
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                        p: { xs: 2, sm: 2.5, md: 3 },
+                      }}
+                    >
+                      <Typography
+                        gutterBottom
+                        variant="h6"
+                        component="div"
+                        sx={{
+                          fontFamily: '"Inter", sans-serif',
+                          textAlign: "center",
+                          fontSize: { xs: "1rem", sm: "1.1rem", md: "1.25rem" },
+                        }}
+                      >
+                        Total Booking
+                      </Typography>
+                      <Typography
+                        sx={{
+                          textAlign: "center",
+                          color: "#23C7B7",
+                          fontFamily: '"Inter", sans-serif',
+                          fontSize: {
+                            xs: "1.25rem",
+                            sm: "1.4rem",
+                            md: "1.5rem",
+                          },
+                          fontWeight: 600,
+                        }}
+                        variant="h5"
+                        component="div"
+                      >
+                        {metrics.total_booking}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }}>
+                  <Card
+                    sx={{
+                      backgroundColor: "#F7F7F7",
+                      boxShadow: 3,
+                      borderRadius: "12px",
+                      width: "100%",
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <CardContent
+                      sx={{
+                        flexGrow: 1,
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                        p: { xs: 2, sm: 2.5, md: 3 },
+                      }}
+                    >
+                      <Typography
+                        gutterBottom
+                        variant="h6"
+                        component="div"
+                        sx={{
+                          fontFamily: '"Inter", sans-serif',
+                          textAlign: "center",
+                          fontSize: { xs: "1rem", sm: "1.1rem", md: "1.25rem" },
+                        }}
+                      >
+                        Total Doctor Booking
+                      </Typography>
+                      <Typography
+                        sx={{
+                          textAlign: "center",
+                          color: "#23C7B7",
+                          fontFamily: '"Inter", sans-serif',
+                          fontSize: {
+                            xs: "1.25rem",
+                            sm: "1.4rem",
+                            md: "1.5rem",
+                          },
+                          fontWeight: 600,
+                        }}
+                        variant="h5"
+                        component="div"
+                      >
+                        {metrics.total_doctor_booking}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
               </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }}>
-                <Card
-                  sx={{
-                    backgroundColor: "#F7F7F7",
-                    boxShadow: 3,
-                    borderRadius: "12px",
-                    width: "100%",
-                    height: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "center", p: { xs: 2, sm: 2.5, md: 3 } }}>
-                    <Typography
-                      gutterBottom
-                      variant="h6"
-                      component="div"
-                      sx={{
-                        fontFamily: '"Inter", sans-serif',
-                        textAlign: "center",
-                        fontSize: { xs: "1rem", sm: "1.1rem", md: "1.25rem" },
-                      }}
-                    >
-                      Arrived Revenue
-                    </Typography>
-                    <Typography
-                      sx={{
-                        textAlign: "center",
-                        color: "#23C7B7",
-                        fontFamily: '"Inter", sans-serif',
-                        fontSize: { xs: "1.25rem", sm: "1.4rem", md: "1.5rem" },
-                        fontWeight: 600,
-                      }}
-                      variant="h5"
-                      component="div"
-                    >
-                      {metrics.arrived_revenue}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }}>
-                <Card
-                  sx={{
-                    backgroundColor: "#F7F7F7",
-                    boxShadow: 3,
-                    borderRadius: "12px",
-                    width: "100%",
-                    height: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "center", p: { xs: 2, sm: 2.5, md: 3 } }}>
-                    <Typography
-                      gutterBottom
-                      variant="h6"
-                      component="div"
-                      sx={{
-                        fontFamily: '"Inter", sans-serif',
-                        textAlign: "center",
-                        fontSize: { xs: "1rem", sm: "1.1rem", md: "1.25rem" },
-                      }}
-                    >
-                      Booked Revenue
-                    </Typography>
-                    <Typography
-                      sx={{
-                        textAlign: "center",
-                        color: "#23C7B7",
-                        fontFamily: '"Inter", sans-serif',
-                        fontSize: { xs: "1.25rem", sm: "1.4rem", md: "1.5rem" },
-                        fontWeight: 600,
-                      }}
-                      variant="h5"
-                      component="div"
-                    >
-                      {metrics.booked_revenue}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }}>
-                <Card
-                  sx={{
-                    backgroundColor: "#F7F7F7",
-                    boxShadow: 3,
-                    borderRadius: "12px",
-                    width: "100%",
-                    height: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "center", p: { xs: 2, sm: 2.5, md: 3 } }}>
-                    <Typography
-                      gutterBottom
-                      variant="h6"
-                      component="div"
-                      sx={{
-                        fontFamily: '"Inter", sans-serif',
-                        textAlign: "center",
-                        fontSize: { xs: "1rem", sm: "1.1rem", md: "1.25rem" },
-                      }}
-                    >
-                      Total Agent Booking
-                    </Typography>
-                    <Typography
-                      sx={{
-                        textAlign: "center",
-                        color: "#23C7B7",
-                        fontFamily: '"Inter", sans-serif',
-                        fontSize: { xs: "1.25rem", sm: "1.4rem", md: "1.5rem" },
-                        fontWeight: 600,
-                      }}
-                      variant="h5"
-                      component="div"
-                    >
-                      {metrics.total_agent_booking}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }}>
-                <Card
-                  sx={{
-                    backgroundColor: "#F7F7F7",
-                    boxShadow: 3,
-                    borderRadius: "12px",
-                    width: "100%",
-                    height: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "center", p: { xs: 2, sm: 2.5, md: 3 } }}>
-                    <Typography
-                      gutterBottom
-                      variant="h6"
-                      component="div"
-                      sx={{
-                        fontFamily: '"Inter", sans-serif',
-                        textAlign: "center",
-                        fontSize: { xs: "1rem", sm: "1.1rem", md: "1.25rem" },
-                      }}
-                    >
-                      Total Booking
-                    </Typography>
-                    <Typography
-                      sx={{
-                        textAlign: "center",
-                        color: "#23C7B7",
-                        fontFamily: '"Inter", sans-serif',
-                        fontSize: { xs: "1.25rem", sm: "1.4rem", md: "1.5rem" },
-                        fontWeight: 600,
-                      }}
-                      variant="h5"
-                      component="div"
-                    >
-                      {metrics.total_booking}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }}>
-                <Card
-                  sx={{
-                    backgroundColor: "#F7F7F7",
-                    boxShadow: 3,
-                    borderRadius: "12px",
-                    width: "100%",
-                    height: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "center", p: { xs: 2, sm: 2.5, md: 3 } }}>
-                    <Typography
-                      gutterBottom
-                      variant="h6"
-                      component="div"
-                      sx={{
-                        fontFamily: '"Inter", sans-serif',
-                        textAlign: "center",
-                        fontSize: { xs: "1rem", sm: "1.1rem", md: "1.25rem" },
-                      }}
-                    >
-                      Total Doctor Booking
-                    </Typography>
-                    <Typography
-                      sx={{
-                        textAlign: "center",
-                        color: "#23C7B7",
-                        fontFamily: '"Inter", sans-serif',
-                        fontSize: { xs: "1.25rem", sm: "1.4rem", md: "1.5rem" },
-                        fontWeight: 600,
-                      }}
-                      variant="h5"
-                      component="div"
-                    >
-                      {metrics.total_doctor_booking}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            </Grid>
-
+            )}
             <TableContainer sx={{ maxHeight: { xs: 500, sm: 600, md: 700 } }}>
               <Table stickyHeader sx={{ minWidth: { xs: 900, sm: "auto" } }}>
                 <TableHead>
@@ -909,7 +1022,9 @@ const ReportsPage = () => {
                           </TableCell>
                           {!isCurrentUserAgent && (
                             <TableCell
-                              sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                              sx={{
+                                fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                              }}
                             >
                               {rep.appointment?.agent?.name}
                             </TableCell>
@@ -949,7 +1064,10 @@ const ReportsPage = () => {
                     })
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={isCurrentUserAgent ? 13 : 14} align="center">
+                      <TableCell
+                        colSpan={isCurrentUserAgent ? 13 : 14}
+                        align="center"
+                      >
                         No reports found
                       </TableCell>
                     </TableRow>
