@@ -260,7 +260,6 @@ const AppointmentsPage = () => {
               onChange={(e) =>
                 handleFilterChange("patient_name", e.target.value)
               }
-              
               size="small"
               sx={{ flex: 1 }}
             />
@@ -293,7 +292,6 @@ const AppointmentsPage = () => {
               onChange={(e) =>
                 handleFilterChange("contact_number", e.target.value)
               }
-              
               size="small"
               sx={{ flex: 1 }}
             />
@@ -352,28 +350,39 @@ const AppointmentsPage = () => {
           </Stack>
 
           {/* Actions Row */}
-          <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
             <Button
               variant="outlined"
               color="primary"
-              onClick={() => handleFilterChange("order_direction", filters.order_direction === 'asc' ? 'desc' : 'asc')}
+              onClick={() =>
+                handleFilterChange(
+                  "order_direction",
+                  filters.order_direction === "asc" ? "desc" : "asc"
+                )
+              }
               size="small"
-              startIcon={filters.order_direction === 'asc' ? '↑' : '↓'}
+              startIcon={filters.order_direction === "asc" ? "↑" : "↓"}
               sx={{
                 whiteSpace: "nowrap",
                 minWidth: 120,
                 height: 36,
               }}
             >
-              {filters.order_direction === 'asc' ? 'Oldest First' : 'Newest First'}
+              {filters.order_direction === "asc"
+                ? "Oldest First"
+                : "Newest First"}
             </Button>
-            
+
             <Button
               variant="outlined"
               color="error"
               onClick={clearFilters}
               size="small"
-              sx={{ 
+              sx={{
                 whiteSpace: "nowrap",
                 height: 36,
                 px: 2,
@@ -398,7 +407,7 @@ const AppointmentsPage = () => {
         ) : (
           <>
             <TableContainer sx={{ maxHeight: { xs: 500, sm: 600, md: 700 } }}>
-              <Table fixed sx={{ minWidth: { xs: 800, sm: "auto" } }}>
+              <Table stickyHeader sx={{ minWidth: { xs: 800, sm: "auto" } }}>
                 <TableHead>
                   <TableRow>
                     <TableCell
@@ -409,7 +418,12 @@ const AppointmentsPage = () => {
                     <TableCell
                       sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
                     >
-                      Date
+                      Booking   Date
+                    </TableCell>
+                    <TableCell
+                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                    >
+                      Created Date
                     </TableCell>
                     <TableCell
                       sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
@@ -462,6 +476,31 @@ const AppointmentsPage = () => {
                     <TableCell
                       sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
                     >
+                      Status
+                    </TableCell>
+                    <TableCell
+                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                    >
+                      Remarks#1
+                    </TableCell>
+                    <TableCell
+                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                    >
+                      Remarks#2
+                    </TableCell>
+                    <TableCell
+                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                    >
+                      Amount
+                    </TableCell>
+                    <TableCell
+                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                    >
+                      MOP
+                    </TableCell>
+                    <TableCell
+                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                    >
                       Actions
                     </TableCell>
                   </TableRow>
@@ -486,6 +525,11 @@ const AppointmentsPage = () => {
                           sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
                         >
                           {dayjs(appt.date).format("DD-MM-YYYY")}
+                        </TableCell>
+                        <TableCell
+                          sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                        >
+                          {dayjs(appt.created_at).format("DD-MM-YYYY")}
                         </TableCell>
                         <TableCell
                           sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
@@ -537,6 +581,31 @@ const AppointmentsPage = () => {
                           sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
                         >
                           {appt.source?.name}
+                        </TableCell>
+                        <TableCell
+                          sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                        >
+                          {appt.status?.name}
+                        </TableCell>
+                        <TableCell
+                          sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                        >
+                          {appt.remarks1?.name}
+                        </TableCell>
+                        <TableCell
+                          sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                        >
+                          {appt.remarks2?.name}
+                        </TableCell>
+                        <TableCell
+                          sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                        >
+                          {appt.amount}
+                        </TableCell>
+                        <TableCell
+                          sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                        >
+                          {appt.payment_mode}
                         </TableCell>
                         <TableCell>
                           <ActionButtons
