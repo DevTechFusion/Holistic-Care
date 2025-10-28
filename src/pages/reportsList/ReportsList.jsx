@@ -22,6 +22,7 @@ import {
   TextField,
   Autocomplete,
   MenuItem,
+  TableSortLabel,
 } from "@mui/material";
 
 import { getAllReports, exportReports } from "../../DAL/reports";
@@ -513,9 +514,14 @@ const ReportsPage = () => {
             <Button
               variant="outlined"
               color="primary"
-              onClick={() => handleFilterChange("order_direction", filters.order_direction === 'asc' ? 'desc' : 'asc')}
+              onClick={() =>
+                handleFilterChange(
+                  "order_direction",
+                  filters.order_direction === "asc" ? "desc" : "asc"
+                )
+              }
               size="small"
-              startIcon={filters.order_direction === 'asc' ? '↑' : '↓'}
+              startIcon={filters.order_direction === "asc" ? "↑" : "↓"}
               sx={{
                 height: 40,
                 px: 3,
@@ -523,9 +529,11 @@ const ReportsPage = () => {
                 minWidth: 120,
               }}
             >
-              {filters.order_direction === 'asc' ? 'Oldest First' : 'Newest First'}
+              {filters.order_direction === "asc"
+                ? "Oldest First"
+                : "Newest First"}
             </Button>
-            
+
             <Button
               variant="outlined"
               color="error"
@@ -892,9 +900,33 @@ const ReportsPage = () => {
                       Sr#
                     </TableCell>
                     <TableCell
+                      sortDirection={
+                        filters.order_by === "created_at"
+                          ? filters.order_direction
+                          : false
+                      }
                       sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
                     >
-                      Date
+                      <TableSortLabel
+                        active={filters.order_by === "created_at"}
+                        direction={filters.order_direction}
+                        onClick={() => {
+                          const direction =
+                            filters.order_by === "created_at" &&
+                            filters.order_direction === "asc"
+                              ? "desc"
+                              : "asc";
+                          handleFilterChange("order_by", "created_at");
+                          handleFilterChange("order_direction", direction);
+                        }}
+                      >
+                        Created Date
+                      </TableSortLabel>
+                    </TableCell>
+                    <TableCell
+                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                    >
+                      Booking Date
                     </TableCell>
                     <TableCell
                       sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
@@ -987,6 +1019,13 @@ const ReportsPage = () => {
                             }}
                           >
                             {page * rowsPerPage + idx + 1}
+                          </TableCell>
+                          <TableCell
+                            sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                          >
+                            {dayjs(rep.appointment?.created_at).format(
+                              "DD-MM-YYYY"
+                            )}
                           </TableCell>
                           <TableCell
                             sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}

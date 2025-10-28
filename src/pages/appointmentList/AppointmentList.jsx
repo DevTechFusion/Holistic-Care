@@ -61,8 +61,8 @@ const AppointmentsPage = () => {
     status_id: "",
     remarks_1_id: "",
     remarks_2_id: "",
-    payment_method: "",
-    order_by: "date", // Default sort by booking date
+    payment_mode: "",
+    order_by: "date", 
     order_direction: "desc",
   });
 
@@ -150,7 +150,7 @@ const AppointmentsPage = () => {
         apiFilters.status_id,
         apiFilters.remarks_1_id,
         apiFilters.remarks_2_id,
-        apiFilters.payment_method,
+        apiFilters.payment_mode,
         apiFilters.order_by,
         apiFilters.order_direction
       );
@@ -238,6 +238,10 @@ const AppointmentsPage = () => {
       procedure_id: "",
       patient_name: "",
       contact_number: "",
+      status_id: "",
+      remarks_1_id: "",
+      remarks_2_id: "",
+      payment_mode: "",
       order_by: "created_at",
       order_direction: "desc",
     };
