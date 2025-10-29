@@ -514,17 +514,14 @@ class ReportController extends Controller
             // Generate filename
             $filename = 'reports_' . $range . '_' . now()->format('Y-m-d_H-i-s') . '.csv';
             
-            // Convert to CSV string
-            $csvContent = '';
+            // Convert to CSV string using proper CSV formatting
+            $handle = fopen('php://temp', 'r+');
             foreach ($csvData as $row) {
-                $csvContent .= implode(',', array_map(function($field) {
-                    // Escape commas and quotes in CSV fields
-                    if (strpos($field, ',') !== false || strpos($field, '"') !== false) {
-                        $field = '"' . str_replace('"', '""', $field) . '"';
-                    }
-                    return $field;
-                }, $row)) . "\n";
+                fputcsv($handle, $row);
             }
+            rewind($handle);
+            $csvContent = stream_get_contents($handle);
+            fclose($handle);
             
             // Return CSV response with additional headers for better download compatibility
             return response($csvContent)
