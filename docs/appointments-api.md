@@ -1,13 +1,14 @@
 ## Appointments API
 
-This document describes the appointments endpoints and the newly added fields `remarks_1_id`, `remarks_2_id`, and `status_id` on the `appointments` resource.
+This document describes the appointments endpoints and the newly added fields `remarks_1_id`, `remarks_2_id`, `status_id`, and `location` on the `appointments` resource.
 
 ### New Fields
 - `remarks_1_id`: nullable, foreign key to `remarks_1.id`
 - `remarks_2_id`: nullable, foreign key to `remarks_2.id`
 - `status_id`: nullable, foreign key to `statuses.id`
+- `location`: nullable, string (max 255 chars)
 
-These fields are optional on create/update and will be included in responses when present. They are also eagerly loaded as relations: `remarks1`, `remarks2`, and `status`.
+These fields are optional on create/update and will be included in responses when present. Relations `remarks1`, `remarks2`, and `status` are eagerly loaded.
 
 ### Authentication
 All endpoints require Sanctum authentication and are behind `auth:sanctum` + custom token middleware. Include a Bearer token:
@@ -38,6 +39,7 @@ Request body example:
   "remarks_2_id": 9,
   "status_id": 1,
   "notes": "Optional notes",
+  "location": "Main Building - Room 305",
   "mr_number": "MR-1001"
 }
 ```
@@ -63,6 +65,7 @@ Successful response (201):
     "remarks_2_id": 9,
     "status_id": 1,
     "notes": "Optional notes",
+    "location": "Main Building - Room 305",
     "mr_number": "MR-1001",
     "created_at": "2024-01-20T10:00:00.000000Z",
     "updated_at": "2024-01-20T10:00:00.000000Z"
@@ -76,12 +79,14 @@ Successful response (201):
   - `remarks_1_id`: nullable|exists:remarks_1,id
   - `remarks_2_id`: nullable|exists:remarks_2,id
   - `status_id`: nullable|exists:statuses,id
+  - `location`: nullable|string|max:255
 
 Example request:
 ```json
 {
   "remarks_1_id": 8,
-  "status_id": 2
+  "status_id": 2,
+  "location": "East Wing - Room 201"
 }
 ```
 
@@ -213,6 +218,7 @@ GET /api/appointments?payment_mode=Insurance&doctor_id=5&start_date=2024-01-01&e
         "contact_number": "9876543210",
         "amount": 1500.00,
         "payment_mode": "Cash",
+        "location": "Main Building - Room 305",
         "doctor": {"id": 5, "name": "Dr. Smith"},
         "department": {"id": 1, "name": "Cardiology"},
         "procedure": {"id": 3, "name": "Echocardiogram"},

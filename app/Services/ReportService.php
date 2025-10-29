@@ -263,6 +263,7 @@ class ReportService extends CrudeService
             'report_type' => $reportType,
             'summary_data' => $summaryData,
             'notes' => $notes,
+            'location' => $appointment->location,
             'generated_by_id' => $generatedById,
             'generated_at' => now(),
             'amount' => $amount ?? $appointment->amount,
@@ -415,6 +416,7 @@ class ReportService extends CrudeService
             $updateData = [
                 'summary_data' => $summaryData,
                 'notes' => $appointment->notes,
+                'location' => $appointment->location,
                 'amount' => $appointment->amount,
                 'payment_method' => $appointment->payment_mode,
                 'remarks_1_id' => $appointment->remarks_1_id,

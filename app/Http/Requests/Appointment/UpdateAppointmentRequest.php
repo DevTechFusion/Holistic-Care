@@ -41,6 +41,7 @@ class UpdateAppointmentRequest extends FormRequest
             'remarks_2_id' => 'nullable|exists:remarks_2,id',
             'status_id' => 'nullable|exists:statuses,id',
             'notes' => 'nullable|string',
+            'location' => 'nullable|string|max:255',
             'mr_number' => 'nullable|string|max:255',
             'update_reports' => 'nullable|boolean',
         ];
@@ -83,6 +84,7 @@ class UpdateAppointmentRequest extends FormRequest
             'remarks_2_id.exists' => 'The selected remark 2 does not exist.',
             'status_id.exists' => 'The selected status does not exist.',
             'payment_mode.max' => 'The payment mode may not be greater than 100 characters.',
+            'location.max' => 'The location may not be greater than 255 characters.',
             'mr_number.max' => 'The MR number may not be greater than 255 characters.',
             'update_reports.boolean' => 'The update reports field must be true or false.',
         ];
