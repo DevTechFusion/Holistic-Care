@@ -19,6 +19,7 @@ class Report extends Model
         'report_type',
         'summary_data',
         'notes',
+        'location',
         'generated_by_id',
         'generated_at',
         'amount',

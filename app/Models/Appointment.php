@@ -23,6 +23,7 @@ class Appointment extends Model
         'contact_number',
         'agent_id',
         'notes',
+        'location',
         'payment_mode',
         'amount',
         'mr_number',

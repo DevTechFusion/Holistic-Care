@@ -155,6 +155,7 @@ GET /api/reports?start_date=2024-01-01&end_date=2024-01-31&report_type=appointme
         "generated_at": "2024-01-20T10:00:00.000000Z",
         "amount": 250.00,
         "payment_method": "Cash",
+        "location": "Main Building - Room 305",
         "notes": "Follow-up required",
         "summary_data": {
           "patient_name": "John Doe",
@@ -168,6 +169,7 @@ GET /api/reports?start_date=2024-01-01&end_date=2024-01-31&report_type=appointme
           "date": "2024-01-20",
           "start_time": "10:00:00",
           "end_time": "11:00:00",
+          "location": "Main Building - Room 305",
           "doctor": {"id": 5, "name": "Dr. Smith"},
           "department": {"id": 1, "name": "Cardiology"},
           "procedure": {"id": 3, "name": "Consultation"}
@@ -216,6 +218,7 @@ Request body example:
     "doctor_name": "Dr. Smith"
   },
   "notes": "Patient follow-up required",
+  "location": "Main Building - Room 305",
   "generated_by_id": 2,
   "amount": 250.00,
   "payment_method": "Cash",
@@ -241,6 +244,7 @@ Request body example:
   "appointment_id": 456,
   "report_type": "appointment_summary",
   "notes": "Additional notes",
+  "location": "Main Building - Room 305",
   "generated_by_id": 2,
   "amount": 250.00,
   "payment_method": "Cash",
