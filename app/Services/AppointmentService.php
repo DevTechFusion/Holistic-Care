@@ -756,12 +756,17 @@ class AppointmentService extends CrudeService
         $rescheduled = (clone $base)->whereHas('status', function ($q) {
             $q->where('name', 'Rescheduled');
         })->count();
+        
+        $startDateTime = \Carbon\Carbon::parse($startDate)->startOfDay();
+        $endDateTime = \Carbon\Carbon::parse($endDate)->endOfDay();
+        $totalAppointments = $this->model->whereBetween('created_at', [$startDateTime, $endDateTime])->count();
 
         return [
             'total_bookings' => $total,
             'arrived' => $arrived,
             'not_arrived' => $notArrived,
             'rescheduled' => $rescheduled,
+            'total_appointments' => $totalAppointments,
         ];
     }
 
