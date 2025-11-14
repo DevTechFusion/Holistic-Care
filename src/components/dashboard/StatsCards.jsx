@@ -46,7 +46,7 @@ const AdminStatsCards = ({ startDate, endDate }) => {
 
   const stats = [
     {
-      title: "Total Bookings",
+      title: "Total Appointments",
       icon: CalendarToday,
       value: cards.total_bookings,
       color: "#23C7B7",
@@ -64,9 +64,9 @@ const AdminStatsCards = ({ startDate, endDate }) => {
       color: "#23C7B7",
     },
     {
-      title: "Rescheduled",
+      title: "Total Bookings",
       icon: Update,
-      value: cards.rescheduled,
+      value: cards.total_appointments,
       color: "#23C7B7",
     },
   ];

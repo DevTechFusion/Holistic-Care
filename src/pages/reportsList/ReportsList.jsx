@@ -920,13 +920,14 @@ const ReportsPage = () => {
                           handleFilterChange("order_direction", direction);
                         }}
                       >
-                        Created Date
+                        Booking Date
                       </TableSortLabel>
                     </TableCell>
+                    
                     <TableCell
                       sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
                     >
-                      Booking Date
+                      Appointment Date
                     </TableCell>
                     <TableCell
                       sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}

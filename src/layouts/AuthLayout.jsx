@@ -9,9 +9,14 @@ const AuthLayout = () => {
   const { user, loading, isAuthenticated } = useAuth();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
 
   const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
+    if (window.innerWidth < 900) {
+      setMobileOpen(!mobileOpen);
+    } else {
+      setSidebarCollapsed(!sidebarCollapsed);
+    }
   };
 
   if (loading) {
@@ -35,24 +40,39 @@ const AuthLayout = () => {
 
   return (
     <Box sx={{ display: "flex" }}>
-      <Sidebar mobileOpen={mobileOpen} onDrawerToggle={handleDrawerToggle} />
+      <Sidebar 
+        mobileOpen={mobileOpen} 
+        onDrawerToggle={handleDrawerToggle} 
+        collapsed={sidebarCollapsed} 
+        setCollapsed={setSidebarCollapsed}
+      />
       <Box
+        component="main"
         sx={{
-          flex: 1,
-          minHeight: "100vh",
-          backgroundColor: "#f8f9fa",
-          position: "relative",
-          width: {
-            xs: "100%", // small screens
-            md: "80%", // medium and up
+          flexGrow: 1,
+          minHeight: '100vh',
+          backgroundColor: '#f8f9fa',
+          width: { 
+            xs: '100%',
+            md: `calc(100% - ${sidebarCollapsed ? '72px' : '280px'})` 
           },
-          marginLeft: {
-            xs: 0, // small screens
-            md: "20%", // medium and up
+          marginLeft: { 
+            xs: 0, 
+            md: sidebarCollapsed ? '72px' : '280px' 
           },
+          transition: theme => theme.transitions.create(['margin', 'width'], {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.leavingScreen,
+          }),
+          position: 'relative',
+          overflowX: 'hidden',
         }}
       >
-        <Topbar onMenuClick={handleDrawerToggle} isSidebarOpen={mobileOpen} />
+        <Topbar 
+          onMenuClick={handleDrawerToggle} 
+          isSidebarOpen={mobileOpen} 
+          sidebarCollapsed={sidebarCollapsed}
+        />
         <Box sx={{ p: 0 }}>
           <Outlet />
         </Box>

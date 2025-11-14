@@ -22,17 +22,16 @@ const RevenueTable = ({ data, formatCurrency, calculatePercentage }) => {
 
   return (
     <TableContainer
-      component={Paper}
-      sx={{
-        boxShadow: "none",
-        border: 1,
-        borderColor: "divider",
-        maxHeight: { xs: 300, sm: 240 },
-        overflowY: "auto",
-        overflowX: "auto",
-      }}
-    >
-      <Table fixed size="small" sx={{ minWidth: { xs: 650, sm: "auto" } }}>
+  component={Paper}
+  sx={{
+    boxShadow: "none",
+    border: 1,
+    borderColor: "divider",
+    width: '100%',
+    overflowX: "auto",
+  }}
+>
+  <Table size="small" sx={{ minWidth: { xs: 650, sm: "auto" } }}>
         <TableHead>
           <TableRow sx={{ backgroundColor: "#f9fafb" }}>
             {headers.map((header, idx) => (

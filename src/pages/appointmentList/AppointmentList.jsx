@@ -550,7 +550,7 @@ const AppointmentsPage = () => {
                           handleFilterChange('order_direction', direction);
                         }}
                       >
-                        Booking Date
+                        Appointment Date
                       </TableSortLabel>
                     </TableCell>
                     <TableCell
@@ -566,7 +566,7 @@ const AppointmentsPage = () => {
                           handleFilterChange('order_direction', direction);
                         }}
                       >
-                        Created Date
+                        Booking Date
                       </TableSortLabel>
                     </TableCell>
                     <TableCell
