@@ -104,6 +104,9 @@ Responses for list/detail also include related `remarks1`, `remarks2`, and `stat
 **📅 Date Filters:**
 - `start_date` - Filter appointments from this date (YYYY-MM-DD)
 - `end_date` - Filter appointments until this date (YYYY-MM-DD)
+- `isBooking` - Boolean flag to determine date filter behavior (accepts: `true`, `false`, `1`, `0`; default: false)
+  - When `false` or omitted: Filters by appointment date (`date` field)
+  - When `true`: Filters by booking creation date (`created_at` field)
 
 **⏰ Time Filters:**
 - `start_time` - Filter appointments by start time (HH:MM:SS format, e.g., "09:00:00")
@@ -145,6 +148,16 @@ GET /api/appointments
 **Filter by date range and department:**
 ```
 GET /api/appointments?start_date=2024-01-01&end_date=2024-01-31&department_id=1&doctor_id=5&per_page=10&order_by=date&order_direction=desc
+```
+
+**Filter by booking creation date (when appointments were booked):**
+```
+GET /api/appointments?start_date=2024-01-01&end_date=2024-01-31&isBooking=true
+```
+
+**Filter by appointment date (default behavior):**
+```
+GET /api/appointments?start_date=2024-01-01&end_date=2024-01-31&isBooking=false
 ```
 
 **Search by patient name:**

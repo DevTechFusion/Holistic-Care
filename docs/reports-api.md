@@ -21,6 +21,9 @@ Accept: application/json
 **📅 Date Filters (Appointment Dates):**
 - `start_date` - Filter reports for appointments from this date onwards (YYYY-MM-DD)
 - `end_date` - Filter reports for appointments until this date (YYYY-MM-DD)
+- `isBooking` - Boolean flag to determine date filter behavior (accepts: `true`, `false`, `1`, `0`; default: false)
+  - When `false` or omitted: Filters by appointment date (`date` field)
+  - When `true`: Filters by appointment booking creation date (`created_at` field)
 - Can be used individually or together for date range filtering
 
 **📋 Report Filters:**
@@ -57,7 +60,8 @@ Accept: application/json
 - Can be used individually or together for time range filtering
 
 **📝 Important Note:** 
-- **Date filters** (`start_date`, `end_date`) filter by **appointment dates**
+- **Date filters** (`start_date`, `end_date`) filter by **appointment dates** by default
+- Use **`isBooking=true`** to filter by **appointment booking creation dates** instead
 - **Time filters** (`start_time`, `end_time`, `duration`) filter by **appointment times**
 
 **📄 Pagination & Ordering:**
@@ -76,6 +80,16 @@ GET /api/reports
 **Filter by appointment date range:**
 ```
 GET /api/reports?start_date=2024-01-01&end_date=2024-01-31
+```
+
+**Filter by appointment booking creation date:**
+```
+GET /api/reports?start_date=2024-01-01&end_date=2024-01-31&isBooking=true
+```
+
+**Filter by appointment date (explicit):**
+```
+GET /api/reports?start_date=2024-01-01&end_date=2024-01-31&isBooking=false
 ```
 
 **Filter by appointment from specific date:**

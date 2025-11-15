@@ -26,6 +26,7 @@ class ReportController extends Controller
                 // Date filters
                 'start_date' => 'nullable|date',
                 'end_date' => 'nullable|date|after_or_equal:start_date',
+                'isBooking' => 'nullable|in:true,false,1,0',
                 
                 // Report filters
                 'report_type' => 'nullable|string|max:255',
@@ -68,12 +69,17 @@ class ReportController extends Controller
 
             // Extract filters from request
             $filters = $request->only([
-                'start_date', 'end_date', 'report_type', 'generated_by_id', 'appointment_id',
+                'start_date', 'end_date', 'isBooking', 'report_type', 'generated_by_id', 'appointment_id',
                 'status_id', 'remarks_1_id', 'remarks_2_id', 'amount_min', 'amount_max',
                 'payment_method', 'doctor_id', 'department_id', 'procedure_id', 'category_id',
                 'source_id', 'agent_id', 'search', 'patient_name', 'contact_number', 'mr_number',
                 'start_time', 'end_time', 'duration'
             ]);
+
+            // Convert isBooking string to boolean
+            if (isset($filters['isBooking'])) {
+                $filters['isBooking'] = filter_var($filters['isBooking'], FILTER_VALIDATE_BOOLEAN);
+            }
 
             // Remove empty filters
             $filters = array_filter($filters, function($value) {
@@ -464,6 +470,7 @@ class ReportController extends Controller
                 // Same filters as reports index
                 'start_date' => 'nullable|date',
                 'end_date' => 'nullable|date|after_or_equal:start_date',
+                'isBooking' => 'nullable|in:true,false,1,0',
                 'report_type' => 'nullable|string|max:255',
                 'generated_by_id' => 'nullable|exists:users,id',
                 'appointment_id' => 'nullable|exists:appointments,id',
@@ -494,12 +501,17 @@ class ReportController extends Controller
 
             // Extract filters
             $filters = $request->only([
-                'start_date', 'end_date', 'report_type', 'generated_by_id', 'appointment_id',
+                'start_date', 'end_date', 'isBooking', 'report_type', 'generated_by_id', 'appointment_id',
                 'status_id', 'remarks_1_id', 'remarks_2_id', 'amount_min', 'amount_max',
                 'payment_method', 'doctor_id', 'department_id', 'procedure_id', 'category_id',
                 'source_id', 'agent_id', 'search', 'patient_name', 'contact_number', 'mr_number',
                 'start_time', 'end_time', 'duration'
             ]);
+
+            // Convert isBooking string to boolean
+            if (isset($filters['isBooking'])) {
+                $filters['isBooking'] = filter_var($filters['isBooking'], FILTER_VALIDATE_BOOLEAN);
+            }
 
             $filters = array_filter($filters, function($value) {
                 return $value !== null && $value !== '';
