@@ -165,6 +165,10 @@ class Appointment extends Model
         return $query->whereBetween('date', [$startDate, $endDate]);
     }
 
+    public function scopeByCreatedAtRange($query, $startDate, $endDate)
+    {
+        return $query->whereBetween('created_at', [$startDate, $endDate]);
+    }
     /**
      * Scope to get appointments by doctor.
      */

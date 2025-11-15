@@ -36,17 +36,20 @@ class ReportService extends CrudeService
         $query = $this->model->query();
 
         // Apply filters only if they are provided and not empty
+        // If isBooking filter is true, filter by appointment created_at (booking date), otherwise filter by appointment date
         if (!empty($filters['start_date']) || !empty($filters['end_date'])) {
             $query->whereHas('appointment', function($q) use ($filters) {
+                $dateField = (!empty($filters['isBooking']) && $filters['isBooking']) ? 'created_at' : 'date';
+                
                 if (!empty($filters['start_date']) && !empty($filters['end_date'])) {
                     // Both start and end date provided - use between
-                    $q->whereBetween('date', [$filters['start_date'], $filters['end_date']]);
+                    $q->whereBetween($dateField, [$filters['start_date'], $filters['end_date']]);
                 } elseif (!empty($filters['start_date'])) {
                     // Only start date provided - appointments from this date
-                    $q->where('date', '>=', $filters['start_date']);
+                    $q->where($dateField, '>=', $filters['start_date']);
                 } elseif (!empty($filters['end_date'])) {
                     // Only end date provided - appointments until this date
-                    $q->where('date', '<=', $filters['end_date']);
+                    $q->where($dateField, '<=', $filters['end_date']);
                 }
             });
         }

@@ -28,6 +28,7 @@ class AppointmentController extends Controller
                 // Date filters
                 'start_date' => 'nullable|date',
                 'end_date' => 'nullable|date|after_or_equal:start_date',
+                'isBooking' => 'nullable|in:true,false,1,0',
                 
                 // Time filters
                 'start_time' => 'nullable|date_format:H:i:s',
@@ -60,11 +61,16 @@ class AppointmentController extends Controller
 
             // Extract filters from request
             $filters = $request->only([
-                'start_date', 'end_date', 'start_time', 'end_time', 'duration',
+                'start_date', 'end_date', 'isBooking', 'start_time', 'end_time', 'duration',
                 'doctor_id', 'department_id', 'procedure_id', 'category_id', 
                 'source_id', 'status_id', 'agent_id', 'remarks_1_id', 'remarks_2_id',
                 'patient_name', 'contact_number', 'mr_number', 'payment_mode'
             ]);
+
+            // Convert isBooking string to boolean
+            if (isset($filters['isBooking'])) {
+                $filters['isBooking'] = filter_var($filters['isBooking'], FILTER_VALIDATE_BOOLEAN);
+            }
 
             // Remove empty filters
             $filters = array_filter($filters, function($value) {

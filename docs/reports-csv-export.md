@@ -28,6 +28,7 @@ Authorization: Bearer {your-token}
 |-----------|------|----------|-------------|
 | `start_date` | date | No | Filter by appointment date from this date onwards (YYYY-MM-DD format) |
 | `end_date` | date | No | Filter by appointment date until this date (YYYY-MM-DD format) |
+| `isBooking` | boolean | No | When `true`, filters by appointment booking creation date instead of appointment date. Accepts: `true`, `false`, `1`, `0` (default: `false`) |
 
 ### Report Filters
 | Parameter | Type | Required | Description |
@@ -191,6 +192,14 @@ curl -X GET "https://your-domain.com/api/reports/export-csv?range=all&start_time
   --output "reports_business_hours.csv"
 ```
 
+#### Export reports by booking creation date
+```bash
+curl -X GET "https://your-domain.com/api/reports/export-csv?range=all&start_date=2025-01-01&end_date=2025-01-31&isBooking=true" \
+  -H "Authorization: Bearer {your-token}" \
+  -H "Accept: text/csv" \
+  --output "reports_by_booking_date.csv"
+```
+
 #### Complex filtering example
 ```bash
 curl -X GET "https://your-domain.com/api/reports/export-csv?range=all&start_date=2025-01-01&end_date=2025-01-31&doctor_id=5&department_id=1&status_id=1&amount_min=100&order_by=generated_at&order_direction=desc" \
@@ -280,7 +289,7 @@ const buildExportUrl = (range, filters) => {
   
   // Add all possible filters
   const filterKeys = [
-    'start_date', 'end_date', 'report_type', 'generated_by_id', 'appointment_id',
+    'start_date', 'end_date', 'isBooking', 'report_type', 'generated_by_id', 'appointment_id',
     'status_id', 'remarks_1_id', 'remarks_2_id', 'amount_min', 'amount_max',
     'payment_method', 'doctor_id', 'department_id', 'procedure_id', 'category_id',
     'source_id', 'agent_id', 'search', 'patient_name', 'contact_number', 'mr_number',

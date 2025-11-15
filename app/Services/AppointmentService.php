@@ -48,8 +48,13 @@ class AppointmentService extends CrudeService
         $query = $this->model->query();
 
         // Apply filters only if they are provided and not empty
+        // If isBooking filter is true, filter by created_at (booking date), otherwise filter by appointment date
         if (!empty($filters['start_date']) && !empty($filters['end_date'])) {
-            $query->byDateRange($filters['start_date'], $filters['end_date']);
+            if (!empty($filters['isBooking']) && $filters['isBooking']) {
+                $query->byCreatedAtRange($filters['start_date'], $filters['end_date']);
+            } else {
+                $query->byDateRange($filters['start_date'], $filters['end_date']);
+            }
         }
 
         if (!empty($filters['doctor_id'])) {
