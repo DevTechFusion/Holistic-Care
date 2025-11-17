@@ -43,13 +43,22 @@ class ReportService extends CrudeService
 
                 if (!empty($filters['start_date']) && !empty($filters['end_date'])) {
                     // Both start and end date provided - use between
-                    $q->whereBetween($dateField, [$filters['start_date'], $filters['end_date']]);
+                    // Add time to end date to include the entire day
+                    $endDate = $filters['end_date'];
+                    if (strlen($endDate) === 10) { // Date only format (YYYY-MM-DD)
+                        $endDate .= ' 23:59:59';
+                    }
+                    $q->whereBetween($dateField, [$filters['start_date'], $endDate]);
                 } elseif (!empty($filters['start_date'])) {
                     // Only start date provided - appointments from this date
                     $q->where($dateField, '>=', $filters['start_date']);
                 } elseif (!empty($filters['end_date'])) {
-                    // Only end date provided - appointments until this date
-                    $q->where($dateField, '<=', $filters['end_date']);
+
+                    $endDate = $filters['end_date'];
+                    if (strlen($endDate) === 10) { 
+                        $endDate .= ' 23:59:59';
+                    }
+                    $q->where($dateField, '<=', $endDate);
                 }
             });
         }
@@ -534,13 +543,26 @@ class ReportService extends CrudeService
         $appointmentQuery = Appointment::query();
 
         // Apply the same filters as in getFilteredReports but on appointments
+        // If isBooking filter is true, filter by appointment created_at (booking date), otherwise filter by appointment date
         if (!empty($filters['start_date']) || !empty($filters['end_date'])) {
+            $dateField = (!empty($filters['isBooking']) && $filters['isBooking']) ? 'created_at' : 'date';
+            
             if (!empty($filters['start_date']) && !empty($filters['end_date'])) {
-                $appointmentQuery->whereBetween('date', [$filters['start_date'], $filters['end_date']]);
+                // Add time to end date to include the entire day
+                $endDate = $filters['end_date'];
+                if (strlen($endDate) === 10) { // Date only format (YYYY-MM-DD)
+                    $endDate .= ' 23:59:59';
+                }
+                $appointmentQuery->whereBetween($dateField, [$filters['start_date'], $endDate]);
             } elseif (!empty($filters['start_date'])) {
-                $appointmentQuery->where('date', '>=', $filters['start_date']);
+                $appointmentQuery->where($dateField, '>=', $filters['start_date']);
             } elseif (!empty($filters['end_date'])) {
-                $appointmentQuery->where('date', '<=', $filters['end_date']);
+                // Add time to end date to include the entire day
+                $endDate = $filters['end_date'];
+                if (strlen($endDate) === 10) { // Date only format (YYYY-MM-DD)
+                    $endDate .= ' 23:59:59';
+                }
+                $appointmentQuery->where($dateField, '<=', $endDate);
             }
         }
 
