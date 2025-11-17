@@ -101,7 +101,8 @@ class Report extends Model
      */
     public function scopeByDateRange($query, $startDate, $endDate)
     {
-        return $query->whereBetween('generated_at', [$startDate, $endDate]);
+        return $query->whereDate('generated_at', '>=', $startDate)
+                     ->whereDate('generated_at', '<=', $endDate);
     }
 
     /**
