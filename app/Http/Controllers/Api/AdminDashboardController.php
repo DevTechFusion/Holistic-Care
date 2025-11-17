@@ -45,7 +45,7 @@ class AdminDashboardController extends Controller
     {
         $validated = $request->validated();
         
-        $range = $validated['range'] ?? 'daily';
+        $range = $validated['range'] ?? 'yearly';
         $departmentId = $validated['department_id'] ?? null;
         $customStartDate = $validated['start_date'] ?? null;
         $customEndDate = $validated['end_date'] ?? null;
