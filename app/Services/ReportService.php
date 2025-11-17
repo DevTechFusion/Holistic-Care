@@ -40,7 +40,7 @@ class ReportService extends CrudeService
         if (!empty($filters['start_date']) || !empty($filters['end_date'])) {
             $query->whereHas('appointment', function($q) use ($filters) {
                 $dateField = (!empty($filters['isBooking']) && $filters['isBooking']) ? 'created_at' : 'date';
-                
+
                 if (!empty($filters['start_date']) && !empty($filters['end_date'])) {
                     // Both start and end date provided - use between
                     $q->whereBetween($dateField, [$filters['start_date'], $filters['end_date']]);
@@ -190,7 +190,7 @@ class ReportService extends CrudeService
         // Load relationships and paginate
         return $query->with([
             'appointment.doctor', 'appointment.procedures', 'appointment.category',
-            'appointment.department', 'appointment.source', 'appointment.agent', 
+            'appointment.department', 'appointment.source', 'appointment.agent',
             'remarks1', 'remarks2', 'status', 'generatedBy'
         ])->paginate($perPage, ['*'], 'page', $page);
     }
@@ -605,27 +605,27 @@ class ReportService extends CrudeService
 
         // Calculate metrics
         $totalBooking = $appointments->count();
-        
+
         $arrivedAppointments = $appointments->filter(function($appointment) {
             return $appointment->status && $appointment->status->name === 'Arrived';
         });
-        
+
         $arrivedCount = $arrivedAppointments->count();
         $arrivedRatio = $totalBooking > 0 ? round(($arrivedCount / $totalBooking) * 100, 2) : 0;
-        
+
         $bookedRevenue = $appointments->sum(function($appointment) {
             return (float) ($appointment->amount ?? 0);
         });
-        
+
         $arrivedRevenue = $arrivedAppointments->sum(function($appointment) {
             return (float) ($appointment->amount ?? 0);
         });
-        
+
         // Total unique agents (count of unique agent_id values)
         $totalAgentBooking = $appointments->filter(function($appointment) {
             return !empty($appointment->agent_id);
         })->pluck('agent_id')->unique()->count();
-        
+
         // Total unique doctors (count of unique doctor_id values)
         $totalDoctorBooking = $appointments->filter(function($appointment) {
             return !empty($appointment->doctor_id);
@@ -794,9 +794,9 @@ class ReportService extends CrudeService
         $query->orderBy($orderBy, $orderDirection);
 
         $reports = $query->get();
-        
+
         $csvData = [];
-        
+
         // Add CSV headers
         $csvData[] = [
             'Report ID',
@@ -822,11 +822,11 @@ class ReportService extends CrudeService
             'Category',
             'Department',
             'Source',
-            // 'Agent Name',
+            'Agent Name',
             'MR Number',
             'Appointment Notes'
         ];
-        
+
         // Add report data
         foreach ($reports as $report) {
             $csvData[] = [
@@ -853,12 +853,12 @@ class ReportService extends CrudeService
                 $report->appointment && $report->appointment->category ? $report->appointment->category->name : 'N/A',
                 $report->appointment && $report->appointment->department ? $report->appointment->department->name : 'N/A',
                 $report->appointment && $report->appointment->source ? $report->appointment->source->name : 'N/A',
-                // $report->appointment && $report->appointment->agent ? $report->appointment->agent->name : 'N/A',
+                $report->appointment && $report->appointment->agent ? $report->appointment->agent->name : 'N/A',
                 $report->appointment ? ($report->appointment->mr_number ?? 'N/A') : 'N/A',
                 $report->appointment ? ($report->appointment->notes ?? 'N/A') : 'N/A'
             ];
         }
-        
+
         return $csvData;
     }
 }
