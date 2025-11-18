@@ -83,6 +83,7 @@ const ReportsPage = () => {
     contact_number: "",
     order_by: "created_at",
     order_direction: "desc",
+    isBooking: false,
   });
 
   // lists for inline filters
@@ -164,6 +165,7 @@ const ReportsPage = () => {
         rowsPerPage,
         apiFilters.start_date,
         apiFilters.end_date,
+        apiFilters.isBooking,
         apiFilters.doctor_id,
         apiFilters.agent_id,
         apiFilters.department_id,
@@ -206,6 +208,7 @@ const ReportsPage = () => {
       const res = await exportReports(
         apiFilters.start_date,
         apiFilters.end_date,
+        apiFilters.isBooking,
         apiFilters.doctor_id,
         apiFilters.agent_id,
         apiFilters.department_id,
@@ -272,6 +275,7 @@ const ReportsPage = () => {
       contact_number: "",
       order_by: "created_at",
       order_direction: "desc",
+      isBooking: false,
     };
     setFilters(cleared);
     setPage(0);
@@ -314,14 +318,9 @@ const ReportsPage = () => {
         <Stack spacing={2.5}>
           {/* Row 1 */}
           <Stack
-            direction={{ xs: "column", sm: "row" }}
-            spacing={2.5}
-            sx={{
-              "& > *": {
-                flex: 1,
-                minWidth: { xs: "100%", sm: "0" },
-              },
-            }}
+            direction={{ xs: "column", md: "row" }}
+            spacing={2}
+            alignItems="stretch"
           >
             <TextField
               label="Start Date"
@@ -330,8 +329,8 @@ const ReportsPage = () => {
               onChange={(e) => handleFilterChange("start_date", e.target.value)}
               InputLabelProps={{ shrink: true }}
               size="small"
+              sx={{ flex: 1 }}
             />
-
             <TextField
               label="End Date"
               type="date"
@@ -339,26 +338,26 @@ const ReportsPage = () => {
               onChange={(e) => handleFilterChange("end_date", e.target.value)}
               InputLabelProps={{ shrink: true }}
               size="small"
+              sx={{ flex: 1 }}
             />
-
             <TextField
               label="Patient Name"
-              placeholder="Search by patient name..."
               value={filters.patient_name}
               onChange={(e) =>
                 handleFilterChange("patient_name", e.target.value)
               }
               size="small"
+              sx={{ flex: 1 }}
             />
 
             <TextField
               label="Contact Number"
-              placeholder="Search by contact number..."
               value={filters.contact_number}
               onChange={(e) =>
                 handleFilterChange("contact_number", e.target.value)
               }
               size="small"
+              sx={{ flex: 1 }}
             />
           </Stack>
 
@@ -510,39 +509,130 @@ const ReportsPage = () => {
           </Stack>
 
           {/* Action Buttons */}
-          <Box display="flex" justifyContent="space-between" mt={1}>
-            <Button
-              variant="outlined"
-              color="primary"
-              onClick={() =>
-                handleFilterChange(
-                  "order_direction",
-                  filters.order_direction === "asc" ? "desc" : "asc"
-                )
-              }
-              size="small"
-              startIcon={filters.order_direction === "asc" ? "↑" : "↓"}
-              sx={{
-                height: 40,
-                px: 3,
-                whiteSpace: "nowrap",
-                minWidth: 120,
-              }}
+          <Box
+            display="flex"
+            flexDirection={{ xs: 'column', sm: 'row' }}
+            justifyContent="space-between"
+            alignItems={{ xs: 'stretch', sm: 'center' }}
+            gap={{ xs: 2, sm: 2 }}
+            mt={1}
+          >
+            <Box
+              display="flex"
+              gap={{ xs: 1.5, sm: 2 }}
+              alignItems="center"
+              flexDirection={{ xs: 'column', sm: 'row' }}
+              width={{ xs: '100%', sm: 'auto' }}
             >
-              {filters.order_direction === "asc"
-                ? "Oldest First"
-                : "Newest First"}
-            </Button>
+              {/* Toggle Switch */}
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  bgcolor: '#f5f5f5',
+                  borderRadius: '50px',
+                  p: 0.5,
+                  position: 'relative',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.05) inset',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  height: { xs: 44, sm: 40 },
+                  width: { xs: '100%', sm: 'auto' },
+                  minWidth: { xs: 'auto', sm: 240 },
+                  maxWidth: { xs: '100%', sm: 300 },
+                }}
+              >
+                {/* Sliding background */}
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    left: 4,
+                    top: '50%',
+                    transform: filters.isBooking
+                      ? 'translate(calc(100% + 2px), -50%)'
+                      : 'translateY(-50%)',
+                    width: 'calc(50% - 6px)',
+                    height: { xs: 36, sm: 32 },
+                    bgcolor: 'background.paper',
+                    borderRadius: '50px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                    zIndex: 1,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                  }}
+                />
 
+                {/* Appt. Date Button */}
+                <Button
+                  onClick={() => handleFilterChange('isBooking', false)}
+                  disableRipple
+                  sx={{
+                    position: 'relative',
+                    zIndex: 2,
+                    minWidth: { xs: 'auto', sm: 140 },
+                    height: { xs: 36, sm: 32 },
+                    px: { xs: 2, sm: 2.5 },
+                    mx: 0.5,
+                    flex: 1,
+                    borderRadius: '50px',
+                    fontSize: { xs: '0.813rem', sm: '0.875rem' },
+                    fontWeight: !filters.isBooking ? 600 : 400,
+                    color: !filters.isBooking ? 'primary.main' : 'text.secondary',
+                    textTransform: 'none',
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      bgcolor: 'transparent',
+                      color: !filters.isBooking ? 'primary.dark' : 'text.primary',
+                    },
+                  }}
+                >
+                  Appt. Date
+                </Button>
+
+                {/* Booking Date Button */}
+                <Button
+                  onClick={() => handleFilterChange('isBooking', true)}
+                  disableRipple
+                  sx={{
+                    position: 'relative',
+                    zIndex: 2,
+                    minWidth: { xs: 'auto', sm: 140 },
+                    height: { xs: 36, sm: 32 },
+                    px: { xs: 2, sm: 2.5 },
+                    mx: 0.5,
+                    flex: 1,
+                    borderRadius: '50px',
+                    fontSize: { xs: '0.813rem', sm: '0.875rem' },
+                    fontWeight: filters.isBooking ? 600 : 400,
+                    color: filters.isBooking ? 'primary.main' : 'text.secondary',
+                    textTransform: 'none',
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      bgcolor: 'transparent',
+                      color: filters.isBooking ? 'primary.dark' : 'text.primary',
+                    },
+                  }}
+                >
+                  Booking Date
+                </Button>
+              </Box>
+            </Box>
+
+            {/* Clear Filters Button */}
             <Button
               variant="outlined"
               color="error"
               onClick={clearFilters}
               size="small"
+              fullWidth={{ xs: true, sm: false }}
               sx={{
-                height: 40,
-                px: 4,
+                height: { xs: 44, sm: 40 },
+                px: { xs: 3, sm: 4 },
                 whiteSpace: "nowrap",
+                fontSize: { xs: '0.875rem', sm: '0.875rem' },
+                fontWeight: 500,
+                order: { xs: 2, sm: 0 },
               }}
             >
               Clear Filters
@@ -890,231 +980,267 @@ const ReportsPage = () => {
                 </Grid>
               </Grid>
             )}
-            <TableContainer sx={{ maxHeight: { xs: 500, sm: 600, md: 700 } }}>
-              <Table stickyHeader sx={{ minWidth: { xs: 900, sm: "auto" } }}>
-                <TableHead>
-                  <TableRow>
-                    <TableCell
-                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                    >
-                      Sr#
-                    </TableCell>
-                    <TableCell
-                      sortDirection={
-                        filters.order_by === "created_at"
-                          ? filters.order_direction
-                          : false
-                      }
-                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                    >
-                      <TableSortLabel
-                        active={filters.order_by === "created_at"}
-                        direction={filters.order_direction}
-                        onClick={() => {
-                          const direction =
-                            filters.order_by === "created_at" &&
-                            filters.order_direction === "asc"
-                              ? "desc"
-                              : "asc";
-                          handleFilterChange("order_by", "created_at");
-                          handleFilterChange("order_direction", direction);
+            <Paper sx={{ overflowX: "auto" }}>
+              <TableContainer sx={{ maxHeight: { xs: 500, sm: 600, md: 700 } }}>
+                <Table stickyHeader sx={{ minWidth: { xs: 900, sm: "auto" } }}>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell
+                        sx={{
+                          position: 'sticky',
+                          left: 0,
+                          zIndex: 3,
+                          backgroundColor: '#fff',
+                          fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                          fontWeight: 600,
+                          '&::after': {
+                            content: '""',
+                            position: 'absolute',
+                            top: 0,
+                            right: 0,
+                            bottom: 0,
+                            width: '1px',
+                            backgroundColor: 'rgba(224, 224, 224, 1)',
+                          }
                         }}
                       >
-                        Booking Date
-                      </TableSortLabel>
-                    </TableCell>
-                    
-                    <TableCell
-                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                    >
-                      Appointment Date
-                    </TableCell>
-                    <TableCell
-                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                    >
-                      Patient
-                    </TableCell>
-                    <TableCell
-                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                    >
-                      Contact
-                    </TableCell>
-                    <TableCell
-                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                    >
-                      Doctor
-                    </TableCell>
-                    <TableCell
-                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                    >
-                      Procedure
-                    </TableCell>
-                    <TableCell
-                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                    >
-                      Department
-                    </TableCell>
-                    {!isCurrentUserAgent && (
+                        Sr#
+                      </TableCell>
+                      <TableCell
+                        sortDirection={
+                          filters.order_by === "created_at"
+                            ? filters.order_direction
+                            : false
+                        }
+                        sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                      >
+                        <TableSortLabel
+                          active={filters.order_by === "created_at"}
+                          direction={filters.order_direction}
+                          onClick={() => {
+                            const direction =
+                              filters.order_by === "created_at" &&
+                              filters.order_direction === "asc"
+                                ? "desc"
+                                : "asc";
+                            handleFilterChange("order_by", "created_at");
+                            handleFilterChange("order_direction", direction);
+                          }}
+                        >
+                          Booking Date
+                        </TableSortLabel>
+                      </TableCell>
                       <TableCell
                         sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
                       >
-                        Agent
+                        Appointment Date
                       </TableCell>
-                    )}
-                    <TableCell
-                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                    >
-                      Source
-                    </TableCell>
-                    <TableCell
-                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                    >
-                      Remarks_1
-                    </TableCell>
-                    <TableCell
-                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                    >
-                      Remarks_2
-                    </TableCell>
-                    <TableCell
-                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                    >
-                      Status
-                    </TableCell>
-                    <TableCell
-                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                    >
-                      Amount
-                    </TableCell>
-                    <TableCell
-                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                    >
-                      Payment
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {reports.length > 0 ? (
-                    reports.map((rep, idx) => {
-                      const status = rep.status?.name;
-                      const bgColor = statusColors[status] || "inherit";
-                      return (
-                        <TableRow
-                          key={rep.id}
-                          sx={{
-                            backgroundColor: bgColor,
-                            "&:hover": {
-                              backgroundColor: bgColor,
-                              opacity: 0.9,
-                            },
-                          }}
-                        >
-                          <TableCell
-                            sx={{
-                              position: "sticky",
-                              left: 0,
-                              zIndex: 1,
-                              backgroundColor: bgColor,
-                              fontWeight: 500,
-                              fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                            }}
-                          >
-                            {page * rowsPerPage + idx + 1}
-                          </TableCell>
-                          <TableCell
-                            sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                          >
-                            {dayjs(rep.appointment?.created_at).format(
-                              "DD-MM-YYYY"
-                            )}
-                          </TableCell>
-                          <TableCell
-                            sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                          >
-                            {dayjs(rep.appointment?.date).format("DD-MM-YYYY")}
-                          </TableCell>
-                          <TableCell
-                            sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                          >
-                            {rep.appointment?.patient_name}
-                          </TableCell>
-                          <TableCell
-                            sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                          >
-                            {rep.appointment?.contact_number}
-                          </TableCell>
-                          <TableCell
-                            sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                          >
-                            {rep.appointment?.doctor?.name}
-                          </TableCell>
-                          <TableCell
-                            sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                          >
-                            {rep.appointment?.procedures
-                              ?.map((p) => p.name)
-                              .join(", ")}
-                          </TableCell>
-                          <TableCell
-                            sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                          >
-                            {rep.appointment?.department?.name}
-                          </TableCell>
-                          {!isCurrentUserAgent && (
-                            <TableCell
-                              sx={{
-                                fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                              }}
-                            >
-                              {rep.appointment?.agent?.name}
-                            </TableCell>
-                          )}
-                          <TableCell
-                            sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                          >
-                            {rep.appointment?.source?.name}
-                          </TableCell>
-                          <TableCell
-                            sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                          >
-                            {rep.remarks1?.name}
-                          </TableCell>
-                          <TableCell
-                            sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                          >
-                            {rep.remarks2?.name}
-                          </TableCell>
-                          <TableCell
-                            sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                          >
-                            {status}
-                          </TableCell>
-                          <TableCell
-                            sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                          >
-                            {rep.amount}
-                          </TableCell>
-                          <TableCell
-                            sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                          >
-                            {rep.appointment?.payment_mode}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  ) : (
-                    <TableRow>
                       <TableCell
-                        colSpan={isCurrentUserAgent ? 13 : 14}
-                        align="center"
+                        sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
                       >
-                        No reports found
+                        Location
+                      </TableCell>
+                      <TableCell
+                        sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                      >
+                        Patient
+                      </TableCell>
+                      <TableCell
+                        sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                      >
+                        Contact
+                      </TableCell>
+                      <TableCell
+                        sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                      >
+                        Doctor
+                      </TableCell>
+                      <TableCell
+                        sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                      >
+                        Procedure
+                      </TableCell>
+                      <TableCell
+                        sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                      >
+                        Department
+                      </TableCell>
+                      {!isCurrentUserAgent && (
+                        <TableCell
+                          sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                        >
+                          Agent
+                        </TableCell>
+                      )}
+                      <TableCell
+                        sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                      >
+                        Source
+                      </TableCell>
+                      <TableCell
+                        sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                      >
+                        Remarks_1
+                      </TableCell>
+                      <TableCell
+                        sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                      >
+                        Remarks_2
+                      </TableCell>
+                      <TableCell
+                        sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                      >
+                        Status
+                      </TableCell>
+                      <TableCell
+                        sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                      >
+                        Amount
+                      </TableCell>
+                      <TableCell
+                        sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                      >
+                        Payment
                       </TableCell>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                  </TableHead>
+                  <TableBody>
+                    {reports.length > 0 ? (
+                      reports.map((rep, idx) => {
+                        const status = rep.status?.name;
+                        const bgColor = statusColors[status] || "inherit";
+                        return (
+                          <TableRow
+                            key={rep.id}
+                            sx={{
+                              backgroundColor: bgColor,
+                              "&:hover": {
+                                backgroundColor: bgColor,
+                                opacity: 0.9,
+                              },
+                            }}
+                          >
+                            <TableCell
+                              sx={{
+                                position: "sticky",
+                                left: 0,
+                                zIndex: 2,
+                                backgroundColor: "#fff",
+                                fontWeight: 500,
+                                fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                                '&::after': {
+                                  content: '""',
+                                  position: 'absolute',
+                                  top: 0,
+                                  right: 0,
+                                  bottom: 0,
+                                  width: '1px',
+                                  backgroundColor: 'rgba(224, 224, 224, 1)',
+                                }
+                              }}
+                            >
+                              {page * rowsPerPage + idx + 1}
+                            </TableCell>
+                            <TableCell
+                              sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                            >
+                              {dayjs(rep.appointment?.created_at).format(
+                                "DD-MM-YYYY"
+                              )}
+                            </TableCell>
+                            <TableCell
+                              sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                            >
+                              {dayjs(rep.appointment?.date).format("DD-MM-YYYY")}
+                            </TableCell>
+                            <TableCell
+                              sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                            >
+                              {rep.appointment?.location}
+                            </TableCell>
+                            <TableCell
+                              sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                            >
+                              {rep.appointment?.patient_name}
+                            </TableCell>
+                            <TableCell
+                              sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                            >
+                              {rep.appointment?.contact_number}
+                            </TableCell>
+                            <TableCell
+                              sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                            >
+                              {rep.appointment?.doctor?.name}
+                            </TableCell>
+                            <TableCell
+                              sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                            >
+                              {rep.appointment?.procedures
+                                ?.map((p) => p.name)
+                                .join(", ")}
+                            </TableCell>
+                            <TableCell
+                              sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                            >
+                              {rep.appointment?.department?.name}
+                            </TableCell>
+                            {!isCurrentUserAgent && (
+                              <TableCell
+                                sx={{
+                                  fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                                }}
+                              >
+                                {rep.appointment?.agent?.name}
+                              </TableCell>
+                            )}
+                            <TableCell
+                              sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                            >
+                              {rep.appointment?.source?.name}
+                            </TableCell>
+                            <TableCell
+                              sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                            >
+                              {rep.remarks1?.name}
+                            </TableCell>
+                            <TableCell
+                              sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                            >
+                              {rep.remarks2?.name}
+                            </TableCell>
+                            <TableCell
+                              sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                            >
+                              {status}
+                            </TableCell>
+                            <TableCell
+                              sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                            >
+                              {rep.amount}
+                            </TableCell>
+                            <TableCell
+                              sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                            >
+                              {rep.appointment?.payment_mode}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    ) : (
+                      <TableRow>
+                        <TableCell
+                          colSpan={isCurrentUserAgent ? 13 : 14}
+                          align="center"
+                        >
+                          No reports found
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Paper>
 
             {/* Pagination */}
             <TablePagination

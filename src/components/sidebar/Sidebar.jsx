@@ -34,6 +34,9 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
   const location = useLocation();
   const navigate = useNavigate();
   
+  // Ensure sidebar is never collapsed on mobile
+  const effectiveCollapsed = isMobile ? false : collapsed;
+  
   const toggleSidebar = () => {
     if (isMobile) {
       onDrawerToggle();
@@ -47,11 +50,13 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
     }
   };
 
-  const handleDropdownToggle = (title) => {
-    if (!collapsed) {
+  const handleDropdownToggle = (item) => {
+    if (!effectiveCollapsed) {
+      // Use a combination of path and title as the key to ensure uniqueness
+      const dropdownKey = `${item.path || ''}-${item.title}`;
       setOpenDropdowns((prev) => ({
         ...prev,
-        [title]: !prev[title],
+        [dropdownKey]: !prev[dropdownKey],
       }));
     }
   };
@@ -88,12 +93,12 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
 
   // Get active child for collapsed state
   const getActiveChild = (item) => {
-    if (!item.children || !collapsed) return null;
+    if (!item.children || !effectiveCollapsed) return null;
     return item.children.find((child) => isActive(child.path));
   };
 
   const sidebarWidth = useMemo(() => {
-    if (isMobile) return '280px';
+    if (isMobile) return '260px';
     if (collapsed) return '72px';
     if (isTablet) return '240px';
     return '280px';
@@ -108,7 +113,7 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
         position: 'fixed',
         top: 0,
         left: 0,
-        zIndex: { xs: 1200, md: 1100 },
+        zIndex: { xs: 1300, md: 1100 },
         transition: theme.transitions.create(['width', 'transform'], {
           easing: theme.transitions.easing.sharp,
           duration: theme.transitions.duration.enteringScreen,
@@ -134,13 +139,13 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
           flexShrink: 0,
           display: "flex",
           alignItems: "center",
-          justifyContent: collapsed ? "center" : "space-between",
-          padding: collapsed ? "16px 8px" : { xs: "16px", md: "12px 16px" },
+          justifyContent: effectiveCollapsed ? "center" : "space-between",
+          padding: effectiveCollapsed ? "16px 8px" : { xs: "16px", md: "12px 16px" },
           borderBottom: "1px solid #eee",
           position: 'relative',
           height: { xs: '72px', md: '80px' },
           minHeight: { xs: '72px', md: '80px' },
-          marginBottom: collapsed ? '24px' : 0,
+          marginBottom: effectiveCollapsed ? '24px' : 0,
         }}
       >
         <Box
@@ -148,21 +153,21 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            flex: collapsed ? 1 : 'none',
+            flex: effectiveCollapsed ? 1 : 'none',
             overflow: 'hidden',
-            width: collapsed ? '100%' : 'auto',
+            width: effectiveCollapsed ? '100%' : 'auto',
           }}
         >
           <img
             src={logo}
             alt="Logo"
             style={{ 
-              width: collapsed ? '40px' : isMobile ? '140px' : isTablet ? '120px' : '160px',
+              width: effectiveCollapsed ? '40px' : isMobile ? '140px' : isTablet ? '120px' : '160px',
               height: 'auto',
-              maxHeight: collapsed ? '40px' : '50px',
+              maxHeight: effectiveCollapsed ? '40px' : '50px',
               objectFit: "contain",
               transition: 'all 0.3s ease',
-              opacity: collapsed ? 1 : 1,
+              opacity: effectiveCollapsed ? 1 : 1,
             }}
           />
         </Box>
@@ -222,9 +227,10 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
           overflowX: 'hidden',
           display: "flex",
           flexDirection: "column",
+          WebkitOverflowScrolling: 'touch', // Smooth scrolling on iOS
           // Custom scrollbar
           '&::-webkit-scrollbar': {
-            width: collapsed ? '0px' : '6px',
+            width: effectiveCollapsed ? '0px' : '4px',
           },
           '&::-webkit-scrollbar-track': {
             background: 'transparent',
@@ -237,7 +243,7 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
             },
           },
           // Firefox scrollbar
-          scrollbarWidth: collapsed ? 'none' : 'thin',
+          scrollbarWidth: effectiveCollapsed ? 'none' : 'thin',
           scrollbarColor: 'rgba(0,0,0,0.2) transparent',
         }}
       >
@@ -245,17 +251,20 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
           flexGrow: 1, 
           padding: { xs: '8px 4px', md: '8px 0' },
           paddingBottom: { xs: '8px', md: '8px' },
+          minWidth: isMobile ? '260px' : 'auto',
         }}>
-          {filteredSidebarItems.map((item) => {
+          {filteredSidebarItems.map((item, index) => {
+            // Create a unique key using path and index to ensure uniqueness
+            const itemKey = `${item.path || ''}-${item.title}-${index}`;
             const parentActive =
               isActive(item.path) ||
               (item.children && item.children.some((child) => isActive(child.path)));
             const activeChild = getActiveChild(item);
-            const displayIcon = collapsed && activeChild ? activeChild.icon : item.icon;
-            const displayTitle = collapsed && activeChild ? activeChild.title : item.title;
+            const displayIcon = effectiveCollapsed && activeChild ? activeChild.icon : item.icon;
+            const displayTitle = effectiveCollapsed && activeChild ? activeChild.title : item.title;
 
             return (
-              <Box key={item.title}>
+              <Box key={itemKey}>
                 {/* Parent Item */}
                 <ListItem 
                   disablePadding
@@ -264,15 +273,15 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
                   <ListItemButton
                     onClick={() =>
                       item.children
-                        ? handleDropdownToggle(item.title)
+                        ? handleDropdownToggle(item)
                         : handleNavigation(item.path)
                     }
                     sx={{
                       borderRadius: "8px",
                       margin: { xs: "2px 8px", md: "2px 8px" },
                       paddingY: { xs: "10px", md: "12px" },
-                      paddingX: collapsed ? '12px' : { xs: '12px', md: '16px' },
-                      justifyContent: collapsed ? 'center' : 'flex-start',
+                      paddingX: effectiveCollapsed ? '12px' : { xs: '12px', md: '16px' },
+                      justifyContent: effectiveCollapsed ? 'center' : 'flex-start',
                       backgroundColor: parentActive ? "primary.main" : "transparent",
                       color: parentActive ? "white" : "text.primary",
                       transition: "all 0.2s ease",
@@ -288,46 +297,52 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
                   >
                     <ListItemIcon 
                       sx={{
-                        minWidth: collapsed ? 'auto' : { xs: '40px', md: '44px' },
+                        minWidth: effectiveCollapsed ? 'auto' : { xs: '40px', md: '44px' },
                         margin: 0,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        ...(collapsed && { width: '100%' })
+                        ...(effectiveCollapsed && { width: '100%' })
                       }}
                     >
                       <img
                         src={displayIcon}
                         alt={displayTitle}
-                        width={collapsed ? 26 : isMobile ? 24 : 26}
-                        height={collapsed ? 26 : isMobile ? 24 : 26}
+                        width={effectiveCollapsed ? (isMobile ? 22 : 24) : (isMobile ? 22 : 26)}
+                        height={effectiveCollapsed ? (isMobile ? 22 : 24) : (isMobile ? 22 : 26)}
                         style={{
                           filter: parentActive ? "brightness(0) invert(1)" : "none",
                           transition: 'filter 0.2s ease',
+                          minWidth: effectiveCollapsed ? (isMobile ? '22px' : '24px') : (isMobile ? '22px' : '26px'),
                         }}
                       />
                     </ListItemIcon>
                     
-                    {!collapsed && (
+                    {!effectiveCollapsed && (
                       <ListItemText 
-                        primary={item.title} 
+                        primary={item.title}
                         sx={{
                           margin: 0,
                           flex: 1,
+                          minWidth: 0,
+                          display: 'block',
                           '& .MuiTypography-root': {
-                            fontSize: { xs: '0.875rem', md: '0.938rem' },
+                            fontSize: { xs: '0.813rem', sm: '0.875rem', md: '0.938rem' },
                             fontWeight: parentActive ? 600 : 400,
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
+                            display: 'block',
+                            lineHeight: '1.2',
+                            paddingRight: '8px',
                           }
                         }}
                       />
                     )}
 
-                    {!collapsed && item.children && (
+                    {!effectiveCollapsed && item.children && (
                       <Box sx={{ display: 'flex', alignItems: 'center', ml: 1 }}>
-                        {openDropdowns[item.title] ? (
+                        {openDropdowns[`${item.path || ''}-${item.title}`] ? (
                           <ExpandLess sx={{ fontSize: { xs: '20px', md: '24px' } }} />
                         ) : (
                           <ExpandMore sx={{ fontSize: { xs: '20px', md: '24px' } }} />
@@ -338,16 +353,30 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
                 </ListItem>
 
                 {/* Dropdown Children */}
-                {item.children && !collapsed && (
+                {item.children && (
                   <Collapse
-                    in={openDropdowns[item.title]}
+                    in={!effectiveCollapsed && openDropdowns[`${item.path || ''}-${item.title}`]}
                     timeout="auto"
                     unmountOnExit
+                    sx={{
+                      '& .MuiCollapse-wrapperInner': {
+                        paddingLeft: effectiveCollapsed ? 0 : '12px',
+                      },
+                      '& .MuiCollapse-root': {
+                        overflow: 'visible',
+                      }
+                    }}
                   >
                     <List 
                       component="div" 
                       disablePadding
-                      sx={{ paddingBottom: '4px' }}
+                      sx={{ 
+                        padding: '4px 0',
+                        marginLeft: effectiveCollapsed ? 0 : '8px',
+                        borderLeft: effectiveCollapsed ? 'none' : '1px solid rgba(0, 0, 0, 0.1)',
+                        display: 'block',
+                        width: '100%'
+                      }}
                     >
                       {item.children
                         .filter((child) => hasPermission(child.module, PERMISSIONS.VIEW))
@@ -355,59 +384,71 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
                           const childActive = isActive(child.path);
                           return (
                             <ListItem 
-                              key={child.title} 
+                              key={`${child.path}-${child.title}`} 
                               disablePadding
                               sx={{ marginBottom: '2px' }}
                             >
                               <ListItemButton
                                 onClick={() => handleNavigation(child.path)}
                                 sx={{
-                                  pl: { xs: 4, md: 5 },
-                                  py: { xs: '8px', md: '10px' },
-                                  pr: { xs: 2, md: 2 },
-                                  borderRadius: "6px",
-                                  margin: "2px 8px 2px 16px",
-                                  backgroundColor: childActive ? "primary.main" : "transparent",
-                                  color: childActive ? "white" : "text.secondary",
-                                  transition: "all 0.2s ease",
-                                  "&:hover": {
-                                    backgroundColor: childActive ? "primary.dark" : "rgba(0, 183, 174, 0.08)",
-                                    color: childActive ? "white" : "primary.main",
-                                    "& .MuiListItemIcon-root img": {
-                                      filter: childActive ? "brightness(0) invert(1)" : "brightness(0) saturate(100%) invert(56%) sepia(89%) saturate(2299%) hue-rotate(145deg) brightness(91%) contrast(101%)",
-                                    },
+                                  pl: effectiveCollapsed ? 2 : 3,
+                                  py: effectiveCollapsed ? '4px' : '8px',
+                                  borderRadius: '6px',
+                                  margin: effectiveCollapsed ? '2px 4px' : '2px 8px',
+                                  minHeight: effectiveCollapsed ? '36px' : '40px',
+                                  width: effectiveCollapsed ? 'auto' : '100%',
+                                  justifyContent: effectiveCollapsed ? 'center' : 'flex-start',
+                                  color: isActive(child.path) ? 'primary.main' : 'text.secondary',
+                                  backgroundColor: isActive(child.path) ? 'rgba(0, 183, 174, 0.08)' : 'transparent',
+                                  '&:hover': {
+                                    backgroundColor: 'rgba(0, 0, 0, 0.04)',
                                   },
+                                  '& .MuiListItemText-root': {
+                                    margin: 0,
+                                    '& .MuiTypography-root': {
+                                      fontSize: { xs: '0.813rem', md: '0.875rem' },
+                                      whiteSpace: 'nowrap',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                    }
+                                  }
                                 }}
                               >
                                 <ListItemIcon sx={{ 
-                                  minWidth: { xs: '32px', md: '36px' },
+                                  minWidth: effectiveCollapsed ? 'auto' : { xs: '32px', md: '36px' },
+                                  marginRight: effectiveCollapsed ? 0 : '8px',
                                   display: 'flex',
                                   alignItems: 'center',
                                 }}>
                                   <img
                                     src={child.icon}
                                     alt={child.title}
-                                    width={isMobile ? 22 : 24}
-                                    height={isMobile ? 22 : 24}
+                                    width={effectiveCollapsed ? (isMobile ? 18 : 20) : (isMobile ? 20 : 22)}
+                                    height={effectiveCollapsed ? (isMobile ? 18 : 20) : (isMobile ? 20 : 22)}
                                     style={{
                                       filter: childActive ? "brightness(0) invert(1)" : "none",
                                       transition: 'filter 0.2s ease',
+                                      display: 'block',
+                                      minWidth: effectiveCollapsed ? (isMobile ? '18px' : '20px') : (isMobile ? '20px' : '22px'),
                                     }}
                                   />
                                 </ListItemIcon>
-                                <ListItemText 
-                                  primary={child.title} 
-                                  sx={{
-                                    margin: 0,
-                                    '& .MuiTypography-root': { 
-                                      fontSize: { xs: '0.813rem', md: '0.875rem' },
-                                      fontWeight: childActive ? 500 : 400,
-                                      whiteSpace: 'nowrap',
-                                      overflow: 'hidden',
-                                      textOverflow: 'ellipsis',
-                                    } 
-                                  }} 
-                                />
+                                {!effectiveCollapsed && (
+                                  <ListItemText 
+                                    primary={child.title} 
+                                    sx={{
+                                      margin: 0,
+                                      '& .MuiTypography-root': { 
+                                        fontSize: { xs: '0.813rem', md: '0.875rem' },
+                                        fontWeight: childActive ? 500 : 400,
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        paddingRight: '8px',
+                                      } 
+                                    }} 
+                                  />
+                                )}
                               </ListItemButton>
                             </ListItem>
                           );
@@ -434,9 +475,9 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
                 borderRadius: '8px',
                 margin: { xs: '2px 8px', md: '4px 8px' },
                 paddingY: { xs: '10px', md: '12px' },
-                paddingX: collapsed ? '12px' : { xs: '12px', md: '16px' },
+                paddingX: effectiveCollapsed ? '12px' : { xs: '12px', md: '16px' },
                 color: 'error.main',
-                justifyContent: collapsed ? 'center' : 'flex-start',
+                justifyContent: effectiveCollapsed ? 'center' : 'flex-start',
                 minHeight: { xs: '48px', md: '52px' },
                 transition: 'all 0.2s ease',
                 '&:hover': {
@@ -445,13 +486,13 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
               }}
             >
               <ListItemIcon sx={{ 
-                minWidth: collapsed ? 'auto' : { xs: '40px', md: '44px' },
+                minWidth: effectiveCollapsed ? 'auto' : { xs: '40px', md: '44px' },
                 justifyContent: 'center',
                 color: 'error.main',
               }}>
                 <LogoutIcon sx={{ fontSize: { xs: '24px', md: '26px' } }} />
               </ListItemIcon>
-              {!collapsed && (
+              {!effectiveCollapsed && (
                 <ListItemText 
                   primary="Logout" 
                   sx={{

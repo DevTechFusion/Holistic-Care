@@ -17,6 +17,8 @@ import {
   Autocomplete,
   MenuItem,
   TableSortLabel,
+  ToggleButtonGroup,
+  ToggleButton,
 } from "@mui/material";
 import { getAppointments, deleteAppointment } from "../../DAL/appointments";
 import CreateAppointmentModal from "../../components/forms/AppointmentForm";
@@ -36,7 +38,7 @@ import { MODULES, PERMISSIONS } from "../../constants/permissionConstants";
 
 const AppointmentsPage = () => {
   const { hasPermission, user } = useAuth();
-  
+
   // Check if current user is an agent
   const isCurrentUserAgent = Array.isArray(user?.roles) && user.roles.some((role) => role.name?.toLowerCase() === "agent");
   const [appointments, setAppointments] = useState([]);
@@ -62,8 +64,9 @@ const AppointmentsPage = () => {
     remarks_1_id: "",
     remarks_2_id: "",
     payment_mode: "",
-    order_by: "date", 
+    order_by: "date",
     order_direction: "desc",
+    isBooking: false,
   });
 
   // Lists for inline filters
@@ -86,12 +89,12 @@ const AppointmentsPage = () => {
     setListsLoading(true);
     try {
       const [
-        docRes, 
-        agentRes, 
-        deptRes, 
-        procRes, 
-        statusRes, 
-        remarks1Res, 
+        docRes,
+        agentRes,
+        deptRes,
+        procRes,
+        statusRes,
+        remarks1Res,
         remarks2Res
       ] = await Promise.all([
         getDoctorsList(),
@@ -152,7 +155,8 @@ const AppointmentsPage = () => {
         apiFilters.remarks_2_id,
         apiFilters.payment_mode,
         apiFilters.order_by,
-        apiFilters.order_direction
+        apiFilters.order_direction,
+        apiFilters.isBooking
       );
 
       const data = res?.data?.data || [];
@@ -474,43 +478,131 @@ const AppointmentsPage = () => {
           {/* Actions Row */}
           <Box
             display="flex"
+            flexDirection={{ xs: 'column', sm: 'row' }}
             justifyContent="space-between"
-            alignItems="center"
+            alignItems={{ xs: 'stretch', sm: 'center' }}
+            gap={{ xs: 2, sm: 2 }}
+            mt={1}
           >
-            <Button
-              variant="outlined"
-              color="primary"
-              onClick={() =>
-                handleFilterChange(
-                  "order_direction",
-                  filters.order_direction === "asc" ? "desc" : "asc"
-                )
-              }
-              size="small"
-              startIcon={filters.order_direction === "asc" ? "↑" : "↓"}
-              sx={{
-                whiteSpace: "nowrap",
-                minWidth: 120,
-                height: 36,
-              }}
+            <Box
+              display="flex"
+              gap={{ xs: 1.5, sm: 2 }}
+              alignItems="center"
+              flexDirection={{ xs: 'column', sm: 'row' }}
+              width={{ xs: '100%', sm: 'auto' }}
             >
-              {filters.order_direction === "asc"
-                ? "Oldest First"
-                : "Newest First"}
-            </Button>
+              {/* Toggle Switch */}
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  bgcolor: '#f5f5f5',
+                  borderRadius: '50px',
+                  p: 0.5,
+                  position: 'relative',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.05) inset',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  height: { xs: 44, sm: 40 },
+                  width: { xs: '100%', sm: 'auto' },
+                  minWidth: { xs: 'auto', sm: 240 },
+                  maxWidth: { xs: '100%', sm: 300 },
+                }}
+              >
+                {/* Sliding background */}
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    left: 4,
+                    top: '50%',
+                    transform: filters.isBooking
+                      ? 'translate(calc(100% + 2px), -50%)'
+                      : 'translateY(-50%)',
+                    width: 'calc(50% - 6px)',
+                    height: { xs: 36, sm: 32 },
+                    bgcolor: 'background.paper',
+                    borderRadius: '50px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                    zIndex: 1,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                  }}
+                />
 
+                {/* Appt. Date Button */}
+                <Button
+                  onClick={() => handleFilterChange('isBooking', false)}
+                  disableRipple
+                  sx={{
+                    position: 'relative',
+                    zIndex: 2,
+                    minWidth: { xs: 'auto', sm: 140 },
+                    height: { xs: 36, sm: 32 },
+                    px: { xs: 2, sm: 2.5 },
+                    mx: 0.5,
+                    flex: 1,
+                    borderRadius: '50px',
+                    fontSize: { xs: '0.813rem', sm: '0.875rem' },
+                    fontWeight: !filters.isBooking ? 600 : 400,
+                    color: !filters.isBooking ? 'primary.main' : 'text.secondary',
+                    textTransform: 'none',
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      bgcolor: 'transparent',
+                      color: !filters.isBooking ? 'primary.dark' : 'text.primary',
+                    },
+                  }}
+                >
+                  Appt. Date
+                </Button>
+
+                {/* Booking Date Button */}
+                <Button
+                  onClick={() => handleFilterChange('isBooking', true)}
+                  disableRipple
+                  sx={{
+                    position: 'relative',
+                    zIndex: 2,
+                    minWidth: { xs: 'auto', sm: 140 },
+                    height: { xs: 36, sm: 32 },
+                    px: { xs: 2, sm: 2.5 },
+                    mx: 0.5,
+                    flex: 1,
+                    borderRadius: '50px',
+                    fontSize: { xs: '0.813rem', sm: '0.875rem' },
+                    fontWeight: filters.isBooking ? 600 : 400,
+                    color: filters.isBooking ? 'primary.main' : 'text.secondary',
+                    textTransform: 'none',
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      bgcolor: 'transparent',
+                      color: filters.isBooking ? 'primary.dark' : 'text.primary',
+                    },
+                  }}
+                >
+                  Booking Date
+                </Button>
+              </Box>
+            </Box>
+
+            {/* Clear Filters Button */}
             <Button
               variant="outlined"
               color="error"
               onClick={clearFilters}
               size="small"
+              fullWidth={{ xs: true, sm: false }}
               sx={{
+                height: { xs: 44, sm: 40 },
+                px: { xs: 3, sm: 4 },
                 whiteSpace: "nowrap",
-                height: 36,
-                px: 2,
+                fontSize: { xs: '0.875rem', sm: '0.875rem' },
+                fontWeight: 500,
+                order: { xs: 2, sm: 0 },
               }}
             >
-              Clear
+              Clear Filters
             </Button>
           </Box>
         </Stack>
@@ -574,10 +666,16 @@ const AppointmentsPage = () => {
                     >
                       Start Time
                     </TableCell>
+
                     <TableCell
                       sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
                     >
                       End Time
+                    </TableCell>
+                    <TableCell
+                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                    >
+                      Location
                     </TableCell>
                     {/* <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>Appt. ID</TableCell> */}
                     <TableCell
@@ -585,6 +683,7 @@ const AppointmentsPage = () => {
                     >
                       Patient
                     </TableCell>
+
                     <TableCell
                       sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
                     >
@@ -685,7 +784,7 @@ const AppointmentsPage = () => {
                         >
                           {appt.end_time}
                         </TableCell>
-                        {/* <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{appt.id}</TableCell> */}
+                        <TableCell sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>{appt.location}</TableCell>
                         <TableCell
                           sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
                         >
@@ -712,7 +811,7 @@ const AppointmentsPage = () => {
                           sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
                         >
                           {Array.isArray(appt.procedures) &&
-                          appt.procedures.length > 0
+                            appt.procedures.length > 0
                             ? appt.procedures.map((p) => p.name).join(", ")
                             : appt.procedure?.name || "-"}
                         </TableCell>

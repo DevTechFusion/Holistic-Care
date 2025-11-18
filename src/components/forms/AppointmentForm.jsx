@@ -33,6 +33,7 @@ const DEFAULT_FORM_DATA = {
   date: new Date().toISOString().split("T")[0],
   start_time: "",
   end_time: "",
+  location: "",
   patient_name: "",
   contact_number: "",
   agent_id: "",
@@ -56,8 +57,8 @@ const VALIDATION_RULES = {
   PHONE_MIN_LENGTH: 11,
   NAME_MIN_LENGTH: 2,
   NAME_MAX_LENGTH: 100,
-  REQUIRED_FIELDS: ["date", "start_time", "patient_name", "contact_number", "agent_id", "doctor_id", "procedure_ids", "category_id", "source_id"],
-  REQUIRED_FIELDS_EDIT: ["date", "start_time", "patient_name", "contact_number", "agent_id", "doctor_id", "procedure_ids", "category_id", "source_id", "amount", "payment_mode"],
+  REQUIRED_FIELDS: ["date", "start_time", "location", "patient_name", "contact_number", "agent_id", "doctor_id", "procedure_ids", "category_id", "source_id"],
+  REQUIRED_FIELDS_EDIT: ["date", "start_time", "location", "patient_name", "contact_number", "agent_id", "doctor_id", "procedure_ids", "category_id", "source_id", "amount", "payment_mode"],
 };
 
 const PAYMENT_MODES = [
@@ -66,6 +67,11 @@ const PAYMENT_MODES = [
   { value: "online", label: "Online" },
   { value: "not_paid", label: "Not Paid" },
   
+];
+
+const LOCATIONS = [
+  { id: "Bahira", name: "Bahira Town" },
+  { id: "DHA", name: "DHA" },
 ];
 
 const API_ENDPOINTS = [
@@ -202,6 +208,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
       procedure_ids: () => (!value || value.length === 0) ? "At least one procedure is required" : "",
       category_id: () => !value ? "Category is required" : "",
       source_id: () => !value ? "Source is required" : "",
+      location: () => !value ? "Location is required" : "",
     };
 
     return rules[field] ? rules[field]() : "";
@@ -320,6 +327,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
         date: data.date || "",
         start_time: formatTimeForInput(data.start_time),
         end_time: formatTimeForInput(data.end_time),
+        location: data.location || "",
         patient_name: data.patient_name || "",
         contact_number: data.contact_number || "",
         agent_id: data.agent_id || data.agent?.id || "",
@@ -562,9 +570,25 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
           <Typography variant="h6" color="primary" sx={{ fontWeight: 600, mb: 1 }}>Appointment Details</Typography>
           <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
             <DatePicker label="Date *" value={formData.date ? dayjs(formData.date) : null} onChange={(newValue) => handleChange("date", newValue ? newValue.format("YYYY-MM-DD") : "")} slotProps={{ textField: { fullWidth: true, error: !!errors.date, helperText: errors.date } }} />
+            <FormControl fullWidth error={!!errors.location}>
+              <InputLabel>Location *</InputLabel>
+              <Select 
+                value={formData.location} 
+                onChange={(e) => handleChange("location", e.target.value)} 
+                label="Location *"
+              >
+                <MenuItem value=""><em>Select location</em></MenuItem>
+                {LOCATIONS.map((location) => (
+                  <MenuItem key={location.id} value={location.id}>{location.name}</MenuItem>
+                ))}
+              </Select>
+              {errors.location && <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 2 }}>{errors.location}</Typography>}
+            </FormControl>
+            </Stack>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
             <TextField label="Start Time *" type="time" fullWidth value={formData.start_time} onChange={(e) => handleChange("start_time", e.target.value)} error={!!errors.start_time} helperText={errors.start_time} InputLabelProps={{ shrink: true }} />
             <TextField label="End Time" type="time" fullWidth value={formData.end_time} onChange={(e) => handleChange("end_time", e.target.value)} error={!!errors.end_time} helperText={errors.end_time} InputLabelProps={{ shrink: true }} />
-          </Stack>
+            </Stack>
           {renderTimeSlots()}
         </Stack>
 

@@ -9,9 +9,9 @@ export const createAppointment = (data) => {
     return invokeApi(reqObj);
 };
 
-export const getAppointments = (page = 1, per_page = 15, start_date = "", end_date = "", doctor_id = "", agent_id = "", department_id = "", procedure_id = "", patient_name = "", contact_number = "",status_id = "", remarks_1_id = "", remarks_2_id = "", payment_mode = "", order_by = "created_at", order_direction = "desc") => {
+export const getAppointments = (page = 1, per_page = 15, start_date = "", end_date = "", doctor_id = "", agent_id = "", department_id = "", procedure_id = "", patient_name = "", contact_number = "",status_id = "", remarks_1_id = "", remarks_2_id = "", payment_mode = "", order_by = "created_at", order_direction = "desc", isBooking = false) => {
   return invokeApi({
-    path: `api/appointments?page=${page}&per_page=${per_page}&start_date=${start_date}&end_date=${end_date}&doctor_id=${doctor_id}&agent_id=${agent_id}&department_id=${department_id}&procedure_id=${procedure_id}&patient_name=${patient_name}&contact_number=${contact_number}&status_id=${status_id}&remarks_1_id=${remarks_1_id}&remarks_2_id=${remarks_2_id}&payment_mode=${payment_mode}&order_by=${order_by}&order_direction= ${order_direction}`,
+    path: `api/appointments?page=${page}&per_page=${per_page}&start_date=${start_date}&end_date=${end_date}&doctor_id=${doctor_id}&agent_id=${agent_id}&department_id=${department_id}&procedure_id=${procedure_id}&patient_name=${patient_name}&contact_number=${contact_number}&status_id=${status_id}&remarks_1_id=${remarks_1_id}&remarks_2_id=${remarks_2_id}&payment_mode=${payment_mode}&order_by=${order_by}&order_direction= ${order_direction}&isBooking=${isBooking}`,
   });
 };
 
