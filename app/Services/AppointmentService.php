@@ -788,6 +788,31 @@ class AppointmentService extends CrudeService
     }
 
     /**
+     * Get arrived today data with count and percentage.
+     * Returns: count and percentage of arrived appointments for today
+     */
+    public function getArrivedTodayData(): array
+    {
+        $totalToday = $this->model
+            ->whereDate('date', now()->toDateString())
+            ->count();
+
+        $arrivedToday = $this->model
+            ->whereDate('date', now()->toDateString())
+            ->whereHas('status', function ($q) {
+                $q->where('name', 'Arrived');
+            })->count();
+
+        $percentage = $totalToday > 0 ? round(($arrivedToday / $totalToday) * 100, 2) : 0;
+
+        return [
+            'count' => $arrivedToday,
+            'percentage' => $percentage,
+            // 'total_today' => $totalToday,
+        ];
+    }
+
+    /**
      * Revenue and incentive summary grouped by agent within date range.
      * Includes bookings count and basic status breakdown.
      */
