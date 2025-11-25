@@ -109,6 +109,10 @@ class AppointmentService extends CrudeService
             $query->where('contact_number', 'like', '%' . $filters['contact_number'] . '%');
         }
 
+        if (!empty($filters['contact_number_2'])) {
+            $query->where('contact_number_2', 'like', '%' . $filters['contact_number_2'] . '%');
+        }
+
         if (!empty($filters['mr_number'])) {
             $query->where('mr_number', 'like', '%' . $filters['mr_number'] . '%');
         }
@@ -1068,6 +1072,7 @@ class AppointmentService extends CrudeService
             ->where(function($q) use ($search) {
                 $q->where('patient_name', 'like', "%{$search}%")
                   ->orWhere('contact_number', 'like', "%{$search}%")
+                  ->orWhere('contact_number_2', 'like', "%{$search}%")
                   ->orWhere('mr_number', 'like', "%{$search}%")
                   ->orWhereHas('agent', function($agentQuery) use ($search) {
                       $agentQuery->where('name', 'like', "%{$search}%");
