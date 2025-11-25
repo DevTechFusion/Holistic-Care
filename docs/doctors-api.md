@@ -305,6 +305,55 @@ GET /api/doctors/procedure/{procedureId}
 Authorization: Bearer {token}
 ```
 
+### Get All Doctors (Without Pagination)
+```http
+GET /api/doctors-all
+Authorization: Bearer {token}
+```
+
+**Query Parameters (all optional):**
+- `name` (string): Filter doctors by name (partial match, case-insensitive)
+
+**Example Requests:**
+```http
+# Get all doctors without pagination
+GET /api/doctors-all
+
+# Filter by name
+GET /api/doctors-all?name=Iqra
+```
+
+**Response:**
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 1,
+      "name": "Dr. Iqra Jamil",
+      "phone_number": "0300-1231236",
+      "department_id": 1,
+      "department": {
+        "id": 1,
+        "name": "Dermatology"
+      }
+    },
+    {
+      "id": 2,
+      "name": "Dr. Ahmed Khan",
+      "phone_number": "0300-1234567",
+      "department_id": 2,
+      "department": {
+        "id": 2,
+        "name": "Cardiology"
+      }
+    }
+  ]
+}
+```
+
+**Note:** This endpoint returns all doctors without pagination. It's optimized for dropdowns and select lists, returning only essential fields (id, name, phone_number, department_id) with department relationship.
+
 ### Get Available Doctors
 ```http
 GET /api/doctors/available

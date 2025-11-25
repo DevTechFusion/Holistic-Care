@@ -278,10 +278,14 @@ class DoctorController extends Controller
     /**
      * Get all doctors without pagination (for select dropdowns)
      */
-    public function getAll()
+    public function getAll(Request $request)
     {
         try {
-            $doctors = $this->doctorService->getAllDoctorsWithoutPagination();
+            $filters = [
+                'name' => $request->query('name')
+            ];
+
+            $doctors = $this->doctorService->getAllDoctorsWithoutPagination($filters);
 
             return response()->json([
                 'status' => 'success',
