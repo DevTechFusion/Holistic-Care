@@ -30,6 +30,11 @@ class DoctorService extends CrudeService
             });
         }
 
+        // Apply name filter
+        if (!empty($filters['name'])) {
+            $query->where('name', 'like', '%' . $filters['name'] . '%');
+        }
+
         // Order by name
         $query->orderBy('name', 'asc');
 

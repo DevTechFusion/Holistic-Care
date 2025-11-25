@@ -47,6 +47,7 @@ Authorization: Bearer {token}
 **Query Parameters (all optional):**
 - `department_id` (integer): Filter doctors by department ID
 - `procedure_id` (integer): Filter doctors by procedure ID
+- `name` (string): Filter doctors by name (partial match, case-insensitive)
 - `per_page` (integer): Number of results per page (default: 15, max: 100)
 - `page` (integer): Page number (default: 1)
 
@@ -61,8 +62,14 @@ GET /api/doctors?department_id=1
 # Filter by procedure
 GET /api/doctors?procedure_id=2
 
+# Filter by name
+GET /api/doctors?name=John
+
 # Filter by both department and procedure
 GET /api/doctors?department_id=1&procedure_id=2
+
+# Filter by name and department
+GET /api/doctors?name=Iqra&department_id=1
 
 # With pagination
 GET /api/doctors?department_id=1&per_page=20&page=2
@@ -358,6 +365,7 @@ Authorization: Bearer {token}
   "errors": {
     "department_id": ["The selected department does not exist."],
     "procedure_id": ["The selected procedure does not exist."],
+    "name": ["The name must be a string.", "The name may not be greater than 255 characters."],
     "per_page": ["The per page value must be at least 1.", "The per page value may not be greater than 100."],
     "page": ["The page value must be at least 1."]
   }
@@ -456,6 +464,7 @@ const getDoctors = async (filters = {}) => {
     const queryParams = new URLSearchParams();
     if (filters.department_id) queryParams.append('department_id', filters.department_id);
     if (filters.procedure_id) queryParams.append('procedure_id', filters.procedure_id);
+    if (filters.name) queryParams.append('name', filters.name);
     if (filters.per_page) queryParams.append('per_page', filters.per_page);
     if (filters.page) queryParams.append('page', filters.page);
     
@@ -493,8 +502,14 @@ getDoctors({ department_id: 1 });
 // Filter by procedure
 getDoctors({ procedure_id: 2 });
 
+// Filter by name
+getDoctors({ name: 'John' });
+
 // Filter by both department and procedure
 getDoctors({ department_id: 1, procedure_id: 2 });
+
+// Filter by name and department
+getDoctors({ name: 'Iqra', department_id: 1 });
 
 // With pagination
 getDoctors({ department_id: 1, per_page: 20, page: 2 });

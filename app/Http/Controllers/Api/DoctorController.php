@@ -30,6 +30,7 @@ class DoctorController extends Controller
             $filters = [
                 'department_id' => $validated['department_id'] ?? null,
                 'procedure_id' => $validated['procedure_id'] ?? null,
+                'name' => $validated['name'] ?? null,
             ];
             
             $doctors = $this->doctorService->getAllDoctors($perPage, $page, $filters);
