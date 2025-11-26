@@ -60,7 +60,7 @@ class AdminDashboardController extends Controller
 
         // Cards and counters
         $statusCounters = $this->appointmentService->getStatusCountersInRange($startDate, $endDate);
-        $arrivedToday = $this->appointmentService->countArrivedToday();
+        $arrivedToday = $this->appointmentService->getArrivedTodayData();
 
         $topAgents = $this->appointmentService->getTopAgentsByBookings($startDate, $endDate, 5);
         $topSources = $this->appointmentService->getTopSourcesByBookings($startDate, $endDate, 5);

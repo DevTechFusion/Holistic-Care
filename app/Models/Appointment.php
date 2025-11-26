@@ -21,6 +21,7 @@ class Appointment extends Model
         'duration',
         'patient_name',
         'contact_number',
+        'contact_number_2',
         'agent_id',
         'notes',
         'location',

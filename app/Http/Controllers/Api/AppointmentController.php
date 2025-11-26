@@ -49,6 +49,7 @@ class AppointmentController extends Controller
                 // Text search filters
                 'patient_name' => 'nullable|string|max:255',
                 'contact_number' => 'nullable|string|max:255',
+                'contact_number_2' => 'nullable|string|max:255',
                 'mr_number' => 'nullable|string|max:255',
                 'payment_mode' => 'nullable|string|max:255',
                 
@@ -64,7 +65,7 @@ class AppointmentController extends Controller
                 'start_date', 'end_date', 'isBooking', 'start_time', 'end_time', 'duration',
                 'doctor_id', 'department_id', 'procedure_id', 'category_id', 
                 'source_id', 'status_id', 'agent_id', 'remarks_1_id', 'remarks_2_id',
-                'patient_name', 'contact_number', 'mr_number', 'payment_mode'
+                'patient_name', 'contact_number', 'contact_number_2', 'mr_number', 'payment_mode'
             ]);
 
             // Convert isBooking string to boolean

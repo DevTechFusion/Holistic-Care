@@ -30,6 +30,7 @@ class DoctorController extends Controller
             $filters = [
                 'department_id' => $validated['department_id'] ?? null,
                 'procedure_id' => $validated['procedure_id'] ?? null,
+                'name' => $validated['name'] ?? null,
             ];
             
             $doctors = $this->doctorService->getAllDoctors($perPage, $page, $filters);
@@ -277,10 +278,14 @@ class DoctorController extends Controller
     /**
      * Get all doctors without pagination (for select dropdowns)
      */
-    public function getAll()
+    public function getAll(Request $request)
     {
         try {
-            $doctors = $this->doctorService->getAllDoctorsWithoutPagination();
+            $filters = [
+                'name' => $request->query('name')
+            ];
+
+            $doctors = $this->doctorService->getAllDoctorsWithoutPagination($filters);
 
             return response()->json([
                 'status' => 'success',

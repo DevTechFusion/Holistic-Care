@@ -7,6 +7,7 @@ This document describes the appointments endpoints and the newly added fields `r
 - `remarks_2_id`: nullable, foreign key to `remarks_2.id`
 - `status_id`: nullable, foreign key to `statuses.id`
 - `location`: nullable, string (max 255 chars)
+- `contact_number_2`: nullable, string (max 255 chars) - Secondary contact number
 
 These fields are optional on create/update and will be included in responses when present. Relations `remarks1`, `remarks2`, and `status` are eagerly loaded.
 
@@ -29,6 +30,7 @@ Request body example:
   "time_slot": "10:00 - 11:00",
   "patient_name": "John Doe",
   "contact_number": "9876543210",
+  "contact_number_2": "9876543211",
   "agent_id": 1,
   "doctor_id": 5,
   "procedure_id": 3,
@@ -127,6 +129,7 @@ Responses for list/detail also include related `remarks1`, `remarks2`, and `stat
 **🔍 Text Search Filters:**
 - `patient_name` - Search by patient name (partial match)
 - `contact_number` - Search by contact number (partial match)
+- `contact_number_2` - Search by secondary contact number (partial match)
 - `mr_number` - Search by MR number (partial match)
 
 **💳 Payment Filters:**
@@ -229,6 +232,7 @@ GET /api/appointments?payment_mode=Insurance&doctor_id=5&start_date=2024-01-01&e
         "end_time": "11:00:00",
         "patient_name": "John Doe",
         "contact_number": "9876543210",
+        "contact_number_2": "9876543211",
         "amount": 1500.00,
         "payment_mode": "Cash",
         "location": "Main Building - Room 305",

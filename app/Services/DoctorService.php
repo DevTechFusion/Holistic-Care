@@ -30,6 +30,11 @@ class DoctorService extends CrudeService
             });
         }
 
+        // Apply name filter
+        if (!empty($filters['name'])) {
+            $query->where('name', 'like', '%' . $filters['name'] . '%');
+        }
+
         // Order by name
         $query->orderBy('name', 'asc');
 
@@ -368,11 +373,15 @@ class DoctorService extends CrudeService
     /**
      * Get all doctors without pagination (for select dropdowns)
      */
-    public function getAllDoctorsWithoutPagination()
+    public function getAllDoctorsWithoutPagination($filters = [])
     {
-        return $this->model::select('id', 'name', 'phone_number', 'department_id')
-            ->with(['department:id,name'])
-            ->orderBy('name')
-            ->get();
+        $query = $this->model::select('id', 'name', 'phone_number', 'department_id')
+            ->with(['department:id,name']);
+
+        if (!empty($filters['name'])) {
+            $query->where('name', 'like', '%' . $filters['name'] . '%');
+        }
+
+        return $query->orderBy('name')->get();
     }
 }

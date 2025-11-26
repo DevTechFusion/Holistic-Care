@@ -24,6 +24,7 @@ class IndexDoctorRequest extends FormRequest
         return [
             'department_id' => 'nullable|integer|exists:departments,id',
             'procedure_id' => 'nullable|integer|exists:procedures,id',
+            'name' => 'nullable|string|max:255',
             'per_page' => 'nullable|integer|min:1|max:100',
             'page' => 'nullable|integer|min:1',
         ];
@@ -39,6 +40,8 @@ class IndexDoctorRequest extends FormRequest
             'department_id.exists' => 'The selected department does not exist.',
             'procedure_id.integer' => 'The procedure ID must be an integer.',
             'procedure_id.exists' => 'The selected procedure does not exist.',
+            'name.string' => 'The name must be a string.',
+            'name.max' => 'The name may not be greater than 255 characters.',
             'per_page.integer' => 'The per page value must be an integer.',
             'per_page.min' => 'The per page value must be at least 1.',
             'per_page.max' => 'The per page value may not be greater than 100.',
