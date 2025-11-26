@@ -86,7 +86,7 @@ const SidebarConfig = [
       },
       {
         title: "Roles List",
-        icon: UserIcon,
+        icon: ManagerIcon,
         path: "/roles",
         module: MODULES.ROLES,
       },
@@ -98,7 +98,7 @@ const SidebarConfig = [
       },
       {
         title: "Users List",
-        icon: UserIcon,
+        icon: AgentIcon,
         path: "/users",
         module: MODULES.USERS,
       },

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 
 import {
   Grid,
@@ -23,7 +23,14 @@ import {
   Autocomplete,
   MenuItem,
   TableSortLabel,
+  Popover,
+  IconButton,
 } from "@mui/material";
+import { DateRangePicker } from "react-date-range";
+import "react-date-range/dist/styles.css";
+import "react-date-range/dist/theme/default.css";
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import CloseIcon from '@mui/icons-material/Close';
 
 import { getAllReports, exportReports } from "../../DAL/reports";
 import { getDoctorsList } from "../../DAL/doctors";
@@ -67,6 +74,15 @@ const ReportsPage = () => {
   
   // Check if current user is an agent
   const isCurrentUserAgent = Array.isArray(user?.roles) && user.roles.some((role) => role.name?.toLowerCase() === "agent");
+
+  const [dateRangeAnchor, setDateRangeAnchor] = useState(null);
+  const [dateRange, setDateRange] = useState([
+    {
+      startDate: null,
+      endDate: null,
+      key: 'selection'
+    }
+  ]);
 
   const [filters, setFilters] = useState({
     start_date: "",
@@ -259,6 +275,39 @@ const ReportsPage = () => {
     setPage(0);
   };
 
+  const handleDateRangeClick = (event) => {
+    setDateRangeAnchor(event.currentTarget);
+  };
+
+  const handleDateRangeClose = () => {
+    setDateRangeAnchor(null);
+  };
+
+  const handleDateRangeChange = (ranges) => {
+    const { selection } = ranges;
+    setDateRange([selection]);
+    
+    // Format dates as YYYY-MM-DD
+    const formatDate = (date) => {
+      if (!date) return '';
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+    
+    setFilters(prev => ({
+      ...prev,
+      start_date: formatDate(selection.startDate),
+      end_date: formatDate(selection.endDate)
+    }));
+  };
+
+  const formatDateDisplay = (start, end) => {
+    if (!start || !end) return "Select Date Range";
+    return `${start} to ${end}`;
+  };
+
   const clearFilters = () => {
     const cleared = {
       start_date: "",
@@ -278,6 +327,11 @@ const ReportsPage = () => {
       isBooking: false,
     };
     setFilters(cleared);
+    setDateRange([{
+      startDate: null,
+      endDate: null,
+      key: 'selection'
+    }]);
     setPage(0);
   };
 
@@ -316,100 +370,146 @@ const ReportsPage = () => {
       {/* Inline Filters */}
       <Paper sx={{ mb: 2, p: { xs: 2, sm: 3 } }}>
         <Stack spacing={2.5}>
-          {/* Row 1 */}
-          <Stack
-            direction={{ xs: "column", md: "row" }}
-            spacing={2}
-            alignItems="stretch"
-          >
-            <TextField
-              label="Start Date"
-              type="date"
-              value={filters.start_date}
-              onChange={(e) => handleFilterChange("start_date", e.target.value)}
-              InputLabelProps={{ shrink: true }}
-              size="small"
-              sx={{ flex: 1 }}
-            />
-            <TextField
-              label="End Date"
-              type="date"
-              value={filters.end_date}
-              onChange={(e) => handleFilterChange("end_date", e.target.value)}
-              InputLabelProps={{ shrink: true }}
-              size="small"
-              sx={{ flex: 1 }}
-            />
+          {/* First Row - 6 Filters */}
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+            {/* Date Range Picker */}
+            <Box sx={{ flex: 1, minWidth: 200 }}>
+              <Button
+                fullWidth
+                variant="outlined"
+                onClick={handleDateRangeClick}
+                startIcon={<CalendarTodayIcon />}
+                sx={{
+                  justifyContent: 'flex-start',
+                  textTransform: 'none',
+                  bgcolor: 'background.paper',
+                  color: filters.start_date && filters.end_date ? 'text.primary' : 'text.secondary',
+                  '&:hover': {
+                    borderColor: 'primary.main',
+                  },
+                }}
+              >
+                {formatDateDisplay(filters.start_date, filters.end_date)}
+              </Button>
+
+              <Popover
+                open={Boolean(dateRangeAnchor)}
+                anchorEl={dateRangeAnchor}
+                onClose={handleDateRangeClose}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'left',
+                }}
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'left',
+                }}
+                PaperProps={{
+                  sx: {
+                    mt: 1,
+                    p: 2,
+                    borderRadius: 2,
+                    boxShadow: 3,
+                  },
+                }}
+              >
+                <DateRangePicker
+                  onChange={handleDateRangeChange}
+                  ranges={dateRange}
+                  months={2}
+                  direction="horizontal"
+                  showMonthAndYearPickers={true}
+                  rangeColors={['#3f51b5']}
+                />
+                <Box display="flex" justifyContent="flex-end" mt={2} gap={2}>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => {
+                      setFilters(prev => ({
+                        ...prev,
+                        start_date: "",
+                        end_date: ""
+                      }));
+                      setDateRange([{
+                        startDate: null,
+                        endDate: null,
+                        key: 'selection'
+                      }]);
+                    }}
+                  >
+                    Clear
+                  </Button>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={handleDateRangeClose}
+                  >
+                    Apply
+                  </Button>
+                </Box>
+              </Popover>
+            </Box>
+
+            {/* Patient Name */}
             <TextField
               label="Patient Name"
               value={filters.patient_name}
-              onChange={(e) =>
-                handleFilterChange("patient_name", e.target.value)
-              }
+              onChange={(e) => handleFilterChange("patient_name", e.target.value)}
               size="small"
               sx={{ flex: 1 }}
             />
 
+            {/* Contact Number */}
             <TextField
               label="Contact Number"
               value={filters.contact_number}
-              onChange={(e) =>
-                handleFilterChange("contact_number", e.target.value)
-              }
+              onChange={(e) => handleFilterChange("contact_number", e.target.value)}
               size="small"
               sx={{ flex: 1 }}
             />
-          </Stack>
 
-          {/* Row 2 */}
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            spacing={2.5}
-            sx={{
-              "& > *": {
-                flex: 1,
-                minWidth: { xs: "100%", sm: "0" },
-              },
-            }}
-          >
+            {/* Doctor */}
             <Autocomplete
               options={doctors}
               getOptionLabel={(option) => option.name || ""}
               value={doctors.find((d) => d.id === filters.doctor_id) || null}
-              onChange={(e, value) =>
-                handleFilterChange("doctor_id", value?.id)
-              }
+              onChange={(e, value) => handleFilterChange("doctor_id", value?.id)}
               renderInput={(params) => (
                 <TextField {...params} label="Doctor" size="small" />
               )}
               isOptionEqualToValue={(o, v) => o?.id === v?.id}
               disablePortal
+              sx={{ flex: 1 }}
             />
 
+            {/* Agent (if not current user) */}
             {!isCurrentUserAgent && (
               <Autocomplete
                 options={agents}
                 getOptionLabel={(option) => option.name || ""}
                 value={agents.find((a) => a.id === filters.agent_id) || null}
-                onChange={(e, value) =>
-                  handleFilterChange("agent_id", value?.id)
-                }
+                onChange={(e, value) => handleFilterChange("agent_id", value?.id)}
                 renderInput={(params) => (
                   <TextField {...params} label="Agent" size="small" />
                 )}
                 isOptionEqualToValue={(o, v) => o?.id === v?.id}
                 disablePortal
+                sx={{ flex: 1 }}
               />
             )}
+          </Stack>
 
+          {/* Second Row - 5 Filters */}
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+            {/* Department */}
             <TextField
               select
               label="Department"
               value={filters.department_id}
-              onChange={(e) =>
-                handleFilterChange("department_id", e.target.value)
-              }
+              onChange={(e) => handleFilterChange("department_id", e.target.value)}
               size="small"
+              sx={{ flex: 1 }}
             >
               <MenuItem value="">All Departments</MenuItem>
               {departments.map((d) => (
@@ -419,34 +519,21 @@ const ReportsPage = () => {
               ))}
             </TextField>
 
+            {/* Procedure */}
             <Autocomplete
               options={procedures}
               getOptionLabel={(option) => option.name || ""}
-              value={
-                procedures.find((p) => p.id === filters.procedure_id) || null
-              }
-              onChange={(e, value) =>
-                handleFilterChange("procedure_id", value?.id)
-              }
+              value={procedures.find((p) => p.id === filters.procedure_id) || null}
+              onChange={(e, value) => handleFilterChange("procedure_id", value?.id)}
               renderInput={(params) => (
                 <TextField {...params} label="Procedure" size="small" />
               )}
               isOptionEqualToValue={(o, v) => o?.id === v?.id}
               disablePortal
+              sx={{ flex: 1 }}
             />
-          </Stack>
 
-          {/* Row 3 */}
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            spacing={2.5}
-            sx={{
-              "& > *": {
-                flex: 1,
-                minWidth: { xs: "100%", sm: "0" },
-              },
-            }}
-          >
+            {/* Status */}
             <Autocomplete
               options={statuses}
               getOptionLabel={(option) => option.name || ""}
@@ -457,54 +544,49 @@ const ReportsPage = () => {
               )}
               isOptionEqualToValue={(o, v) => o?.id === v?.id}
               disablePortal
+              sx={{ flex: 1 }}
             />
 
+            {/* Remarks #1 */}
             <Autocomplete
               options={remarks1}
               getOptionLabel={(option) => option.name || ""}
-              value={
-                remarks1.find((r) => r.id === filters.remarks_1_id) || null
-              }
-              onChange={(e, value) =>
-                handleFilterChange("remarks_1_id", value?.id)
-              }
+              value={remarks1.find((r) => r.id === filters.remarks_1_id) || null}
+              onChange={(e, value) => handleFilterChange("remarks_1_id", value?.id)}
               renderInput={(params) => (
                 <TextField {...params} label="Remark 1" size="small" />
               )}
               isOptionEqualToValue={(o, v) => o?.id === v?.id}
               disablePortal
+              sx={{ flex: 1 }}
             />
 
+            {/* Remarks #2 */}
             <Autocomplete
               options={remarks2}
               getOptionLabel={(option) => option.name || ""}
-              value={
-                remarks2.find((r) => r.id === filters.remarks_2_id) || null
-              }
-              onChange={(e, value) =>
-                handleFilterChange("remarks_2_id", value?.id)
-              }
+              value={remarks2.find((r) => r.id === filters.remarks_2_id) || null}
+              onChange={(e, value) => handleFilterChange("remarks_2_id", value?.id)}
               renderInput={(params) => (
                 <TextField {...params} label="Remark 2" size="small" />
               )}
               isOptionEqualToValue={(o, v) => o?.id === v?.id}
               disablePortal
+              sx={{ flex: 1 }}
             />
 
+            {/* Payment Method */}
             <Autocomplete
               options={paymentModes}
               getOptionLabel={(option) => option.name || ""}
-              value={
-                paymentModes.find((p) => p.id === filters.payment_mode) || null
-              }
-              onChange={(e, value) =>
-                handleFilterChange("payment_mode", value?.id)
-              }
+              value={paymentModes.find((p) => p.id === filters.payment_mode) || null}
+              onChange={(e, value) => handleFilterChange("payment_mode", value?.id)}
               renderInput={(params) => (
-                <TextField {...params} label="Payment Mode" size="small" />
+                <TextField {...params} label="Payment Method" size="small" />
               )}
               isOptionEqualToValue={(o, v) => o?.id === v?.id}
               disablePortal
+              sx={{ flex: 1 }}
             />
           </Stack>
 

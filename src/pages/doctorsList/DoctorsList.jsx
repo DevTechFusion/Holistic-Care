@@ -28,9 +28,11 @@ import { useAuth } from "../../contexts/AuthContext";
 import { MODULES, PERMISSIONS } from "../../constants/permissionConstants";
 import { getDepartmentsList } from "../../DAL/departments";
 import { getProceduresList } from "../../DAL/procedure";
+import { getDoctorsList } from "../../DAL/doctors";
 
 const DoctorsPage = () => {
-  const [doctors, setDoctors] = useState([]);
+    const [doctors, setDoctors] = useState([]);
+  const [doctorsList, setDoctorsList] = useState([]); // For filter dropdown
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [page, setPage] = useState(0);
@@ -43,6 +45,7 @@ const DoctorsPage = () => {
   const [filters, setFilters] = useState({
     department_id: "",
     procedure_id: "",
+    name: "", // Changed from doctor_id to name
   });
 
   // Lists for filters
@@ -53,16 +56,19 @@ const DoctorsPage = () => {
   const fetchFilterLists = async () => {
     setListsLoading(true);
     try {
-      const [deptRes, procRes] = await Promise.all([
+      const [deptRes, procRes, docsRes] = await Promise.all([
         getDepartmentsList(),
         getProceduresList(),
+        getDoctorsList(), // This is for the filter dropdown
       ]);
       setDepartments(Array.isArray(deptRes?.data) ? deptRes.data : []);
       setProcedures(Array.isArray(procRes?.data) ? procRes.data : []);
+      setDoctorsList(Array.isArray(docsRes?.data) ? docsRes.data : []);
     } catch (err) {
       console.error("Error fetching filter lists:", err);
       setDepartments([]);
       setProcedures([]);
+      setDoctorsList([]);
     } finally {
       setListsLoading(false);
     }
@@ -75,7 +81,8 @@ const DoctorsPage = () => {
         page + 1,
         rowsPerPage,
         filters.department_id,
-        filters.procedure_id
+        filters.procedure_id,
+        filters.name // Changed from doctor_id to name
       );
       setDoctors(res?.data?.data || []);
       setTotal(res?.data?.total || 0);
@@ -134,6 +141,7 @@ const DoctorsPage = () => {
     setFilters({
       department_id: "",
       procedure_id: "",
+      name: ""
     });
     setPage(0);
   };
@@ -228,6 +236,19 @@ const DoctorsPage = () => {
             }
             renderInput={(params) => (
               <TextField {...params} label="Procedure" size="small" />
+            )}
+            isOptionEqualToValue={(o, v) => o?.id === v?.id}
+            disablePortal
+            sx={{ flex: 1, minWidth: 200 }}
+          />
+
+          <Autocomplete
+            options={doctorsList}
+            getOptionLabel={(option) => option.name || ""}
+            value={doctorsList.find((p) => p.name === filters.name) || null}
+            onChange={(e, value) => handleFilterChange("name", value?.name || "")}
+            renderInput={(params) => (
+              <TextField {...params} label="Doctors" size="small" />
             )}
             isOptionEqualToValue={(o, v) => o?.id === v?.id}
             disablePortal

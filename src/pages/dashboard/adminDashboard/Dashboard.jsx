@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   Divider,
   Menu,
@@ -12,17 +12,28 @@ import {
   useTheme,
   alpha,
   Typography,
+  Popover,
+  IconButton,
 } from "@mui/material";
 
 import MedicalServicesIcon from "@mui/icons-material/MedicalServices";
 import BusinessIcon from "@mui/icons-material/Business";
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
+import VaccinesIcon from "@mui/icons-material/Vaccines";
 import AddIcon from "@mui/icons-material/Add";
+import BookOnlineIcon from '@mui/icons-material/BookOnline';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import CloseIcon from '@mui/icons-material/Close';
+
+import { DateRangePicker } from 'react-date-range';
+import 'react-date-range/dist/styles.css';
+import 'react-date-range/dist/theme/default.css';
 
 import CreateProcedureModal from "../../../components/forms/ProcedureForm";
 import CreateDepartmentModal from "../../../components/forms/DepartmentForm";
 import CreateDoctorModal from "../../../components/forms/DoctorForm";
 import CreateAppointmentModal from "../../../components/forms/AppointmentForm";
+import PharmacyModal from "../../../components/forms/PharmacyForm";
 
 import AgentWiseBookings from "../../../components/dashboard/AgentWiseBooking";
 import SourceWiseBookings from "../../../components/dashboard/SourceWiseBooking";
@@ -43,6 +54,14 @@ const Dashboard = () => {
   const [endDate, setEndDate] = useState("");
   const [appliedStartDate, setAppliedStartDate] = useState("");
   const [appliedEndDate, setAppliedEndDate] = useState("");
+  const [dateRangeAnchor, setDateRangeAnchor] = useState(null);
+  const [dateRange, setDateRange] = useState([
+    {
+      startDate: new Date(),
+      endDate: new Date(),
+      key: 'selection'
+    }
+  ]);
   const theme = useTheme();
 
   const handleClick = (event) => setAnchorEl(event.currentTarget);
@@ -63,9 +82,35 @@ const Dashboard = () => {
     }
   };
 
+  const handleDateRangeClick = (event) => {
+    setDateRangeAnchor(event.currentTarget);
+  };
+
+  const handleDateRangeClose = () => {
+    setDateRangeAnchor(null);
+  };
+
+  const handleDateRangeChange = (item) => {
+    setDateRange([item.selection]);
+    const start = item.selection.startDate;
+    const end = item.selection.endDate;
+    
+    // Format dates as YYYY-MM-DD
+    const formatDate = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+    
+    setStartDate(formatDate(start));
+    setEndDate(formatDate(end));
+  };
+
   const handleApplyFilters = () => {
     setAppliedStartDate(startDate);
     setAppliedEndDate(endDate);
+    handleDateRangeClose();
   };
 
   const handleClearFilters = () => {
@@ -73,6 +118,19 @@ const Dashboard = () => {
     setEndDate("");
     setAppliedStartDate("");
     setAppliedEndDate("");
+    setDateRange([
+      {
+        startDate: new Date(),
+        endDate: new Date(),
+        key: 'selection'
+      }
+    ]);
+    handleDateRangeClose();
+  };
+
+  const formatDateDisplay = (start, end) => {
+    if (!start || !end) return "Select Date Range";
+    return `${start} to ${end}`;
   };
 
   return (
@@ -83,6 +141,75 @@ const Dashboard = () => {
         p: { xs: 2, sm: 4 },
       }}
     >
+      {/* Date Range Picker Popover */}
+      <Popover
+        open={Boolean(dateRangeAnchor)}
+        anchorEl={dateRangeAnchor}
+        onClose={handleDateRangeClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        PaperProps={{
+          sx: {
+            mt: 1,
+            borderRadius: 2,
+            boxShadow: theme.shadows[8],
+          }
+        }}
+      >
+        <Box sx={{ p: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h5" sx={{ fontWeight: 500 }}>
+              Select Date Range
+            </Typography>
+            <IconButton size="small" onClick={handleDateRangeClose}>
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Box>
+          
+          <DateRangePicker
+            ranges={dateRange}
+            onChange={handleDateRangeChange}
+            moveRangeOnFirstSelection={false}
+            months={2}
+            direction="horizontal"
+            showDateDisplay={false}
+          />
+          
+          <Stack direction="row" spacing={2} sx={{ mt: 2, justifyContent: 'flex-end' }}>
+            <Button
+              variant="outlined"
+              color="error"
+              onClick={handleClearFilters}
+              sx={{
+                borderRadius: 2,
+                textTransform: "none",
+                fontWeight: 500,
+                px: 3,
+              }}
+            >
+              Clear
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleApplyFilters}
+              sx={{
+                borderRadius: 2,
+                textTransform: "none",
+                fontWeight: 500,
+                px: 3,
+              }}
+            >
+              Apply
+            </Button>
+          </Stack>
+        </Box>
+      </Popover>
       {/* Dropdown Menu */}
       <Menu
         anchorEl={anchorEl}
@@ -136,14 +263,20 @@ const Dashboard = () => {
         <Divider />
         <MenuItem onClick={() => handleClose("appointment")}>
           <ListItemIcon>
-            <LocalHospitalIcon fontSize="small" color="primary" />
+            <BookOnlineIcon fontSize="small" color="primary" />
           </ListItemIcon>
           <ListItemText primary="Appointment" />
+        </MenuItem>
+        <Divider />
+        <MenuItem onClick={() => handleClose("pharmacy")}>
+          <ListItemIcon>
+            <VaccinesIcon fontSize="small" color="primary" />
+          </ListItemIcon>
+          <ListItemText primary="Pharmacy" />
         </MenuItem>
       </Menu>
 
       {/* Modals */}
-
       <CreateProcedureModal
         open={openModal === "procedure"}
         onClose={(success, message) =>
@@ -168,6 +301,15 @@ const Dashboard = () => {
           handleModalClose(success, message, "Appointment")
         }
       />
+      
+      <PharmacyModal
+        open={openModal === "pharmacy"}
+        onClose={(success, message) =>
+          handleModalClose(success, message, "Pharmacy")
+        }
+      />
+
+      
 
       {/* Header Section */}
       <Stack
@@ -186,6 +328,29 @@ const Dashboard = () => {
           sx={{ width: { xs: "100%", sm: "auto" } }}
         >
           <Button
+            variant="outlined"
+            onClick={handleDateRangeClick}
+            startIcon={<CalendarTodayIcon />}
+            sx={{
+              borderRadius: 2,
+              textTransform: "none",
+              fontWeight:  500,
+              px: 3,
+              py: 1,
+              minWidth: { xs: "100%", sm: 280 },
+              justifyContent: "flex-start",
+              bgcolor: "background.paper",
+              color: startDate && endDate ? "text.primary" : "text.secondary",
+              borderColor: "divider",
+              "&:hover": {
+                borderColor: "primary.main",
+                bgcolor: alpha(theme.palette.primary.main, 0.04),
+              },
+            }}
+          >
+            {formatDateDisplay(startDate, endDate)}
+          </Button>
+          <Button
             variant="contained"
             onClick={handleClick}
             startIcon={<AddIcon />}
@@ -193,7 +358,7 @@ const Dashboard = () => {
             sx={{
               borderRadius: 2,
               textTransform: "none",
-              fontWeight: 600,
+              fontWeight: 500,
               px: 3,
               py: 1,
               boxShadow: theme.shadows[2],
@@ -205,64 +370,8 @@ const Dashboard = () => {
           >
             Create New
           </Button>
-          <TextField
-            label="Start Date"
-            type="date"
-            size="small"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-            sx={{
-              minWidth: { xs: "100%", sm: 160 },
-              bgcolor: "background.paper",
-              borderRadius: 2,
-            }}
-          />
 
-          <TextField
-            label="End Date"
-            type="date"
-            size="small"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-            sx={{
-              minWidth: { xs: "100%", sm: 160 },
-              bgcolor: "background.paper",
-              borderRadius: 2,
-            }}
-          />
-
-          <Button
-            variant="contained"
-            onClick={handleApplyFilters}
-            sx={{
-              borderRadius: 2,
-              textTransform: "none",
-              fontWeight: 600,
-              px: 3,
-              py: 1,
-              minWidth: { xs: "100%", sm: "auto" },
-            }}
-          >
-            Apply
-          </Button>
-
-          <Button
-            variant="outlined"
-            color="error"
-            onClick={handleClearFilters}
-            sx={{
-              borderRadius: 2,
-              textTransform: "none",
-              fontWeight: 600,
-              px: 3,
-              py: 1,
-              minWidth: { xs: "100%", sm: "auto" },
-            }}
-          >
-            Clear
-          </Button>
+          
         </Stack>
       </Stack>
 

@@ -50,15 +50,19 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
     }
   };
 
-  const handleDropdownToggle = (item) => {
-    if (!effectiveCollapsed) {
-      // Use a combination of path and title as the key to ensure uniqueness
-      const dropdownKey = `${item.path || ''}-${item.title}`;
-      setOpenDropdowns((prev) => ({
-        ...prev,
-        [dropdownKey]: !prev[dropdownKey],
-      }));
+  const handleDropdownToggle = (item, event) => {
+    // Prevent default to avoid navigation when clicking on a dropdown
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
     }
+
+    // Use a combination of path and title as the key to ensure uniqueness
+    const dropdownKey = `${item.path || ''}-${item.title}`;
+    setOpenDropdowns((prev) => ({
+      ...prev,
+      [dropdownKey]: !prev[dropdownKey],
+    }));
   };
 
   const handleNavigation = (path) => {
@@ -271,11 +275,18 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
                   sx={{ marginBottom: { xs: '2px', md: '4px' } }}
                 >
                   <ListItemButton
-                    onClick={() =>
-                      item.children
-                        ? handleDropdownToggle(item)
-                        : handleNavigation(item.path)
-                    }
+                    onClick={(e) => {
+                      if (item.children) {
+                        handleDropdownToggle(item, e);
+                      } else {
+                        handleNavigation(item.path);
+                      }
+                    }}
+                    onMouseEnter={!effectiveCollapsed ? undefined : (e) => {
+                      if (item.children) {
+                        handleDropdownToggle(item, e);
+                      }
+                    }}
                     sx={{
                       borderRadius: "8px",
                       margin: { xs: "2px 8px", md: "2px 8px" },
@@ -340,8 +351,20 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
                       />
                     )}
 
-                    {!effectiveCollapsed && item.children && (
-                      <Box sx={{ display: 'flex', alignItems: 'center', ml: 1 }}>
+                    {item.children && (
+                      <Box 
+                        sx={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          ml: 1,
+                          opacity: effectiveCollapsed ? 0 : 1,
+                          transition: 'opacity 0.2s ease',
+                          position: 'absolute',
+                          right: '8px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                        }}
+                      >
                         {openDropdowns[`${item.path || ''}-${item.title}`] ? (
                           <ExpandLess sx={{ fontSize: { xs: '20px', md: '24px' } }} />
                         ) : (
@@ -355,7 +378,7 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
                 {/* Dropdown Children */}
                 {item.children && (
                   <Collapse
-                    in={!effectiveCollapsed && openDropdowns[`${item.path || ''}-${item.title}`]}
+                    in={openDropdowns[`${item.path || ''}-${item.title}`]}
                     timeout="auto"
                     unmountOnExit
                     sx={{
@@ -375,7 +398,21 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
                         marginLeft: effectiveCollapsed ? 0 : '8px',
                         borderLeft: effectiveCollapsed ? 'none' : '1px solid rgba(0, 0, 0, 0.1)',
                         display: 'block',
-                        width: '100%'
+                        width: '100%',
+                        position: 'relative',
+                        '&:before': {
+                          content: '""',
+                          position: 'absolute',
+                          left: effectiveCollapsed ? '0' : '12px',
+                          top: '0',
+                          bottom: '0',
+                          width: '2px',
+                          backgroundColor: 'transparent',
+                          transition: 'background-color 0.2s ease',
+                        },
+                        '&:hover:before': {
+                          backgroundColor: 'primary.main',
+                        }
                       }}
                     >
                       {item.children
@@ -400,8 +437,12 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
                                   justifyContent: effectiveCollapsed ? 'center' : 'flex-start',
                                   color: isActive(child.path) ? 'primary.main' : 'text.secondary',
                                   backgroundColor: isActive(child.path) ? 'rgba(0, 183, 174, 0.08)' : 'transparent',
+                                  position: 'relative',
+                                  left: '0',
+                                  transition: 'all 0.2s ease',
                                   '&:hover': {
                                     backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                                    left: '4px',
                                   },
                                   '& .MuiListItemText-root': {
                                     margin: 0,

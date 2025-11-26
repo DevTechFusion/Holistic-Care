@@ -51,8 +51,15 @@ const AdminStatsCards = ({ startDate, endDate }) => {
       value: cards.total_bookings,
       color: "#23C7B7",
     },
+     {
+      title: "Total Bookings",
+      icon: Update,
+      value: cards.total_appointments,
+      color: "#23C7B7",
+    },
+   
     {
-      title: "Arrived Today",
+      title: "Total Arrived",
       icon: Person,
       value: cards.arrived,
       color: "#23C7B7",
@@ -63,12 +70,21 @@ const AdminStatsCards = ({ startDate, endDate }) => {
       value: cards.not_arrived,
       color: "#23C7B7",
     },
+   
     {
-      title: "Total Bookings",
-      icon: Update,
-      value: cards.total_appointments,
+      title: "Arrived Today Count",
+      icon: Person,
+      value: cards.arrived_today.count,
       color: "#23C7B7",
     },
+     {
+      title: "Arrived Today Percentage",
+      icon: Person,
+      value: `${cards.arrived_today.percentage}%`,
+      color: "#23C7B7",
+    },
+   
+
   ];
 
   return (
