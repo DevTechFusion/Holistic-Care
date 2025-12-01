@@ -27,7 +27,7 @@ class ReportController extends Controller
                 'start_date' => 'nullable|date',
                 'end_date' => 'nullable|date|after_or_equal:start_date',
                 'isBooking' => 'nullable|in:true,false,1,0',
-                
+
                 // Report filters
                 'report_type' => 'nullable|string|max:255',
                 'generated_by_id' => 'nullable|exists:users,id',
@@ -35,12 +35,12 @@ class ReportController extends Controller
                 'status_id' => 'nullable|exists:statuses,id',
                 'remarks_1_id' => 'nullable|exists:remarks_1,id',
                 'remarks_2_id' => 'nullable|exists:remarks_2,id',
-                
+
                 // Amount filters
                 'amount_min' => 'nullable|numeric|min:0',
                 'amount_max' => 'nullable|numeric|min:0|gte:amount_min',
                 'payment_method' => 'nullable|string|max:255',
-                
+
                 // Appointment-related filters
                 'doctor_id' => 'nullable|exists:doctors,id',
                 'department_id' => 'nullable|exists:departments,id',
@@ -48,18 +48,18 @@ class ReportController extends Controller
                 'category_id' => 'nullable|exists:categories,id',
                 'source_id' => 'nullable|exists:sources,id',
                 'agent_id' => 'nullable|exists:users,id',
-                
+
                 // Text search filters
                 'search' => 'nullable|string|max:255',
                 'patient_name' => 'nullable|string|max:255',
                 'contact_number' => 'nullable|string|max:255',
                 'mr_number' => 'nullable|string|max:255',
-                
+
                 // Time filters (for appointment times)
                 'start_time' => 'nullable|date_format:H:i:s',
                 'end_time' => 'nullable|date_format:H:i:s|after:start_time',
                 'duration' => 'nullable|integer|min:1',
-                
+
                 // Pagination and ordering
                 'per_page' => 'nullable|integer|min:1|max:100',
                 'page' => 'nullable|integer|min:1',
@@ -99,7 +99,7 @@ class ReportController extends Controller
                 $reports = $this->reportService->getFilteredReports(
                     $filters, $perPage, $page, $orderBy, $orderDirection
                 );
-                
+
                 return response()->json([
                     'status' => 'success',
                     'data' => $reports,
@@ -109,7 +109,7 @@ class ReportController extends Controller
             } else {
                 // Even when no filters are provided, respect ordering params
                 $reports = $this->reportService->getAllReports($perPage, $page, $orderBy, $orderDirection);
-                
+
                 return response()->json([
                     'status' => 'success',
                     'data' => $reports,
@@ -489,6 +489,7 @@ class ReportController extends Controller
                 'search' => 'nullable|string|max:255',
                 'patient_name' => 'nullable|string|max:255',
                 'contact_number' => 'nullable|string|max:255',
+                'contact_number_2' => 'nullable|string|max:255',
                 'mr_number' => 'nullable|string|max:255',
                 'start_time' => 'nullable|date_format:H:i:s',
                 'end_time' => 'nullable|date_format:H:i:s|after:start_time',
@@ -522,10 +523,10 @@ class ReportController extends Controller
 
             // Get CSV data with filters and ordering
             $csvData = $this->reportService->exportToCsv($range, $filters, $orderBy, $orderDirection);
-            
+
             // Generate filename
             $filename = 'reports_' . $range . '_' . now()->format('Y-m-d_H-i-s') . '.csv';
-            
+
             // Convert to CSV string using proper CSV formatting
             $handle = fopen('php://temp', 'r+');
             foreach ($csvData as $row) {
@@ -534,7 +535,7 @@ class ReportController extends Controller
             rewind($handle);
             $csvContent = stream_get_contents($handle);
             fclose($handle);
-            
+
             // Return CSV response with additional headers for better download compatibility
             return response($csvContent)
                 ->header('Content-Type', 'text/csv; charset=utf-8')
@@ -542,7 +543,7 @@ class ReportController extends Controller
                 ->header('Cache-Control', 'no-cache, must-revalidate')
                 ->header('Pragma', 'no-cache')
                 ->header('Expires', '0');
-                
+
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
