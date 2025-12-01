@@ -20,12 +20,35 @@ class ProcedureController extends Controller
     /**
      * Display a listing of procedures
      */
+    // public function index()
+    // {
+    //     try {
+    //         $perPage = request()->get('per_page', 20);
+    //         $page = request()->get('page', 1);
+    //         $procedures = $this->procedureService->getAllProcedures($perPage, $page);
+
+    //         return response()->json([
+    //             'status' => 'success',
+    //             'data' => $procedures
+    //         ], 200);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'Failed to fetch procedures',
+    //             'error' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
+
     public function index()
     {
         try {
             $perPage = request()->get('per_page', 20);
             $page = request()->get('page', 1);
-            $procedures = $this->procedureService->getAllProcedures($perPage, $page);
+            $search = request()->get('search', '');
+
+            $procedures = $this->procedureService->getAllProcedures($perPage, $page, $search);
 
             return response()->json([
                 'status' => 'success',

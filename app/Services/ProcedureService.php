@@ -14,9 +14,23 @@ class ProcedureService extends CrudeService
     /**
      * Get all procedures with pagination
      */
-    public function getAllProcedures($perPage = 20, $page = 1, $orderBy = 'name', $format = 'asc')
+    // public function getAllProcedures($perPage = 20, $page = 1, $orderBy = 'name', $format = 'asc')
+    // {
+    //     return $this->_paginate($perPage, $page, null, []);
+    // }
+
+
+    public function getAllProcedures($perPage = 20, $page = 1, $search = '')
     {
-        return $this->_paginate($perPage, $page, null, []);
+        $query = Procedure::query();
+
+        if (!empty($search)) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%");
+            });
+        }
+
+        return $query->paginate($perPage, ['*'], 'page', $page);
     }
 
     /**
