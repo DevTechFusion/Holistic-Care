@@ -211,11 +211,12 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
       },
       date: () => {
         if (!value) return "Date is required";
-        if (!isEdit) {
-          const selectedDate = dayjs(value);
-          const today = dayjs().startOf('day');
-          if (selectedDate.isBefore(today, 'day')) return "Cannot select a past date for new appointments";
-        }
+        // Commented out to allow past date selection
+        // if (!isEdit) {
+        //   const selectedDate = dayjs(value);
+        //   const today = dayjs().startOf('day');
+        //   if (selectedDate.isBefore(today, 'day')) return "Cannot select a past date for new appointments";
+        // }
         return "";
       },
       start_time: () => !value ? "Start time is required" : "",
@@ -591,7 +592,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
               value={formData.date ? dayjs(formData.date) : null} 
               onChange={(newValue) => handleChange("date", newValue ? newValue.format("YYYY-MM-DD") : "")} 
               // disablePast={!isSuperAdmin}
-              minDate={isSuperAdmin ? null : dayjs()}
+              // minDate={isSuperAdmin ? null : dayjs()}
               slotProps={{ 
                 textField: { 
                   fullWidth: true, 
