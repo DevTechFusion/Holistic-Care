@@ -72,12 +72,7 @@ const SidebarConfig = [
         path: "/procedures",
         module: MODULES.PROCEDURES,
       },
-      {
-        title: "Pharmacy List",
-        icon: PharmacyIcon,
-        path: "/pharmacy",
-        module: MODULES.PHARMACY,
-      },
+      
       {
         title: "Meta Ads Source List",
         icon: SourceIcon,
@@ -103,6 +98,12 @@ const SidebarConfig = [
         module: MODULES.USERS,
       },
     ],
+  },
+  {
+    title: "Pharmacy",
+    icon: PharmacyIcon,
+    path: "/pharmacy",
+    module: MODULES.PHARMACY,
   },
   {
     title: "Reports",

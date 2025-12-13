@@ -40,10 +40,26 @@ import { getSelectRemarks1 } from "../../DAL/remarks1";
 import { getSelectRemarks2 } from "../../DAL/remarks2";
 import { MODULES, PERMISSIONS } from "../../constants/permissionConstants";
 
+// Format phone number function (same as in AppointmentForm)
+const formatPhoneNumber = (value) => {
+  if (!value) return '';
+  // Remove all non-digit characters except leading +
+  const cleaned = value.replace(/[^\d+]/g, '');
+  
+  // Format the number with proper spacing
+  if (cleaned.startsWith('+')) {
+    // International format: +XX XXX XXXXXXX
+    const countryCode = cleaned.substring(0, 3);
+    const rest = cleaned.substring(3).replace(/(\d{3})(?=\d)/g, '$1 ');
+    return `${countryCode} ${rest}`.trim();
+  } else {
+    // Local format: XXX XXX XXXX
+    return cleaned.replace(/(\d{3})(?=\d)/g, '$1 ').trim();
+  }
+};
+
 const AppointmentsPage = () => {
   const { hasPermission, user } = useAuth();
-
-  // Check if current user is an agent
   const isCurrentUserAgent = Array.isArray(user?.roles) && user.roles.some((role) => role.name?.toLowerCase() === "agent");
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -777,9 +793,24 @@ const AppointmentsPage = () => {
                     </TableCell>
 
                     <TableCell
-                      sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                      sx={{ 
+                        fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                        whiteSpace: 'nowrap',
+                        minWidth: '150px',
+                        width: '100%'
+                      }}
                     >
-                      Contact
+                      Primary Contact
+                    </TableCell>
+                    <TableCell
+                      sx={{ 
+                        fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                        whiteSpace: 'nowrap',
+                        minWidth: '150px',
+                        width: '100%'
+                      }}
+                    >
+                      Secondary Contact
                     </TableCell>
                     <TableCell
                       sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
@@ -883,9 +914,24 @@ const AppointmentsPage = () => {
                           {appt.patient_name}
                         </TableCell>
                         <TableCell
-                          sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                          sx={{ 
+                            fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                            whiteSpace: 'nowrap',
+                            minWidth: '150px',
+                            width: '100%'
+                          }}
                         >
-                          {appt.contact_number}
+                          {(appt.contact_number) || '-'}
+                        </TableCell>
+                        <TableCell
+                          sx={{ 
+                            fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                            whiteSpace: 'nowrap',
+                            minWidth: '150px',
+                            width: '100%'
+                          }}
+                        >
+                          {appt.contact_number_2 ? (appt.contact_number_2) : '-'}
                         </TableCell>
                         <TableCell
                           sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
@@ -975,7 +1021,7 @@ const AppointmentsPage = () => {
                   ) : (
                     <TableRow>
                       <TableCell
-                        colSpan={isCurrentUserAgent ? 12 : 13}
+                        colSpan={isCurrentUserAgent ? 13 : 14}
                         align="center"
                       >
                         No appointments found

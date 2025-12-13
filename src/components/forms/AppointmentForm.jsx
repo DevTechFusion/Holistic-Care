@@ -11,10 +11,13 @@ import {
   Box,
   Chip,
   Alert,
-  InputAdornment,
+  FormHelperText,
 } from "@mui/material";
 import Autocomplete from "@mui/material/Autocomplete";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import PhoneInput from "react-phone-number-input";
+import "react-phone-number-input/style.css";
+import "./PhoneInputStyles.css";
 import GenericFormModal from "./GenericForm";
 import { useSnackbar } from "notistack";
 import { createAppointment, updateAppointment, getAppointmentsByDoctor } from "../../DAL/appointments";
@@ -28,8 +31,6 @@ import { getAllRemarks2 } from "../../DAL/remarks2";
 import { getAllStatuses } from "../../DAL/status";
 import dayjs from "dayjs";
 import { useAuth } from "../../contexts/AuthContext";
-import PhoneInput from 'react-phone-number-input';
-import 'react-phone-number-input/style.css';
 
 // ============= CONSTANTS =============
 const DEFAULT_FORM_DATA = {
@@ -57,8 +58,7 @@ const DEFAULT_FORM_DATA = {
 };
 
 const VALIDATION_RULES = {
-  PHONE_MAX_LENGTH: 20, // Increased to accommodate international numbers
-  PHONE_MIN_LENGTH: 8,  // Minimum length for international numbers
+  PHONE_MAX_LENGTH: 15,
   NAME_MIN_LENGTH: 2,
   NAME_MAX_LENGTH: 100,
   REQUIRED_FIELDS: ["date", "start_time", "location", "patient_name", "contact_number", "agent_id", "doctor_id", "procedure_ids", "category_id", "source_id"],
@@ -70,6 +70,7 @@ const PAYMENT_MODES = [
   { value: "card", label: "Card" },
   { value: "online", label: "Online" },
   { value: "not_paid", label: "Not Paid" },
+  
 ];
 
 const LOCATIONS = [
@@ -145,7 +146,7 @@ const useApiData = (open) => {
 const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
   const { enqueueSnackbar } = useSnackbar();
   const { user, isAuthenticated } = useAuth();
-
+  const isSuperAdmin = Array.isArray(user?.roles) && user.roles.some((role) => role.name?.toLowerCase() === "super_admin");
   const [formData, setFormData] = useState(DEFAULT_FORM_DATA);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -191,85 +192,51 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
   }, [formData.doctor_id, formData.date, enqueueSnackbar]);
 
   // ============= VALIDATION =============
-  const formatPhoneNumber = useCallback((value) => {
-    if (!value) return '';
-    // Remove all non-digit characters except leading +
-    const cleaned = value.replace(/[^\d+]/g, '');
-    // Keep only the first + if there are multiple
-    const hasPlus = cleaned.startsWith('+');
-    const digits = hasPlus ? cleaned.substring(1).replace(/\+/g, '') : cleaned;
-    return hasPlus ? `+${digits}` : digits;
-  }, []);
+  const validateField = useCallback((field, value, isEdit = isEditing) => {
+    const rules = {
+      patient_name: () => {
+        if (!value?.trim()) return "Patient name is required";
+        if (value.trim().length < VALIDATION_RULES.NAME_MIN_LENGTH) return `Patient name must be at least ${VALIDATION_RULES.NAME_MIN_LENGTH} characters`;
+        if (value.trim().length > VALIDATION_RULES.NAME_MAX_LENGTH) return `Patient name must be less than ${VALIDATION_RULES.NAME_MAX_LENGTH} characters`;
+        return "";
+      },
+      contact_number: () => {
+        if (!value) return "Contact number is required";
+        if (value.replace(/\D/g, "").length < 7) return "Contact number must be valid";
+        return "";
+      },
+      contact_number_2: () => {
+        if (value && value.replace(/\D/g, "").length < 7) return "Second contact number must be valid";
+        return "";
+      },
+      date: () => {
+        if (!value) return "Date is required";
+        if (!isEdit) {
+          const selectedDate = dayjs(value);
+          const today = dayjs().startOf('day');
+          if (selectedDate.isBefore(today, 'day')) return "Cannot select a past date for new appointments";
+        }
+        return "";
+      },
+      start_time: () => !value ? "Start time is required" : "",
+      agent_id: () => !isCurrentUserAgent && !value ? "Agent is required" : "",
+      doctor_id: () => !value ? "Doctor is required" : "",
+      procedure_ids: () => (!value || value.length === 0) ? "At least one procedure is required" : "",
+      category_id: () => !value ? "Category is required" : "",
+      source_id: () => !value ? "Source is required" : "",
+      location: () => !value ? "Location is required" : "",
+    };
 
-  const validateField = useCallback((field, value) => {
-    // Skip validation if field is not required and empty
-    if (!value) {
-      return VALIDATION_RULES.REQUIRED_FIELDS.includes(field) 
-        ? 'This field is required' 
-        : '';
-    }
-
-    switch (field) {
-      case 'patient_name':
-        if (value.length < VALIDATION_RULES.NAME_MIN_LENGTH || value.length > VALIDATION_RULES.NAME_MAX_LENGTH) {
-          return `Name must be between ${VALIDATION_RULES.NAME_MIN_LENGTH} and ${VALIDATION_RULES.NAME_MAX_LENGTH} characters`;
-        }
-        return '';
-      
-      case 'contact_number':
-      case 'contact_number_2':
-        const phoneNumber = formatPhoneNumber(value);
-        const digitsOnly = phoneNumber.replace(/\D/g, '');
-        
-        // Check for minimum length (including country code if present)
-        if (digitsOnly.length < VALIDATION_RULES.PHONE_MIN_LENGTH) {
-          return `Phone number must be at least ${VALIDATION_RULES.PHONE_MIN_LENGTH} digits`;
-        }
-        
-        // Check for maximum length
-        if (digitsOnly.length > VALIDATION_RULES.PHONE_MAX_LENGTH) {
-          return `Phone number cannot exceed ${VALIDATION_RULES.PHONE_MAX_LENGTH} digits`;
-        }
-        
-        // Basic phone number validation (allows international format)
-        if (!/^\+?[0-9\s-()]+$/.test(phoneNumber)) {
-          return 'Please enter a valid phone number';
-        }
-        
-        // If it starts with +, make sure it's followed by numbers
-        if (phoneNumber.startsWith('+') && !/^\+[0-9]+$/.test(phoneNumber)) {
-          return 'Please enter a valid country code';
-        }
-        
-        return '';
-      
-      default:
-        return '';
-    }
-  }, [formatPhoneNumber]);
+    return rules[field] ? rules[field]() : "";
+  }, [isCurrentUserAgent, isEditing]);
 
   const validateForm = useCallback(() => {
-    const newErrors = {};
     const requiredFields = isEditing ? VALIDATION_RULES.REQUIRED_FIELDS_EDIT : VALIDATION_RULES.REQUIRED_FIELDS;
-
-    // Validate required fields
-    requiredFields.forEach((field) => {
-      if (!formData[field] || (Array.isArray(formData[field]) && formData[field].length === 0)) {
-        newErrors[field] = 'This field is required';
-      }
-    });
-
-    // Validate all fields with individual validation rules
-    Object.keys(formData).forEach((field) => {
-      if (field in newErrors) return; // Skip if already has required error
-      const error = validateField(field, formData[field]);
-      if (error) {
-        newErrors[field] = error;
-      }
-    });
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return requiredFields.reduce((acc, field) => {
+      const error = validateField(field, formData[field], isEditing);
+      if (error) acc[field] = error;
+      return acc;
+    }, {});
   }, [formData, isEditing, validateField]);
 
   const resetForm = useCallback(() => {
@@ -280,53 +247,19 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
   }, []);
 
   // ============= HANDLERS =============
-
   const handleChange = useCallback((field, value) => {
     let processedValue = value;
 
-    // Special handling for different field types
-    if (field === "contact_number" || field === "contact_number_2") {
-      // For phone numbers, preserve formatting but clean the value
-      processedValue = value;
-    } else if (field === "mr_number") {
-      // For MR numbers, keep only digits
+    if (field === "mr_number") {
       processedValue = value.replace(/\D/g, "");
       if (processedValue.length > VALIDATION_RULES.PHONE_MAX_LENGTH) return;
     } else if (field === "amount") {
-      // For amounts, keep only numbers and one decimal point
       processedValue = value.replace(/[^0-9.]/g, "");
-      // Ensure only one decimal point
-      const parts = processedValue.split('.');
-      if (parts.length > 2) {
-        processedValue = parts[0] + '.' + parts.slice(1).join('');
-      }
     }
 
-    // Update the form data
-    setFormData((prev) => {
-      const newData = { ...prev, [field]: processedValue };
-      return newData;
-    });
-    
-    // Validate the field if it exists in the form data
-    if (field in DEFAULT_FORM_DATA) {
-      // For phone numbers, validate the cleaned version
-      const valueToValidate = (field === "contact_number" || field === "contact_number_2")
-        ? formatPhoneNumber(processedValue)
-        : processedValue;
-        
-      const error = validateField(field, valueToValidate);
-      
-      setErrors((prev) => {
-        const newErrors = { ...prev, [field]: error };
-        // Remove the error if it's been fixed
-        if (!error && field in prev) {
-          delete newErrors[field];
-        }
-        return newErrors;
-      });
-    }
-  }, [validateField, formatPhoneNumber]);
+    setFormData((prev) => ({ ...prev, [field]: processedValue }));
+    setErrors((prev) => ({ ...prev, [field]: validateField(field, processedValue, isEditing) }));
+  }, [validateField]);
 
   const handleDoctorChange = useCallback((doctorId) => {
     const selectedDoctor = apiData.doctors?.find((d) => d.id === Number(doctorId));
@@ -336,21 +269,10 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
       department_id: selectedDoctor?.department?.id || "",
     }));
     setSelectedDepartment(selectedDoctor?.department || null);
-    setErrors((prev) => ({ ...prev, doctor_id: validateField("doctor_id", doctorId) }));
+    setErrors((prev) => ({ ...prev, doctor_id: validateField("doctor_id", doctorId, isEditing) }));
   }, [apiData.doctors, validateField]);
 
   const handleSubmit = useCallback(async () => {
-    // Format phone numbers before validation
-    const formattedData = {
-      ...formData,
-      contact_number: formData.contact_number ? formatPhoneNumber(formData.contact_number) : '',
-      contact_number_2: formData.contact_number_2 ? formatPhoneNumber(formData.contact_number_2) : ''
-    };
-    
-    // Update form data with formatted values
-    setFormData(formattedData);
-    
-    // Validate the form with formatted values
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
@@ -664,7 +586,20 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
         <Stack spacing={2}>
           <Typography variant="h6" color="primary" sx={{ fontWeight: 600, mb: 1 }}>Appointment Details</Typography>
           <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-            <DatePicker label="Date *" value={formData.date ? dayjs(formData.date) : null} onChange={(newValue) => handleChange("date", newValue ? newValue.format("YYYY-MM-DD") : "")} slotProps={{ textField: { fullWidth: true, error: !!errors.date, helperText: errors.date } }} />
+             <DatePicker 
+              label="Date *" 
+              value={formData.date ? dayjs(formData.date) : null} 
+              onChange={(newValue) => handleChange("date", newValue ? newValue.format("YYYY-MM-DD") : "")} 
+              // disablePast={!isSuperAdmin}
+              minDate={isSuperAdmin ? null : dayjs()}
+              slotProps={{ 
+                textField: { 
+                  fullWidth: true, 
+                  error: !!errors.date, 
+                  helperText: errors.date 
+                } 
+              }} 
+            />
             <FormControl fullWidth error={!!errors.location}>
               <InputLabel>Location *</InputLabel>
               <Select 
@@ -691,110 +626,63 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
         <Stack spacing={2}>
           <Typography variant="h6" color="primary" sx={{ fontWeight: 600, mb: 1 }}>Patient Information</Typography>
           <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-            <TextField 
-              label="Patient Name *" 
-              fullWidth 
-              value={formData.patient_name} 
-              onChange={(e) => handleChange("patient_name", e.target.value)} 
-              error={!!errors.patient_name} 
-              helperText={errors.patient_name || `${formData.patient_name.length}/${VALIDATION_RULES.NAME_MAX_LENGTH} characters`} 
-              placeholder="Enter patient's full name" 
-              inputProps={{ maxLength: VALIDATION_RULES.NAME_MAX_LENGTH }} 
-            />
-            <Box sx={{ width: '100%' }}>
-              <Typography variant="caption" display="block" gutterBottom sx={{ 
-                color: 'text.secondary', 
-                mb: 0.5,
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-              }}>
-                <span>Primary Contact Number *</span>
-                {formData.contact_number && (
-                  <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
-                    {formatPhoneNumber(formData.contact_number)}
-                  </Typography>
-                )}
-              </Typography>
+            <TextField label="Patient Name *" fullWidth value={formData.patient_name} onChange={(e) => handleChange("patient_name", e.target.value)} error={!!errors.patient_name} helperText={errors.patient_name || `${formData.patient_name.length}/${VALIDATION_RULES.NAME_MAX_LENGTH} characters`} placeholder="Enter patient's full name" inputProps={{ maxLength: VALIDATION_RULES.NAME_MAX_LENGTH }} />
+          </Stack>
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+            <FormControl fullWidth error={!!errors.contact_number}>
+              <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 500 }}>Contact Number 1*</Typography>
               <PhoneInput
                 international
-                defaultCountry="PK"
                 countryCallingCodeEditable={false}
+                defaultCountry="PK"
                 value={formData.contact_number}
-                onChange={(value) => handleChange("contact_number", value || '')}
-                placeholder="Enter phone number"
-                style={{
-                  '--PhoneInputCountrySelectArrow-color': 'currentColor',
-                  '--PhoneInputCountrySelectArrow-opacity': '0.7',
-                  '--PhoneInput-color--focus': 'var(--mui-palette-primary-main)',
-                  '--PhoneInputCountryFlag-borderColor': 'transparent',
-                  '--PhoneInputCountryFlag-height': '24px',
-                  '--PhoneInputCountryFlag-width': '24px',
-                  '--PhoneInput-color': 'var(--mui-palette-text-primary)',
-                  '--PhoneInput-color--focus': 'var(--mui-palette-primary-main)',
-                  '--PhoneInput-border': '1px solid rgba(0, 0, 0, 0.23)',
-                  '--PhoneInput-border-radius': '4px',
-                  '--PhoneInput-border-error': '1px solid #d32f2f',
-                  '--PhoneInput-padding': '16.5px 14px',
+                onChange={(value) => {
+                  setFormData((prev) => ({ ...prev, contact_number: value || "" }));
+                  setErrors((prev) => ({ ...prev, contact_number: validateField("contact_number", value || "") }));
                 }}
-                className={`MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-formControl ${errors.contact_number ? 'Mui-error' : ''}`}
+                placeholder="Enter contact number"
+                style={{
+                  padding: "12px 14px",
+                  fontSize: "1rem",
+                  border: errors.contact_number ? "2px solid #f44336" : "1px solid rgba(0, 0, 0, 0.23)",
+                  borderRadius: "4px",
+                  fontFamily: "Roboto, Helvetica, Arial, sans-serif",
+                  width: "100%",
+                  boxSizing: "border-box",
+                  transition: "border-color 0.2s",
+                }}
               />
-              {errors.contact_number ? (
-                <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 2, display: 'block' }}>
-                  {errors.contact_number}
-                </Typography>
-              ) : (
-                <Typography variant="caption" sx={{ color: 'text.secondary', mt: 0.5, ml: 2, display: 'block' }}>
-                  {formData.contact_number ? 'Valid phone number' : 'Enter a valid phone number'}
-                </Typography>
+              {errors.contact_number && (
+                <FormHelperText sx={{ color: "#f44336", mt: 0.5 }}>{errors.contact_number}</FormHelperText>
               )}
-            </Box>
-            <Box sx={{ width: '100%' }}>
-              <Typography variant="caption" display="block" gutterBottom sx={{ 
-                color: 'text.secondary', 
-                mb: 0.5,
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-              }}>
-                <span>Secondary Contact Number</span>
-                {formData.contact_number_2 && (
-                  <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
-                    {formatPhoneNumber(formData.contact_number_2)}
-                  </Typography>
-                )}
-              </Typography>
+            </FormControl>
+            <FormControl fullWidth error={!!errors.contact_number_2}>
+              <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 500 }}>Contact Number 2</Typography>
               <PhoneInput
                 international
-                defaultCountry="PK"
                 countryCallingCodeEditable={false}
+                defaultCountry="PK"
                 value={formData.contact_number_2}
-                onChange={(value) => handleChange("contact_number_2", value || '')}
-                placeholder="Enter secondary phone number"
-                style={{
-                  '--PhoneInputCountrySelectArrow-color': 'currentColor',
-                  '--PhoneInputCountrySelectArrow-opacity': '0.7',
-                  '--PhoneInputCountryFlag-borderColor': 'transparent',
-                  '--PhoneInputCountryFlag-height': '24px',
-                  '--PhoneInputCountryFlag-width': '24px',
-                  '--PhoneInput-color': 'var(--mui-palette-text-primary)',
-                  '--PhoneInput-border': '1px solid rgba(0, 0, 0, 0.23)',
-                  '--PhoneInput-border-radius': '4px',
-                  '--PhoneInput-border-error': '1px solid #d32f2f',
-                  '--PhoneInput-padding': '16.5px 14px',
+                onChange={(value) => {
+                  setFormData((prev) => ({ ...prev, contact_number_2: value || "" }));
+                  setErrors((prev) => ({ ...prev, contact_number_2: validateField("contact_number_2", value || "") }));
                 }}
-                className={`MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-formControl ${errors.contact_number_2 ? 'Mui-error' : ''}`}
+                placeholder="Enter alternate contact number (optional)"
+                style={{
+                  padding: "12px 14px",
+                  fontSize: "1rem",
+                  border: errors.contact_number_2 ? "2px solid #f44336" : "1px solid rgba(0, 0, 0, 0.23)",
+                  borderRadius: "4px",
+                  fontFamily: "Roboto, Helvetica, Arial, sans-serif",
+                  width: "100%",
+                  boxSizing: "border-box",
+                  transition: "border-color 0.2s",
+                }}
               />
-              {errors.contact_number_2 ? (
-                <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 2, display: 'block' }}>
-                  {errors.contact_number_2}
-                </Typography>
-              ) : formData.contact_number_2 ? (
-                <Typography variant="caption" sx={{ color: 'success.main', mt: 0.5, ml: 2, display: 'block' }}>
-                  Valid phone number
-                </Typography>
-              ) : null}
-            </Box>
+              {errors.contact_number_2 && (
+                <FormHelperText sx={{ color: "#f44336", mt: 0.5 }}>{errors.contact_number_2}</FormHelperText>
+              )}
+            </FormControl>
           </Stack>
         </Stack>
 

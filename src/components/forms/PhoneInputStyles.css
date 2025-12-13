@@ -1,0 +1,51 @@
+/* Phone Input Custom Styles to match Material-UI TextField */
+.PhoneInput {
+  width: 100%;
+}
+
+.PhoneInputInput {
+  padding: 12px 16px !important;
+  font-size: 1rem !important;
+  font-family: "Roboto", "Helvetica", "Arial", sans-serif !important;
+  border: 0px solid rgba(0, 0, 0, 0.23) !important;
+  border-radius: 4px !important;
+  background-color: transparent !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  transition: border-color 0.2s !important;
+}
+
+.PhoneInputInput:hover {
+  border-color: rgba(0, 0, 0, 0.87) !important;
+}
+
+.PhoneInputInput:focus {
+  outline: none !important;
+  border-color: #eff0f1 !important;
+  border-width: 2px !important;
+  padding: 11px 13px !important;
+}
+
+.PhoneInputCountryIcon {
+  width: 30px !important;
+  height: auto !important;
+}
+
+.PhoneInputCountrySelect {
+  border: none !important;
+  padding: 0 !important;
+  margin-right: 8px !important;
+}
+
+.PhoneInputCountrySelect:hover {
+  cursor: pointer !important;
+}
+
+/* Error state */
+.PhoneInputInput.error {
+  border-color: #f44336 !important;
+}
+
+.PhoneInputInput.error:focus {
+  border-color: #f44336 !important;
+}

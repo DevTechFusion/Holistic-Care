@@ -12,6 +12,9 @@ import {
   TableCell,
   TableBody,
   TablePagination,
+  TextField,
+  Stack,
+  Autocomplete,
 } from "@mui/material";
 import { useSnackbar } from "notistack";
 import { getProcedures, deleteProcedure } from "../../DAL/procedure";
@@ -22,6 +25,7 @@ import { MODULES, PERMISSIONS } from "../../constants/permissionConstants";
 
 const ProceduresPage = () => {
   const [procedures, setProcedures] = useState([]);
+  const [proceduresList, setProceduresList] = useState([]); // For filter dropdown
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [page, setPage] = useState(0);
@@ -29,16 +33,17 @@ const ProceduresPage = () => {
   const [total, setTotal] = useState(0);
   const { enqueueSnackbar } = useSnackbar();
   const [targetItem, setTargetItem] = useState(null);
-
+  const [filters, setFilters] = useState({
+    search: "",
+  });
   const { hasPermission } = useAuth();
 
   const fetchProcedures = async () => {
     setLoading(true);
     try {
-      const res = await getProcedures(page + 1, rowsPerPage);
-      const procedures = res?.data?.data || [];
+      const res = await getProcedures(page + 1, rowsPerPage, filters.search);
+      setProcedures(res?.data?.data || []);
       setTotal(res?.data?.total || 0);
-      setProcedures(procedures);
     } catch (err) {
       console.error("Failed to fetch procedures", err);
       setProcedures([]);
@@ -47,9 +52,32 @@ const ProceduresPage = () => {
     }
   };
 
+  const fetchProceduresList = async () => {
+    try {
+      const res = await getProceduresList();
+      setProceduresList(Array.isArray(res?.data) ? res.data : []);
+    } catch (err) {
+      console.error("Failed to fetch procedures list", err);
+      setProceduresList([]);
+    }
+  };
+
+  const handleFilterChange = (field, value) => {
+    setFilters(prev => ({ ...prev, [field]: value || "" }));
+    setPage(0);
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      search: "",
+    });
+    setPage(0);
+  };
+
   useEffect(() => {
     fetchProcedures();
-  }, [page, rowsPerPage]);
+    fetchProceduresList();
+  }, [page, rowsPerPage, filters]);
 
   const handleDeleteProcedure = async (id) => {
     try {
@@ -107,6 +135,35 @@ const ProceduresPage = () => {
           </Button>
         )}
       </Box>
+
+      {/* Search and Filters */}
+      <Paper sx={{ p: 2, mb: 2 }}>
+        <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
+          <Autocomplete
+            freeSolo
+            options={proceduresList.map((proc) => proc.name) || []}
+            value={filters.search}
+            onChange={(_, newValue) => handleFilterChange("search", newValue)}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Search Procedures"
+                variant="outlined"
+                size="small"
+                sx={{ minWidth: 250 }}
+                onChange={(e) => handleFilterChange("search", e.target.value)}
+              />
+            )}
+          />
+          <Button
+            variant="outlined"
+            onClick={clearFilters}
+            disabled={!filters.search}
+          >
+            Clear Filters
+          </Button>
+        </Stack>
+      </Paper>
 
       {/* Table */}
       <Paper sx={{ overflowX: "auto" }}>

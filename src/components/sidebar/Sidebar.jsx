@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import {
   Box,
   List,
@@ -27,6 +27,8 @@ import { PERMISSIONS } from "../../constants/permissionConstants";
 
 const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setCollapsed }) => {
   const [openDropdowns, setOpenDropdowns] = useState({});
+  const [hoveredItem, setHoveredItem] = useState(null);
+  const hoverTimeoutRef = useRef(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isTablet = useMediaQuery(theme.breakpoints.between('md', 'lg'));
@@ -63,6 +65,44 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
       ...prev,
       [dropdownKey]: !prev[dropdownKey],
     }));
+  };
+
+  const handleMouseEnter = (item) => {
+    if (!effectiveCollapsed || !item.children) return;
+    
+    // Clear any existing timeout
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    
+    // Set new timeout to open dropdown after 200ms
+    hoverTimeoutRef.current = setTimeout(() => {
+      const dropdownKey = `${item.path || ''}-${item.title}`;
+      setOpenDropdowns((prev) => ({
+        ...prev,
+        [dropdownKey]: true,
+      }));
+      setHoveredItem(dropdownKey);
+    }, 200);
+  };
+
+  const handleMouseLeave = (item) => {
+    if (!effectiveCollapsed || !item.children) return;
+    
+    // Clear any pending open timeout
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    
+    // Set timeout to close dropdown after 300ms
+    hoverTimeoutRef.current = setTimeout(() => {
+      const dropdownKey = `${item.path || ''}-${item.title}`;
+      setOpenDropdowns((prev) => ({
+        ...prev,
+        [dropdownKey]: false,
+      }));
+      setHoveredItem(null);
+    }, 300);
   };
 
   const handleNavigation = (path) => {
@@ -107,6 +147,50 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
     if (isTablet) return '240px';
     return '280px';
   }, [isMobile, isTablet, collapsed]);
+
+  // Common styles for consistent appearance
+  const getItemStyles = (isActive, isChild = false) => ({
+    borderRadius: "8px",
+    margin: isChild 
+      ? (effectiveCollapsed ? '2px 4px' : '2px 8px')
+      : { xs: "2px 8px", md: "2px 8px" },
+    paddingY: isChild 
+      ? (effectiveCollapsed ? '6px' : '8px')
+      : { xs: "10px", md: "12px" },
+    paddingX: effectiveCollapsed ? '12px' : { xs: '12px', md: '16px' },
+    justifyContent: effectiveCollapsed ? 'center' : 'flex-start',
+    backgroundColor: isActive ? "primary.main" : "transparent",
+    color: isActive ? "white" : "text.primary",
+    transition: "all 0.2s ease",
+    minHeight: isChild 
+      ? (effectiveCollapsed ? '40px' : '44px')
+      : { xs: '48px', md: '52px' },
+    position: 'relative',
+    '&.Mui-focusVisible': {
+      backgroundColor: isActive ? "primary.dark" : "rgba(0, 183, 174, 0.12)",
+      boxShadow: '0 0 0 3px rgba(0, 183, 174, 0.2)',
+    },
+    "&:hover": {
+      backgroundColor: isActive ? "primary.dark" : "rgba(0, 183, 174, 0.08)",
+      color: isActive ? "white" : "primary.main",
+      "& .MuiListItemIcon-root": { 
+        color: isActive ? "white" : "primary.main" 
+      },
+      '& img': {
+        filter: isActive 
+          ? 'brightness(0) invert(1)' 
+          : 'invert(54%) sepia(100%) saturate(500%) hue-rotate(140deg) brightness(90%) contrast(90%)',
+      }
+    },
+  });
+
+  const getIconStyles = (isActive) => ({
+    filter: isActive 
+      ? 'brightness(0) invert(1)' 
+      : 'brightness(0) saturate(100%)',
+    transition: 'all 0.2s ease',
+    opacity: isActive ? 1 : 0.9,
+  });
 
   const sidebarContent = (
     <Box
@@ -171,7 +255,6 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
               maxHeight: effectiveCollapsed ? '40px' : '50px',
               objectFit: "contain",
               transition: 'all 0.3s ease',
-              opacity: effectiveCollapsed ? 1 : 1,
             }}
           />
         </Box>
@@ -231,8 +314,7 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
           overflowX: 'hidden',
           display: "flex",
           flexDirection: "column",
-          WebkitOverflowScrolling: 'touch', // Smooth scrolling on iOS
-          // Custom scrollbar
+          WebkitOverflowScrolling: 'touch',
           '&::-webkit-scrollbar': {
             width: effectiveCollapsed ? '0px' : '4px',
           },
@@ -246,7 +328,6 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
               backgroundColor: 'rgba(0,0,0,0.3)',
             },
           },
-          // Firefox scrollbar
           scrollbarWidth: effectiveCollapsed ? 'none' : 'thin',
           scrollbarColor: 'rgba(0,0,0,0.2) transparent',
         }}
@@ -258,7 +339,6 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
           minWidth: isMobile ? '260px' : 'auto',
         }}>
           {filteredSidebarItems.map((item, index) => {
-            // Create a unique key using path and index to ensure uniqueness
             const itemKey = `${item.path || ''}-${item.title}-${index}`;
             const parentActive =
               isActive(item.path) ||
@@ -268,7 +348,11 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
             const displayTitle = effectiveCollapsed && activeChild ? activeChild.title : item.title;
 
             return (
-              <Box key={itemKey}>
+              <Box 
+                key={itemKey}
+                onMouseEnter={() => handleMouseEnter(item)}
+                onMouseLeave={() => handleMouseLeave(item)}
+              >
                 {/* Parent Item */}
                 <ListItem 
                   disablePadding
@@ -282,29 +366,7 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
                         handleNavigation(item.path);
                       }
                     }}
-                    onMouseEnter={!effectiveCollapsed ? undefined : (e) => {
-                      if (item.children) {
-                        handleDropdownToggle(item, e);
-                      }
-                    }}
-                    sx={{
-                      borderRadius: "8px",
-                      margin: { xs: "2px 8px", md: "2px 8px" },
-                      paddingY: { xs: "10px", md: "12px" },
-                      paddingX: effectiveCollapsed ? '12px' : { xs: '12px', md: '16px' },
-                      justifyContent: effectiveCollapsed ? 'center' : 'flex-start',
-                      backgroundColor: parentActive ? "primary.main" : "transparent",
-                      color: parentActive ? "white" : "text.primary",
-                      transition: "all 0.2s ease",
-                      minHeight: { xs: '48px', md: '52px' },
-                      "&:hover": {
-                        backgroundColor: parentActive ? "primary.dark" : "rgba(0, 183, 174, 0.08)",
-                        color: parentActive ? "white" : "primary.main",
-                        "& .MuiListItemIcon-root": { 
-                          color: parentActive ? "white" : "primary.main" 
-                        },
-                      },
-                    }}
+                    sx={getItemStyles(parentActive, false)}
                   >
                     <ListItemIcon 
                       sx={{
@@ -313,6 +375,7 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
+                        color: parentActive ? 'white' : 'text.primary',
                         ...(effectiveCollapsed && { width: '100%' })
                       }}
                     >
@@ -322,8 +385,7 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
                         width={effectiveCollapsed ? (isMobile ? 22 : 24) : (isMobile ? 22 : 26)}
                         height={effectiveCollapsed ? (isMobile ? 22 : 24) : (isMobile ? 22 : 26)}
                         style={{
-                          filter: parentActive ? "brightness(0) invert(1)" : "none",
-                          transition: 'filter 0.2s ease',
+                          ...getIconStyles(parentActive),
                           minWidth: effectiveCollapsed ? (isMobile ? '22px' : '24px') : (isMobile ? '22px' : '26px'),
                         }}
                       />
@@ -346,23 +408,23 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
                             display: 'block',
                             lineHeight: '1.2',
                             paddingRight: '8px',
+                            color: 'inherit',
                           }
                         }}
                       />
                     )}
 
-                    {item.children && (
+                    {item.children && !effectiveCollapsed && (
                       <Box 
                         sx={{ 
                           display: 'flex', 
                           alignItems: 'center', 
                           ml: 1,
-                          opacity: effectiveCollapsed ? 0 : 1,
-                          transition: 'opacity 0.2s ease',
                           position: 'absolute',
                           right: '8px',
                           top: '50%',
                           transform: 'translateY(-50%)',
+                          color: 'inherit',
                         }}
                       >
                         {openDropdowns[`${item.path || ''}-${item.title}`] ? (
@@ -381,14 +443,6 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
                     in={openDropdowns[`${item.path || ''}-${item.title}`]}
                     timeout="auto"
                     unmountOnExit
-                    sx={{
-                      '& .MuiCollapse-wrapperInner': {
-                        paddingLeft: effectiveCollapsed ? 0 : '12px',
-                      },
-                      '& .MuiCollapse-root': {
-                        overflow: 'visible',
-                      }
-                    }}
                   >
                     <List 
                       component="div" 
@@ -396,23 +450,10 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
                       sx={{ 
                         padding: '4px 0',
                         marginLeft: effectiveCollapsed ? 0 : '8px',
-                        borderLeft: effectiveCollapsed ? 'none' : '1px solid rgba(0, 0, 0, 0.1)',
+                        borderLeft: effectiveCollapsed ? 'none' : '2px solid rgba(0, 183, 174, 0.2)',
                         display: 'block',
                         width: '100%',
                         position: 'relative',
-                        '&:before': {
-                          content: '""',
-                          position: 'absolute',
-                          left: effectiveCollapsed ? '0' : '12px',
-                          top: '0',
-                          bottom: '0',
-                          width: '2px',
-                          backgroundColor: 'transparent',
-                          transition: 'background-color 0.2s ease',
-                        },
-                        '&:hover:before': {
-                          backgroundColor: 'primary.main',
-                        }
                       }}
                     >
                       {item.children
@@ -427,50 +468,23 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
                             >
                               <ListItemButton
                                 onClick={() => handleNavigation(child.path)}
-                                sx={{
-                                  pl: effectiveCollapsed ? 2 : 3,
-                                  py: effectiveCollapsed ? '4px' : '8px',
-                                  borderRadius: '6px',
-                                  margin: effectiveCollapsed ? '2px 4px' : '2px 8px',
-                                  minHeight: effectiveCollapsed ? '36px' : '40px',
-                                  width: effectiveCollapsed ? 'auto' : '100%',
-                                  justifyContent: effectiveCollapsed ? 'center' : 'flex-start',
-                                  color: isActive(child.path) ? 'primary.main' : 'text.secondary',
-                                  backgroundColor: isActive(child.path) ? 'rgba(0, 183, 174, 0.08)' : 'transparent',
-                                  position: 'relative',
-                                  left: '0',
-                                  transition: 'all 0.2s ease',
-                                  '&:hover': {
-                                    backgroundColor: 'rgba(0, 0, 0, 0.04)',
-                                    left: '4px',
-                                  },
-                                  '& .MuiListItemText-root': {
-                                    margin: 0,
-                                    '& .MuiTypography-root': {
-                                      fontSize: { xs: '0.813rem', md: '0.875rem' },
-                                      whiteSpace: 'nowrap',
-                                      overflow: 'hidden',
-                                      textOverflow: 'ellipsis',
-                                    }
-                                  }
-                                }}
+                                sx={getItemStyles(childActive, true)}
                               >
                                 <ListItemIcon sx={{ 
                                   minWidth: effectiveCollapsed ? 'auto' : { xs: '32px', md: '36px' },
                                   marginRight: effectiveCollapsed ? 0 : '8px',
                                   display: 'flex',
                                   alignItems: 'center',
+                                  color: childActive ? 'white' : 'text.primary',
                                 }}>
                                   <img
                                     src={child.icon}
                                     alt={child.title}
-                                    width={effectiveCollapsed ? (isMobile ? 18 : 20) : (isMobile ? 20 : 22)}
-                                    height={effectiveCollapsed ? (isMobile ? 18 : 20) : (isMobile ? 20 : 22)}
+                                    width={effectiveCollapsed ? (isMobile ? 20 : 22) : (isMobile ? 20 : 22)}
+                                    height={effectiveCollapsed ? (isMobile ? 20 : 22) : (isMobile ? 20 : 22)}
                                     style={{
-                                      filter: childActive ? "brightness(0) invert(1)" : "none",
-                                      transition: 'filter 0.2s ease',
-                                      display: 'block',
-                                      minWidth: effectiveCollapsed ? (isMobile ? '18px' : '20px') : (isMobile ? '20px' : '22px'),
+                                      ...getIconStyles(childActive),
+                                      minWidth: effectiveCollapsed ? (isMobile ? '20px' : '22px') : (isMobile ? '20px' : '22px'),
                                     }}
                                   />
                                 </ListItemIcon>
@@ -481,11 +495,12 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
                                       margin: 0,
                                       '& .MuiTypography-root': { 
                                         fontSize: { xs: '0.813rem', md: '0.875rem' },
-                                        fontWeight: childActive ? 500 : 400,
+                                        fontWeight: childActive ? 600 : 400,
                                         whiteSpace: 'nowrap',
                                         overflow: 'hidden',
                                         textOverflow: 'ellipsis',
                                         paddingRight: '8px',
+                                        color: 'inherit',
                                       } 
                                     }} 
                                   />
@@ -502,7 +517,7 @@ const Sidebar = ({ mobileOpen = false, onDrawerToggle, collapsed = true, setColl
           })}
         </List>
 
-        {/* Logout Section - stays at bottom */}
+        {/* Logout Section */}
         <List sx={{ 
           flexShrink: 0,
           padding: { xs: '8px 4px', md: '8px 0' },

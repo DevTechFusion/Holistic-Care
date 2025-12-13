@@ -62,7 +62,6 @@ const paymentModes = [
 
 const ReportsPage = () => {
   const [reports, setReports] = useState([]);
-  console.log("reports::", reports);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [page, setPage] = useState(0);
@@ -1130,20 +1129,29 @@ const ReportsPage = () => {
                       <TableCell
                         sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
                       >
-                        Contact
+                        Primary Contact
                       </TableCell>
                       <TableCell
-                        sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                        sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                        width: '100%' }}
+                      >
+                        Secondary Contact
+                      </TableCell>
+                      <TableCell
+                        sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                        width: '100%' }}
                       >
                         Doctor
                       </TableCell>
                       <TableCell
-                        sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                        sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                        width: '100%' }}
                       >
                         Procedure
                       </TableCell>
                       <TableCell
-                        sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                        sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                        width: '100%' }}
                       >
                         Department
                       </TableCell>
@@ -1249,6 +1257,11 @@ const ReportsPage = () => {
                               sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
                             >
                               {rep.appointment?.contact_number}
+                            </TableCell>
+                            <TableCell
+                              sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                            >
+                              {rep.appointment?.contact_number_2}
                             </TableCell>
                             <TableCell
                               sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}

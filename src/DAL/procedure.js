@@ -9,8 +9,8 @@ export const createProcedure = (data) => {
   return invokeApi(reqObj);
 };
 
-export const getProcedures = (page = 1, per_page=15) => {
-  return invokeApi({ path: `api/procedures?page=${page}&per_page=${per_page}` });
+export const getProcedures = (page = 1, per_page=15, search="") => {
+  return invokeApi({ path: `api/procedures?page=${page}&per_page=${per_page}&search=${search}` });
 };
 
 export const getProcedureById = (id) => {

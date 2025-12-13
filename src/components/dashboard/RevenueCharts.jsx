@@ -1,17 +1,38 @@
-import { useEffect, useRef } from "react";
-import { Box, Typography } from "@mui/material";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { Box, Typography, useTheme, useMediaQuery } from "@mui/material";
 import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { motion } from "framer-motion";
+import { useLayout } from "../../contexts/LayoutContext";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const RevenueCharts = ({ topFiveRevenue, topFiveBookings, topFiveIncentive }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'lg'));
+  const { isSidebarOpen } = useLayout();
+  const [containerWidth, setContainerWidth] = useState('100%');
   const chartRefs = useRef([]);
+  const containerRef = useRef(null);
+
+  // Update chart dimensions when sidebar state changes
+  const updateDimensions = useCallback(() => {
+    if (containerRef.current) {
+      setContainerWidth(containerRef.current.offsetWidth);
+    }
+  }, []);
 
   useEffect(() => {
-    // Cleanup to avoid "Canvas already in use" errors
+    // Initial dimension setup
+    updateDimensions();
+    
+    // Add resize event listener
+    window.addEventListener('resize', updateDimensions);
+    
+    // Cleanup
     return () => {
+      window.removeEventListener('resize', updateDimensions);
       chartRefs.current.forEach((chart) => {
         if (chart?.destroy) {
           try {
@@ -23,7 +44,16 @@ const RevenueCharts = ({ topFiveRevenue, topFiveBookings, topFiveIncentive }) =>
       });
       chartRefs.current = [];
     };
-  }, []);
+  }, [updateDimensions]);
+
+  // Update dimensions when sidebar state changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      updateDimensions();
+    }, theme.transitions.duration.leavingScreen);
+    
+    return () => clearTimeout(timer);
+  }, [isSidebarOpen, theme.transitions.duration.leavingScreen, updateDimensions]);
 
   const generateChartData = (dataset, labelKey) => ({
     labels: dataset.map((row) => row.agent?.name ?? "Unknown Agent"),
@@ -39,55 +69,115 @@ const RevenueCharts = ({ topFiveRevenue, topFiveBookings, topFiveIncentive }) =>
 
   const chartOptions = {
     responsive: true,
-    maintainAspectRatio: false, // important for responsive resizing
+    maintainAspectRatio: false,
     plugins: {
-      legend: { position: "bottom" },
+      legend: { 
+        position: 'bottom',
+        labels: {
+          boxWidth: 12,
+          padding: 15,
+          font: {
+            size: isMobile ? 10 : 12,
+          }
+        }
+      },
     },
   };
 
   const charts = [
-    { title: "Top 5 Agents by Revenue", data: topFiveRevenue, key: "revenue" },
-    { title: "Top 5 Agents by Bookings", data: topFiveBookings, key: "bookings" },
-    { title: "Top 5 Agents by Incentive", data: topFiveIncentive, key: "incentive" },
+    { title: "Top 5 by Revenue", data: topFiveRevenue, key: "revenue" },
+    { title: "Top 5 by Bookings", data: topFiveBookings, key: "bookings" },
+    { title: "Top 5 by Incentive", data: topFiveIncentive, key: "incentive" },
   ];
 
-  return (
-    <Box
-      display="grid"
-      gridTemplateColumns={{ xs: "1fr", md: "repeat(3, 1fr)" }}
-      gap={3}
-      mt={3}
-    >
-      {charts.map((chart, index) => (
-        <motion.div
-          key={chart.key}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: index * 0.2 }}
-          style={{ textAlign: "center" }}
-        >
-          <Typography variant="subtitle1" fontWeight="bold" mb={1}>
-            {chart.title}
-          </Typography>
+  // Calculate grid columns based on screen size and sidebar state
+  const getGridTemplateColumns = () => {
+    if (isMobile) return '1fr';
+    if (isTablet) return isSidebarOpen ? '1fr' : 'repeat(2, 1fr)';
+    return isSidebarOpen ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)';
+  };
 
-          {/* ✅ Responsive height: smaller on mobile, bigger on desktop */}
-          <Box
-            sx={{
-              height: { xs: 220, sm: 250, md: 280, lg: 300 },
-              maxWidth: "100%",
-              mx: "auto",
+  return (
+    <Box 
+      ref={containerRef}
+      sx={{
+        width: '100%',
+        transition: theme.transitions.create('all', {
+          easing: theme.transitions.easing.sharp,
+          duration: theme.transitions.duration.leavingScreen,
+        }),
+      }}
+    >
+      <Box
+        display="grid"
+        gridTemplateColumns={getGridTemplateColumns()}
+        gap={3}
+        mt={3}
+        sx={{
+          transition: theme.transitions.create('grid-template-columns', {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.leavingScreen,
+          }),
+        }}
+      >
+        {charts.map((chart, index) => (
+          <motion.div
+            key={chart.key}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
+            style={{ 
+              textAlign: 'center',
+              minWidth: 0, // Prevent flex item from overflowing
             }}
           >
-            <Doughnut
-              data={generateChartData(chart.data, chart.key)}
-              options={chartOptions}
-              ref={(el) => {
-                if (el?.canvas) chartRefs.current[index] = el;
+            <Typography 
+              variant="subtitle1" 
+              fontWeight="bold" 
+              mb={1}
+              sx={{
+                fontSize: isMobile ? '0.875rem' : '1rem',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
               }}
-            />
-          </Box>
-        </motion.div>
-      ))}
+            >
+              {chart.title}
+            </Typography>
+
+            <Box
+              sx={{
+                height: { 
+                  xs: 220, 
+                  sm: 250, 
+                  md: isSidebarOpen ? 250 : 280, 
+                  lg: isSidebarOpen ? 280 : 300 
+                },
+                width: '100%',
+                maxWidth: '100%',
+                mx: 'auto',
+                p: 1,
+              }}
+            >
+              <Doughnut
+                data={generateChartData(chart.data, chart.key)}
+                options={{
+                  ...chartOptions,
+                  // Update chart on container width change
+                  onResize: (chart, size) => {
+                    chart.resize();
+                  }
+                }}
+                redraw={false}
+                updateMode='resize'
+                ref={(el) => {
+                  if (el?.canvas) chartRefs.current[index] = el;
+                }}
+              />
+            </Box>
+          </motion.div>
+        ))}
+      </Box>
     </Box>
   );
 };
