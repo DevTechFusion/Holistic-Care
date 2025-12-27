@@ -848,7 +848,8 @@ class AppointmentService extends CrudeService
      */
     protected function upsertIncentiveForAppointment(Appointment $appointment): void
     {
-        if (empty($appointment->amount) || empty($appointment->agent_id) || !$appointment->isStatusArrived()) {
+        // dd($appointment->isPaymentMethodNotPaid());
+        if (empty($appointment->amount) || empty($appointment->agent_id) || !$appointment->isStatusArrived() || $appointment->isPaymentMethodNotPaid()) {
             // If conditions are not met, delete any existing incentive
             Incentive::where('appointment_id', $appointment->id)->delete();
             return;
