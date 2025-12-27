@@ -126,6 +126,11 @@ class Appointment extends Model
     {
         return $this->status && $this->status->name === 'Arrived';
     }
+
+        public function isPaymentMethodNotPaid()
+    {
+        return $this->payment_mode && $this->payment_mode === 'not_paid';
+    }
     /**
      * Get the reports for this appointment.
      */
