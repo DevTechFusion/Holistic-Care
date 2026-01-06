@@ -825,14 +825,18 @@ class AppointmentService extends CrudeService
         $query = $this->model
             ->select([
                 'appointments.agent_id',
-                DB::raw('COUNT(*) as bookings'),
-                DB::raw("SUM(CASE WHEN s.name = 'Arrived' THEN 1 ELSE 0 END) as arrived"),
-                DB::raw("SUM(CASE WHEN s.name = 'Not Show' THEN 1 ELSE 0 END) as no_show"),
-                DB::raw("SUM(CASE WHEN s.name = 'Rescheduled' THEN 1 ELSE 0 END) as rescheduled"),
-                DB::raw('COALESCE(SUM(appointments.amount), 0) as revenue'),
+                DB::raw("COUNT(DISTINCT CASE WHEN appointments.date BETWEEN '{$startDate}' AND '{$endDate}' THEN appointments.id END) as bookings"),
+                DB::raw("COUNT(DISTINCT CASE WHEN DATE(appointments.created_at) BETWEEN '{$startDate}' AND '{$endDate}' THEN appointments.id END) as appointments"),
+                DB::raw("COUNT(DISTINCT CASE WHEN s.name = 'Arrived' THEN appointments.id END) as arrived"),
+                DB::raw("COUNT(DISTINCT CASE WHEN s.name = 'Not Show' THEN appointments.id END) as no_show"),
+                DB::raw("COUNT(DISTINCT CASE WHEN s.name = 'Rescheduled' THEN appointments.id END) as rescheduled"),
+                DB::raw('COALESCE(SUM(DISTINCT appointments.amount), 0) as revenue'),
                 DB::raw('COALESCE(SUM(i.incentive_amount), 0) as incentive'),
             ])
-            ->byDateRange($startDate, $endDate)
+            ->where(function($q) use ($startDate, $endDate) {
+                $q->whereBetween('appointments.date', [$startDate, $endDate])
+                  ->orWhereBetween(DB::raw('DATE(appointments.created_at)'), [$startDate, $endDate]);
+            })
             ->whereNotNull('appointments.agent_id')
             ->leftJoin('statuses as s', 's.id', '=', 'appointments.status_id')
             ->leftJoin('incentives as i', 'i.appointment_id', '=', 'appointments.id')
