@@ -13,6 +13,7 @@ const RevenueTable = ({ data, formatCurrency, calculatePercentage }) => {
     "Sr#",
     "Agent",
     "Bookings",
+    "Appointments",
     "Arrived",
     "No Show",
     "Arrived %",
@@ -85,6 +86,16 @@ const RevenueTable = ({ data, formatCurrency, calculatePercentage }) => {
                 }}
               >
                 {row.bookings ?? 0}
+              </TableCell>
+              <TableCell
+                align="center"
+                sx={{ 
+                  borderRight: "1px solid #e0e0e0",
+                  fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                  px: { xs: 1, sm: 2 }
+                }}
+              >
+                {row.appointments ?? 0}
               </TableCell>
               <TableCell
                 align="center"
