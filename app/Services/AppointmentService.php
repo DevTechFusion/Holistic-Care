@@ -822,6 +822,10 @@ class AppointmentService extends CrudeService
      */
     public function getRevenueByAgent(string $startDate, string $endDate)
     {
+        // Convert dates to Carbon instances with proper timezone handling
+        $start = \Carbon\Carbon::parse($startDate)->startOfDay();
+        $end = \Carbon\Carbon::parse($endDate)->endOfDay();
+        
         $query = $this->model
             ->select([
                 'appointments.agent_id',
@@ -833,9 +837,9 @@ class AppointmentService extends CrudeService
                 DB::raw('COALESCE(SUM(DISTINCT appointments.amount), 0) as revenue'),
                 DB::raw('COALESCE(SUM(i.incentive_amount), 0) as incentive'),
             ])
-            ->where(function($q) use ($startDate, $endDate) {
+            ->where(function($q) use ($startDate, $endDate, $start, $end) {
                 $q->whereBetween('appointments.date', [$startDate, $endDate])
-                  ->orWhereBetween(DB::raw('DATE(appointments.created_at)'), [$startDate, $endDate]);
+                  ->orWhereBetween('appointments.created_at', [$start, $end]);
             })
             ->whereNotNull('appointments.agent_id')
             ->leftJoin('statuses as s', 's.id', '=', 'appointments.status_id')
