@@ -821,25 +821,25 @@ class AppointmentService extends CrudeService
      * Includes bookings count and basic status breakdown.
      */
     public function getRevenueByAgent(string $startDate, string $endDate)
-    {
-        // Convert dates to Carbon instances with proper timezone handling
-        $start = \Carbon\Carbon::parse($startDate)->startOfDay();
-        $end = \Carbon\Carbon::parse($endDate)->endOfDay();
+    {  
+        // Convert UTC datetimes to app timezone and extract date
+        $start = Carbon::parse($startDate)->timezone(config('app.timezone'))->toDateString();
+        $end = Carbon::parse($endDate)->timezone(config('app.timezone'))->toDateString();
         
         $query = $this->model
             ->select([
                 'appointments.agent_id',
-                DB::raw("COUNT(DISTINCT CASE WHEN appointments.date BETWEEN '{$startDate}' AND '{$endDate}' THEN appointments.id END) as bookings"),
-                DB::raw("COUNT(DISTINCT CASE WHEN DATE(appointments.created_at) BETWEEN '{$startDate}' AND '{$endDate}' THEN appointments.id END) as appointments"),
+                DB::raw("COUNT(DISTINCT CASE WHEN appointments.date BETWEEN '{$start}' AND '{$end}' THEN appointments.id END) as bookings"),
+                DB::raw("COUNT(DISTINCT CASE WHEN DATE(appointments.created_at) BETWEEN '{$start}' AND '{$end}' THEN appointments.id END) as appointments"),
                 DB::raw("COUNT(DISTINCT CASE WHEN s.name = 'Arrived' THEN appointments.id END) as arrived"),
                 DB::raw("COUNT(DISTINCT CASE WHEN s.name = 'Not Show' THEN appointments.id END) as no_show"),
                 DB::raw("COUNT(DISTINCT CASE WHEN s.name = 'Rescheduled' THEN appointments.id END) as rescheduled"),
                 DB::raw('COALESCE(SUM(DISTINCT appointments.amount), 0) as revenue'),
                 DB::raw('COALESCE(SUM(i.incentive_amount), 0) as incentive'),
             ])
-            ->where(function($q) use ($startDate, $endDate, $start, $end) {
-                $q->whereBetween('appointments.date', [$startDate, $endDate])
-                  ->orWhereBetween('appointments.created_at', [$start, $end]);
+            ->where(function($q) use ($start, $end) {
+                $q->whereBetween('appointments.date', [$start, $end])
+                  ->orWhereBetween(DB::raw('DATE(appointments.created_at)'), [$start, $end]);
             })
             ->whereNotNull('appointments.agent_id')
             ->leftJoin('statuses as s', 's.id', '=', 'appointments.status_id')
@@ -849,6 +849,33 @@ class AppointmentService extends CrudeService
 
         return $query->get();
     }
+
+
+    // public function getRevenueByAgent(string $startDate, string $endDate)
+    // {  
+    //     $query = $this->model
+    //         ->select([
+    //             'appointments.agent_id',
+    //             DB::raw("COUNT(DISTINCT CASE WHEN appointments.date BETWEEN '{$startDate}' AND '{$endDate}' THEN appointments.id END) as bookings"),
+    //             DB::raw("COUNT(DISTINCT CASE WHEN DATE(appointments.created_at) BETWEEN '{$startDate}' AND '{$endDate}' THEN appointments.id END) as appointments"),
+    //             DB::raw("COUNT(DISTINCT CASE WHEN s.name = 'Arrived' THEN appointments.id END) as arrived"),
+    //             DB::raw("COUNT(DISTINCT CASE WHEN s.name = 'Not Show' THEN appointments.id END) as no_show"),
+    //             DB::raw("COUNT(DISTINCT CASE WHEN s.name = 'Rescheduled' THEN appointments.id END) as rescheduled"),
+    //             DB::raw('COALESCE(SUM(DISTINCT appointments.amount), 0) as revenue'),
+    //             DB::raw('COALESCE(SUM(i.incentive_amount), 0) as incentive'),
+    //         ])
+    //         ->where(function($q) use ($startDate, $endDate) {
+    //             $q->whereBetween('appointments.date', [$startDate, $endDate])
+    //               ->orWhereBetween(DB::raw('DATE(appointments.created_at)'), [$startDate, $endDate]);
+    //         })
+    //         ->whereNotNull('appointments.agent_id')
+    //         ->leftJoin('statuses as s', 's.id', '=', 'appointments.status_id')
+    //         ->leftJoin('incentives as i', 'i.appointment_id', '=', 'appointments.id')
+    //         ->groupBy('appointments.agent_id')
+    //         ->with(['agent:id,name']);
+
+    //     return $query->get();
+    // }
 
     /**
      * Create or update incentive for an appointment when amount is present and status is "Arrived".
