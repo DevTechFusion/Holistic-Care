@@ -820,35 +820,47 @@ class AppointmentService extends CrudeService
      * Revenue and incentive summary grouped by agent within date range.
      * Includes bookings count and basic status breakdown.
      */
-    public function getRevenueByAgent(string $startDate, string $endDate)
-    {  
-        // Convert UTC datetimes to app timezone and extract date
-        $start = Carbon::parse($startDate)->timezone(config('app.timezone'))->toDateString();
-        $end = Carbon::parse($endDate)->timezone(config('app.timezone'))->toDateString();
+    // public function getRevenueByAgent(string $startDate, string $endDate)
+    // {  
+    //     // Parse dates like scopeByCreatedAtRange does
+    //     $startDateTime = \Carbon\Carbon::parse($startDate);
+    //     $endDateTime = \Carbon\Carbon::parse($endDate);
         
-        $query = $this->model
-            ->select([
-                'appointments.agent_id',
-                DB::raw("COUNT(DISTINCT CASE WHEN appointments.date BETWEEN '{$start}' AND '{$end}' THEN appointments.id END) as bookings"),
-                DB::raw("COUNT(DISTINCT CASE WHEN DATE(appointments.created_at) BETWEEN '{$start}' AND '{$end}' THEN appointments.id END) as appointments"),
-                DB::raw("COUNT(DISTINCT CASE WHEN s.name = 'Arrived' THEN appointments.id END) as arrived"),
-                DB::raw("COUNT(DISTINCT CASE WHEN s.name = 'Not Show' THEN appointments.id END) as no_show"),
-                DB::raw("COUNT(DISTINCT CASE WHEN s.name = 'Rescheduled' THEN appointments.id END) as rescheduled"),
-                DB::raw('COALESCE(SUM(DISTINCT appointments.amount), 0) as revenue'),
-                DB::raw('COALESCE(SUM(i.incentive_amount), 0) as incentive'),
-            ])
-            ->where(function($q) use ($start, $end) {
-                $q->whereBetween('appointments.date', [$start, $end])
-                  ->orWhereBetween(DB::raw('DATE(appointments.created_at)'), [$start, $end]);
-            })
-            ->whereNotNull('appointments.agent_id')
-            ->leftJoin('statuses as s', 's.id', '=', 'appointments.status_id')
-            ->leftJoin('incentives as i', 'i.appointment_id', '=', 'appointments.id')
-            ->groupBy('appointments.agent_id')
-            ->with(['agent:id,name']);
-
-        return $query->get();
-    }
+    //     // Use raw SQL to avoid join duplication issues
+    //     $results = DB::select("
+    //         SELECT 
+    //             a.agent_id,
+    //             COUNT(CASE WHEN a.date BETWEEN ? AND ? THEN 1 END) as bookings,
+    //             COUNT(CASE WHEN a.created_at BETWEEN ? AND ? THEN 1 END) as appointments,
+    //             COUNT(CASE WHEN s.name = 'Arrived' AND (a.date BETWEEN ? AND ? OR a.created_at BETWEEN ? AND ?) THEN 1 END) as arrived,
+    //             COUNT(CASE WHEN s.name = 'Not Show' AND (a.date BETWEEN ? AND ? OR a.created_at BETWEEN ? AND ?) THEN 1 END) as no_show,
+    //             COUNT(CASE WHEN s.name = 'Rescheduled' AND (a.date BETWEEN ? AND ? OR a.created_at BETWEEN ? AND ?) THEN 1 END) as rescheduled,
+    //             COALESCE(SUM(a.amount), 0) as revenue,
+    //             COALESCE(SUM(i.incentive_amount), 0) as incentive
+    //         FROM appointments a
+    //         LEFT JOIN statuses s ON s.id = a.status_id
+    //         LEFT JOIN incentives i ON i.appointment_id = a.id
+    //         WHERE (a.date BETWEEN ? AND ? OR a.created_at BETWEEN ? AND ?)
+    //             AND a.agent_id IS NOT NULL
+    //         GROUP BY a.agent_id
+    //     ", [
+    //         $startDate, $endDate,  // bookings
+    //         $startDateTime, $endDateTime,  // appointments
+    //         $startDate, $endDate, $startDateTime, $endDateTime,  // arrived
+    //         $startDate, $endDate, $startDateTime, $endDateTime,  // no_show
+    //         $startDate, $endDate, $startDateTime, $endDateTime,  // rescheduled
+    //         $startDate, $endDate, $startDateTime, $endDateTime   // WHERE clause
+    //     ]);
+        
+    //     // Load agent relationships
+    //     $agentIds = collect($results)->pluck('agent_id')->unique();
+    //     $agents = User::whereIn('id', $agentIds)->get()->keyBy('id');
+        
+    //     return collect($results)->map(function($result) use ($agents) {
+    //         $result->agent = $agents->get($result->agent_id);
+    //         return $result;
+    //     });
+    // }
 
 
     // public function getRevenueByAgent(string $startDate, string $endDate)
@@ -876,6 +888,109 @@ class AppointmentService extends CrudeService
 
     //     return $query->get();
     // }
+
+
+        // public function getRevenueByAgent(string $startDate, string $endDate)
+    // {  
+    //     // Convert UTC datetimes to app timezone and extract date
+    //     $start = \Carbon\Carbon::parse($startDate)->timezone(config('app.timezone'))->toDateString();
+    //     $end = \Carbon\Carbon::parse($endDate)->timezone(config('app.timezone'))->toDateString();
+        
+    //     $query = $this->model
+    //         ->select([
+    //             'appointments.agent_id',
+    //             DB::raw("COUNT(DISTINCT CASE WHEN appointments.date BETWEEN '{$start}' AND '{$end}' THEN appointments.id END) as bookings"),
+    //             DB::raw("COUNT(DISTINCT CASE WHEN DATE(appointments.created_at) BETWEEN '{$start}' AND '{$end}' THEN appointments.id END) as appointments"),
+    //             DB::raw("COUNT(DISTINCT CASE WHEN s.name = 'Arrived' THEN appointments.id END) as arrived"),
+    //             DB::raw("COUNT(DISTINCT CASE WHEN s.name = 'Not Show' THEN appointments.id END) as no_show"),
+    //             DB::raw("COUNT(DISTINCT CASE WHEN s.name = 'Rescheduled' THEN appointments.id END) as rescheduled"),
+    //             DB::raw('COALESCE(SUM(DISTINCT appointments.amount), 0) as revenue'),
+    //             DB::raw('COALESCE(SUM(i.incentive_amount), 0) as incentive'),
+    //         ])
+    //         ->where(function($q) use ($start, $end) {
+    //             $q->whereBetween('appointments.date', [$start, $end])
+    //               ->orWhereBetween(DB::raw('DATE(appointments.created_at)'), [$start, $end]);
+    //         })
+    //         ->whereNotNull('appointments.agent_id')
+    //         ->leftJoin('statuses as s', 's.id', '=', 'appointments.status_id')
+    //         ->leftJoin('incentives as i', 'i.appointment_id', '=', 'appointments.id')
+    //         ->groupBy('appointments.agent_id')
+    //         ->with(['agent:id,name']);
+
+    //     return $query->get();
+    // }
+
+
+    // public function getRevenueByAgent(string $startDate, string $endDate)
+    // {  
+    //     $query = $this->model
+    //         ->select([
+    //             'appointments.agent_id',
+    //             DB::raw("COUNT(DISTINCT CASE WHEN appointments.date BETWEEN '{$startDate}' AND '{$endDate}' THEN appointments.id END) as bookings"),
+    //             DB::raw("COUNT(DISTINCT CASE WHEN DATE(appointments.created_at) BETWEEN '{$startDate}' AND '{$endDate}' THEN appointments.id END) as appointments"),
+    //             DB::raw("COUNT(DISTINCT CASE WHEN s.name = 'Arrived' THEN appointments.id END) as arrived"),
+    //             DB::raw("COUNT(DISTINCT CASE WHEN s.name = 'Not Show' THEN appointments.id END) as no_show"),
+    //             DB::raw("COUNT(DISTINCT CASE WHEN s.name = 'Rescheduled' THEN appointments.id END) as rescheduled"),
+    //             DB::raw('COALESCE(SUM(DISTINCT appointments.amount), 0) as revenue'),
+    //             DB::raw('COALESCE(SUM(i.incentive_amount), 0) as incentive'),
+    //         ])
+    //         ->where(function($q) use ($startDate, $endDate) {
+    //             $q->whereBetween('appointments.date', [$startDate, $endDate])
+    //               ->orWhereBetween(DB::raw('DATE(appointments.created_at)'), [$startDate, $endDate]);
+    //         })
+    //         ->whereNotNull('appointments.agent_id')
+    //         ->leftJoin('statuses as s', 's.id', '=', 'appointments.status_id')
+    //         ->leftJoin('incentives as i', 'i.appointment_id', '=', 'appointments.id')
+    //         ->groupBy('appointments.agent_id')
+    //         ->with(['agent:id,name']);
+
+    //     return $query->get();
+    // }
+    
+    
+    
+    
+    public function getRevenueByAgent(string $startDate, string $endDate)
+    {  
+        // Parse dates like scopeByCreatedAtRange does
+        $startDateTime = \Carbon\Carbon::parse($startDate);
+        $endDateTime = \Carbon\Carbon::parse($endDate);
+        
+        // Use raw SQL to avoid join duplication issues
+        $results = DB::select("
+            SELECT 
+                a.agent_id,
+                COUNT(CASE WHEN a.date BETWEEN ? AND ? THEN 1 END) as bookings,
+                COUNT(CASE WHEN a.created_at BETWEEN ? AND ? THEN 1 END) as appointments,
+                COUNT(CASE WHEN s.name = 'Arrived' AND (a.date BETWEEN ? AND ? OR a.created_at BETWEEN ? AND ?) THEN 1 END) as arrived,
+                COUNT(CASE WHEN s.name = 'Not Show' AND (a.date BETWEEN ? AND ? OR a.created_at BETWEEN ? AND ?) THEN 1 END) as no_show,
+                COUNT(CASE WHEN s.name = 'Rescheduled' AND (a.date BETWEEN ? AND ? OR a.created_at BETWEEN ? AND ?) THEN 1 END) as rescheduled,
+                COALESCE(SUM(a.amount), 0) as revenue,
+                COALESCE(SUM(i.incentive_amount), 0) as incentive
+            FROM appointments a
+            LEFT JOIN statuses s ON s.id = a.status_id
+            LEFT JOIN incentives i ON i.appointment_id = a.id
+            WHERE (a.date BETWEEN ? AND ? OR a.created_at BETWEEN ? AND ?)
+                AND a.agent_id IS NOT NULL
+            GROUP BY a.agent_id
+        ", [
+            $startDate, $endDate,  // bookings
+            $startDateTime, $endDateTime,  // appointments
+            $startDate, $endDate, $startDateTime, $endDateTime,  // arrived
+            $startDate, $endDate, $startDateTime, $endDateTime,  // no_show
+            $startDate, $endDate, $startDateTime, $endDateTime,  // rescheduled
+            $startDate, $endDate, $startDateTime, $endDateTime   // WHERE clause
+        ]);
+        
+        // Load agent relationships
+        $agentIds = collect($results)->pluck('agent_id')->unique();
+        $agents = User::whereIn('id', $agentIds)->get()->keyBy('id');
+        
+        return collect($results)->map(function($result) use ($agents) {
+            $result->agent = $agents->get($result->agent_id);
+            return $result;
+        });
+    }
 
     /**
      * Create or update incentive for an appointment when amount is present and status is "Arrived".
