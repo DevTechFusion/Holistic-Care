@@ -45,6 +45,8 @@ import {
   RevenueSection,
 } from "../../../components/dashboard";
 import { useSnackbar } from "notistack";
+import utc from 'dayjs/plugin/utc'
+import dayjs from "dayjs";
 
 const Dashboard = () => {
   const [openModal, setOpenModal] = useState(null);
@@ -91,21 +93,19 @@ const Dashboard = () => {
   };
 
   const handleDateRangeChange = (item) => {
-    setDateRange([item.selection]);
-    const start = item.selection.startDate;
-    const end = item.selection.endDate;
-    
-    // Format dates as YYYY-MM-DD
-    const formatDate = (date) => {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    };
-    
-    setStartDate(formatDate(start));
-    setEndDate(formatDate(end));
+  setDateRange([item.selection]);
+  const start = dayjs(item.selection.startDate).startOf("day");
+  const end = dayjs(item.selection.endDate).endOf("day");
+  
+  const formatDate = (date) => {
+    if (!date) return '';
+    dayjs.extend(utc)
+    return dayjs(date).utc().format();
   };
+  
+  setStartDate(formatDate(start));
+  setEndDate(formatDate(end));
+};
 
   const handleApplyFilters = () => {
     setAppliedStartDate(startDate);
@@ -128,10 +128,10 @@ const Dashboard = () => {
     handleDateRangeClose();
   };
 
-  const formatDateDisplay = (start, end) => {
-    if (!start || !end) return "Select Date Range";
-    return `${start} to ${end}`;
-  };
+   const formatDateDisplay = (start, end) => {
+      if (!start || !end) return "Select Date Range";
+      return `${dayjs(start).format('YYYY-MM-DD')} to ${dayjs(end).format('YYYY-MM-DD')}`;
+    };
 
   return (
     <Box

@@ -280,12 +280,6 @@ const AppointmentsPage = () => {
       dayjs.extend(utc)
 
       return dayjs(date).utc().format();
-
-      const offsetDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
-      const year = offsetDate.getUTCFullYear();
-      const month = String(offsetDate.getUTCMonth() + 1).padStart(2, '0');
-      const day = String(offsetDate.getUTCDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
     };
 
     setFilters(prev => ({
