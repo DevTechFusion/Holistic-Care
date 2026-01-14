@@ -12,8 +12,8 @@ const RevenueTable = ({ data, formatCurrency, calculatePercentage }) => {
   const headers = [
     "Sr#",
     "Agent",
-    "Bookings",
     "Appointments",
+    "Bookings",
     "Arrived",
     "No Show",
     "Arrived %",

@@ -30,7 +30,6 @@ import { DateRangePicker } from 'react-date-range';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import CloseIcon from '@mui/icons-material/Close';
 import { getDoctorsList } from "../../DAL/doctors";
 import { getProceduresList } from "../../DAL/procedure";
 import { getDepartmentsList } from "../../DAL/departments";
@@ -39,13 +38,14 @@ import { getSelectStatuses } from "../../DAL/status";
 import { getSelectRemarks1 } from "../../DAL/remarks1";
 import { getSelectRemarks2 } from "../../DAL/remarks2";
 import { MODULES, PERMISSIONS } from "../../constants/permissionConstants";
+import utc from 'dayjs/plugin/utc'
 
 // Format phone number function (same as in AppointmentForm)
 const formatPhoneNumber = (value) => {
   if (!value) return '';
   // Remove all non-digit characters except leading +
   const cleaned = value.replace(/[^\d+]/g, '');
-  
+
   // Format the number with proper spacing
   if (cleaned.startsWith('+')) {
     // International format: +XX XXX XXXXXXX
@@ -70,7 +70,6 @@ const AppointmentsPage = () => {
   const [targetItem, setTargetItem] = useState(null);
   const { enqueueSnackbar } = useSnackbar();
   const [complaintModalOpen, setComplaintModalOpen] = useState(false);
-
   const [dateRangeAnchor, setDateRangeAnchor] = useState(null);
   const [dateRange, setDateRange] = useState([
     {
@@ -272,26 +271,33 @@ const AppointmentsPage = () => {
   const handleDateRangeChange = (ranges) => {
     const { selection } = ranges;
     setDateRange([selection]);
-    
-    // Format dates as YYYY-MM-DD
+    const startDate = dayjs(selection.startDate).startOf("day");
+    const endDate = dayjs(selection.endDate).endOf("day");
+
     const formatDate = (date) => {
       if (!date) return '';
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
+
+      dayjs.extend(utc)
+
+      return dayjs(date).utc().format();
+
+      const offsetDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+      const year = offsetDate.getUTCFullYear();
+      const month = String(offsetDate.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(offsetDate.getUTCDate()).padStart(2, '0');
       return `${year}-${month}-${day}`;
     };
-    
+
     setFilters(prev => ({
       ...prev,
-      start_date: formatDate(selection.startDate),
-      end_date: formatDate(selection.endDate)
+      start_date: formatDate(startDate),
+      end_date: formatDate(endDate)
     }));
   };
 
   const formatDateDisplay = (start, end) => {
     if (!start || !end) return "Select Date Range";
-    return `${start} to ${end}`;
+    return `${dayjs(start).format('YYYY-MM-DD')} to ${dayjs(end).format('YYYY-MM-DD')}`;
   };
 
   const clearFilters = () => {
@@ -793,7 +799,7 @@ const AppointmentsPage = () => {
                     </TableCell>
 
                     <TableCell
-                      sx={{ 
+                      sx={{
                         fontSize: { xs: "0.75rem", sm: "0.875rem" },
                         whiteSpace: 'nowrap',
                         minWidth: '150px',
@@ -803,7 +809,7 @@ const AppointmentsPage = () => {
                       Primary Contact
                     </TableCell>
                     <TableCell
-                      sx={{ 
+                      sx={{
                         fontSize: { xs: "0.75rem", sm: "0.875rem" },
                         whiteSpace: 'nowrap',
                         minWidth: '150px',
@@ -890,12 +896,12 @@ const AppointmentsPage = () => {
                         <TableCell
                           sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
                         >
-                          {dayjs(appt.date).format("DD-MM-YYYY")}
+                          {dayjs(appt.date).format('YYYY-MM-DD')}
                         </TableCell>
                         <TableCell
                           sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
                         >
-                          {dayjs(appt.created_at).format("DD-MM-YYYY")}
+                          {dayjs(appt.created_at).format('YYYY-MM-DD')}
                         </TableCell>
                         <TableCell
                           sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
@@ -914,7 +920,7 @@ const AppointmentsPage = () => {
                           {appt.patient_name}
                         </TableCell>
                         <TableCell
-                          sx={{ 
+                          sx={{
                             fontSize: { xs: "0.75rem", sm: "0.875rem" },
                             whiteSpace: 'nowrap',
                             minWidth: '150px',
@@ -924,7 +930,7 @@ const AppointmentsPage = () => {
                           {(appt.contact_number) || '-'}
                         </TableCell>
                         <TableCell
-                          sx={{ 
+                          sx={{
                             fontSize: { xs: "0.75rem", sm: "0.875rem" },
                             whiteSpace: 'nowrap',
                             minWidth: '150px',
