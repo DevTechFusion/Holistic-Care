@@ -52,10 +52,10 @@ class AdminDashboardController extends Controller
 
         // If custom dates are provided, use them; otherwise use range
         if ($customStartDate && $customEndDate) {
-            // $startDate = $customStartDate;
-            // $endDate = $customEndDate;
-            $startDate = Carbon::parse($customStartDate)->startOfDay()->toDateString();
-            $endDate = Carbon::parse($customEndDate)->endOfDay()->toDateString();
+            $startDate = $customStartDate;
+            $endDate = $customEndDate;
+            // $startDate = Carbon::parse($customStartDate)->startOfDay()->toDateString();
+            // $endDate = Carbon::parse($customEndDate)->endOfDay()->toDateString();
         } else {
             [$startDate, $endDate] = $this->resolveDateRange($range);
         }
