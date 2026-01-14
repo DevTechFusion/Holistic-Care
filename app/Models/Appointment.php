@@ -173,8 +173,15 @@ class Appointment extends Model
 
     public function scopeByCreatedAtRange($query, $startDate, $endDate)
     {
-        return $query->whereDate('created_at', '>=', $startDate)
-                     ->whereDate('created_at', '<=', $endDate);
+
+        $start = \Carbon\Carbon::parse($startDate);
+        $end = \Carbon\Carbon::parse($endDate);
+
+        
+        return $query->whereBetween('created_at', [$start, $end]);
+
+        // return $query->whereDate('created_at', '>=', $startDate)
+        //              ->whereDate('created_at', '<=', $endDate);
     }
     /**
      * Scope to get appointments by doctor.
