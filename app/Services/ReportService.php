@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Report;
 use App\Models\Appointment;
+use Carbon\Carbon;
 
 class ReportService extends CrudeService
 {
@@ -42,22 +43,18 @@ class ReportService extends CrudeService
                 $dateField = (!empty($filters['isBooking']) && $filters['isBooking']) ? 'created_at' : 'date';
 
                 if (!empty($filters['start_date']) && !empty($filters['end_date'])) {
-                    // Both start and end date provided - use between
-                    // Add time to end date to include the entire day
-                    $endDate = $filters['end_date'];
-                    if (strlen($endDate) === 10) { // Date only format (YYYY-MM-DD)
-                        $endDate .= ' 23:59:59';
-                    }
-                    $q->whereBetween($dateField, [$filters['start_date'], $endDate]);
+                    // Parse UTC dates, convert to app timezone, then back to UTC for database comparison
+                    $startDate = Carbon::parse($filters['start_date'])->timezone(config('app.timezone'));
+                    $endDate = Carbon::parse($filters['end_date'])->timezone(config('app.timezone'));
+                    
+                    $q->whereBetween($dateField, [$startDate, $endDate]);
                 } elseif (!empty($filters['start_date'])) {
                     // Only start date provided - appointments from this date
-                    $q->where($dateField, '>=', $filters['start_date']);
+                    $startDate = Carbon::parse($filters['start_date'])->timezone(config('app.timezone'));
+                    $q->where($dateField, '>=', $startDate);
                 } elseif (!empty($filters['end_date'])) {
-
-                    $endDate = $filters['end_date'];
-                    if (strlen($endDate) === 10) {
-                        $endDate .= ' 23:59:59';
-                    }
+                    // Only end date provided - appointments up to this date
+                    $endDate = Carbon::parse($filters['end_date'])->timezone(config('app.timezone'));
                     $q->where($dateField, '<=', $endDate);
                 }
             });
@@ -548,20 +545,18 @@ class ReportService extends CrudeService
             $dateField = (!empty($filters['isBooking']) && $filters['isBooking']) ? 'created_at' : 'date';
 
             if (!empty($filters['start_date']) && !empty($filters['end_date'])) {
-                // Add time to end date to include the entire day
-                $endDate = $filters['end_date'];
-                if (strlen($endDate) === 10) { // Date only format (YYYY-MM-DD)
-                    $endDate .= ' 23:59:59';
-                }
-                $appointmentQuery->whereBetween($dateField, [$filters['start_date'], $endDate]);
+                // Parse UTC dates, convert to app timezone, then back to UTC for database comparison
+                $startDate = Carbon::parse($filters['start_date'])->timezone(config('app.timezone'));
+                $endDate = Carbon::parse($filters['end_date'])->timezone(config('app.timezone'));
+                
+                $appointmentQuery->whereBetween($dateField, [$startDate, $endDate]);
             } elseif (!empty($filters['start_date'])) {
-                $appointmentQuery->where($dateField, '>=', $filters['start_date']);
+                // Only start date provided - appointments from this date
+                $startDate = Carbon::parse($filters['start_date'])->timezone(config('app.timezone'));
+                $appointmentQuery->where($dateField, '>=', $startDate);
             } elseif (!empty($filters['end_date'])) {
-                // Add time to end date to include the entire day
-                $endDate = $filters['end_date'];
-                if (strlen($endDate) === 10) { // Date only format (YYYY-MM-DD)
-                    $endDate .= ' 23:59:59';
-                }
+                // Only end date provided - appointments up to this date
+                $endDate = Carbon::parse($filters['end_date'])->timezone(config('app.timezone'));
                 $appointmentQuery->where($dateField, '<=', $endDate);
             }
         }
