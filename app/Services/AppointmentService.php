@@ -748,26 +748,77 @@ class AppointmentService extends CrudeService
     /**
      * Status counters across all appointments in a date range.
      */
+    // public function getStatusCountersInRange(string $startDate, string $endDate): array
+    // {
+    //     $base = $this->model->byDateRange($startDate, $endDate);
+
+    //     $total = (clone $base)->count();
+
+    //     $arrived = (clone $base)->whereHas('status', function ($q) {
+    //         $q->where('name', 'Arrived');
+    //     })->count();
+
+    //     $notArrived = (clone $base)->whereHas('status', function ($q) {
+    //         $q->where('name', 'Not Show');
+    //     })->count();
+
+    //     $rescheduled = (clone $base)->whereHas('status', function ($q) {
+    //         $q->where('name', 'Rescheduled');
+    //     })->count();
+        
+    //     // $startDateTime = \Carbon\Carbon::parse($startDate)->startOfDay();
+    //     // $endDateTime = \Carbon\Carbon::parse($endDate)->endOfDay();     
+
+    //     $startDateTime = \Carbon\Carbon::parse($startDate);
+    //     $endDateTime = \Carbon\Carbon::parse($endDate);
+    //     $totalAppointments = $this->model->whereBetween('created_at', [$startDateTime, $endDateTime])->count();
+
+    //     return [
+    //         'total_bookings' => $total,
+    //         'arrived' => $arrived,
+    //         'not_arrived' => $notArrived,
+    //         'rescheduled' => $rescheduled,
+    //         'total_appointments' => $totalAppointments,
+    //     ];
+    // }
+
     public function getStatusCountersInRange(string $startDate, string $endDate): array
     {
         $base = $this->model->byDateRange($startDate, $endDate);
 
         $total = (clone $base)->count();
 
-        $arrived = (clone $base)->whereHas('status', function ($q) {
-            $q->where('name', 'Arrived');
-        })->count();
-
-        $notArrived = (clone $base)->whereHas('status', function ($q) {
-            $q->where('name', 'Not Show');
-        })->count();
-
-        $rescheduled = (clone $base)->whereHas('status', function ($q) {
-            $q->where('name', 'Rescheduled');
-        })->count();
+        // Combine byDateRange and byCreatedAtRange for status counts
+        $startDateTime = \Carbon\Carbon::parse($startDate);
+        $endDateTime = \Carbon\Carbon::parse($endDate);
         
-        $startDateTime = \Carbon\Carbon::parse($startDate)->startOfDay();
-        $endDateTime = \Carbon\Carbon::parse($endDate)->endOfDay();
+        $arrived = $this->model
+            ->where(function ($query) use ($startDate, $endDate, $startDateTime, $endDateTime) {
+                $query->whereBetween('date', [$startDate, $endDate])
+                      ->orWhereBetween('created_at', [$startDateTime, $endDateTime]);
+            })
+            ->whereHas('status', function ($q) {
+                $q->where('name', 'Arrived');
+            })->count();
+
+        $notArrived = $this->model
+            ->where(function ($query) use ($startDate, $endDate, $startDateTime, $endDateTime) {
+                $query->whereBetween('date', [$startDate, $endDate])
+                      ->orWhereBetween('created_at', [$startDateTime, $endDateTime]);
+            })
+            ->whereHas('status', function ($q) {
+                $q->where('name', 'Not Show');
+            })->count();
+
+        $rescheduled = $this->model
+            ->where(function ($query) use ($startDate, $endDate, $startDateTime, $endDateTime) {
+                $query->whereBetween('date', [$startDate, $endDate])
+                      ->orWhereBetween('created_at', [$startDateTime, $endDateTime]);
+            })
+            ->whereHas('status', function ($q) {
+                $q->where('name', 'Rescheduled');
+            })->count();
+
         $totalAppointments = $this->model->whereBetween('created_at', [$startDateTime, $endDateTime])->count();
 
         return [
