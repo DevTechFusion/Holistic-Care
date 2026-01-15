@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Services\ReportService;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class ReportController extends Controller
 {
@@ -75,7 +76,7 @@ class ReportController extends Controller
                 'source_id', 'agent_id', 'search', 'patient_name', 'contact_number', 'mr_number',
                 'start_time', 'end_time', 'duration'
             ]);
-
+            
             // Convert isBooking string to boolean
             if (isset($filters['isBooking'])) {
                 $filters['isBooking'] = filter_var($filters['isBooking'], FILTER_VALIDATE_BOOLEAN);

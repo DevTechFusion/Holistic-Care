@@ -11,6 +11,7 @@ use App\Services\ReportService;
 use App\Services\DoctorService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class AppointmentService extends CrudeService
 {
@@ -46,10 +47,14 @@ class AppointmentService extends CrudeService
     public function getFilteredAppointments($filters = [], $perPage = 20, $page = 1, $orderBy = 'date', $orderDirection = 'desc')
     {
         $query = $this->model->query();
-
+        
+        
         // Apply filters only if they are provided and not empty
         // If isBooking filter is true, filter by created_at (booking date), otherwise filter by appointment date
         if (!empty($filters['start_date']) && !empty($filters['end_date'])) {
+            $filters['start_date'] = Carbon::parse($filters['start_date'])->timezone(config('app.timezone'));
+            $filters['end_date'] = Carbon::parse($filters['end_date'])->timezone(config('app.timezone'));
+
             if (!empty($filters['isBooking']) && $filters['isBooking']) {
                 $query->byCreatedAtRange($filters['start_date'], $filters['end_date']);
             } else {
