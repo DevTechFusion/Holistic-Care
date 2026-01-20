@@ -240,6 +240,7 @@ class AppointmentService extends CrudeService
         // Check doctor availability and time conflicts before updating appointment
         if (isset($data['doctor_id']) && isset($data['date']) && isset($data['start_time']) && isset($data['end_time'])) {
             // Log the incoming time data for debugging
+            $data['date'] = Carbon::parse($data['date'])->timezone(config('app.timezone'));
             Log::info('Updating appointment with time data', [
                 'appointment_id' => $id,
                 'start_time' => $data['start_time'],
