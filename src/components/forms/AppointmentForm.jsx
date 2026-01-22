@@ -25,7 +25,7 @@ import { getDoctorsList } from "../../DAL/doctors";
 import { getProceduresList } from "../../DAL/procedure";
 import { getCategories } from "../../DAL/category";
 import { getSelectSources } from "../../DAL/source";
-import { getRoles } from "../../DAL/modelRoles";
+import { getAgentList } from "../../DAL/users";
 import { getAllRemarks1 } from "../../DAL/remarks1";
 import { getAllRemarks2 } from "../../DAL/remarks2";
 import { getAllStatuses } from "../../DAL/status";
@@ -83,7 +83,7 @@ const API_ENDPOINTS = [
   { key: "procedures", call: getProceduresList, errorMsg: "Failed to load procedures. Please refresh and try again." },
   { key: "categories", call: getCategories, errorMsg: "Failed to load categories. Please refresh and try again." },
   { key: "sources", call: getSelectSources, errorMsg: "Failed to load sources. Please refresh and try again." },
-  { key: "roles", call: getRoles, errorMsg: "Failed to load agents. Please refresh and try again." },
+  { key: "agents", call: getAgentList, errorMsg: "Failed to load agents. Please refresh and try again." },
   { key: "remarks1", call: getAllRemarks1, errorMsg: "Failed to load remarks 1. Please refresh and try again." },
   { key: "remarks2", call: getAllRemarks2, errorMsg: "Failed to load remarks 2. Please refresh and try again." },
   { key: "statuses", call: getAllStatuses, errorMsg: "Failed to load statuses. Please refresh and try again." },
@@ -160,6 +160,10 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
     () => Array.isArray(user?.roles) && user.roles.some((role) => role.name?.toLowerCase() === "agent"),
     [user]
   );
+  const shouldDisablePastDates = useMemo(
+    () => !isSuperAdmin && !isEditing && isCurrentUserAgent,
+    [isSuperAdmin, isEditing, isCurrentUserAgent]
+  );
 
   // Fetch appointments when doctor and date are selected
   useEffect(() => {
@@ -211,12 +215,11 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
       },
       date: () => {
         if (!value) return "Date is required";
-        // Commented out to allow past date selection
-        // if (!isEdit) {
-        //   const selectedDate = dayjs(value);
-        //   const today = dayjs().startOf('day');
-        //   if (selectedDate.isBefore(today, 'day')) return "Cannot select a past date for new appointments";
-        // }
+        if (!isSuperAdmin && !isEdit && isCurrentUserAgent) {
+          const selectedDate = dayjs(value);
+          const today = dayjs().startOf('day');
+          if (selectedDate.isBefore(today, 'day')) return "Agents cannot select past dates when creating appointments";
+        }
         return "";
       },
       start_time: () => !value ? "Start time is required" : "",
@@ -229,7 +232,7 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
     };
 
     return rules[field] ? rules[field]() : "";
-  }, [isCurrentUserAgent, isEditing]);
+  }, [isCurrentUserAgent, isEditing, isSuperAdmin]);
 
   const validateForm = useCallback(() => {
     const requiredFields = isEditing ? VALIDATION_RULES.REQUIRED_FIELDS_EDIT : VALIDATION_RULES.REQUIRED_FIELDS;
@@ -425,9 +428,9 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
   };
 
   const renderAgentField = () => {
-    const loading = loadingStates.roles;
-    const apiError = errorStates.roles;
-    const agents = apiData.roles || [];
+    const loading = loadingStates.agents;
+    const apiError = errorStates.agents;
+    const agents = apiData.agents || [];
 
     if (loading) return (
       <FormControl fullWidth>
@@ -450,15 +453,37 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
       <TextField label="Agent *" fullWidth value={user.name || "Current User"} disabled helperText="Automatically set to current agent" />
     );
 
+    const selectedAgent = agents.find((agent) => agent.id === Number(formData.agent_id)) || null;
+
     return (
-      <FormControl fullWidth error={!!errors.agent_id}>
-        <InputLabel>Agent *</InputLabel>
-        <Select value={formData.agent_id} onChange={(e) => handleChange("agent_id", e.target.value)} label="Agent *">
-          <MenuItem value=""><em>Select agent</em></MenuItem>
-          {agents.length > 0 ? agents.map((agent) => <MenuItem key={agent.id} value={agent.id}>{agent.name}</MenuItem>) : <MenuItem disabled>No agents available</MenuItem>}
-        </Select>
-        {errors.agent_id && <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 2 }}>{errors.agent_id}</Typography>}
-      </FormControl>
+      <Autocomplete
+        fullWidth
+        options={agents}
+        getOptionLabel={(option) => option.name || ""}
+        loading={loading}
+        disabled={loading || agents.length === 0}
+        value={selectedAgent}
+        onChange={(_, newValue) => handleChange("agent_id", newValue?.id || "")}
+        isOptionEqualToValue={(option, value) => option?.id === value?.id}
+        noOptionsText={apiError || "No agents available"}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Agent *"
+            error={!!errors.agent_id}
+            helperText={errors.agent_id}
+            InputProps={{
+              ...params.InputProps,
+              endAdornment: (
+                <>
+                  {loading ? <CircularProgress color="inherit" size={20} /> : null}
+                  {params.InputProps.endAdornment}
+                </>
+              ),
+            }}
+          />
+        )}
+      />
     );
   };
 
@@ -587,12 +612,12 @@ const CreateAppointmentModal = ({ open, onClose, isEditing, data }) => {
         <Stack spacing={2}>
           <Typography variant="h6" color="primary" sx={{ fontWeight: 600, mb: 1 }}>Appointment Details</Typography>
           <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-             <DatePicker 
+            <DatePicker 
               label="Date *" 
               value={formData.date ? dayjs(formData.date) : null} 
               onChange={(newValue) => handleChange("date", newValue ? newValue.format("YYYY-MM-DD") : "")} 
-              // disablePast={!isSuperAdmin}
-              // minDate={isSuperAdmin ? null : dayjs()}
+              disablePast={shouldDisablePastDates}
+              minDate={shouldDisablePastDates ? dayjs().startOf("day") : undefined}
               slotProps={{ 
                 textField: { 
                   fullWidth: true, 
